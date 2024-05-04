@@ -130,6 +130,4 @@ dist
 .pnp.*
 
 # Project debug dumps
-patchLibrary.json 
-paramsModel.json
 tmp/

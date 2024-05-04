@@ -1,35 +1,37 @@
+#!/usr/bin/env node
 import { analyzeParamsTypeAndRange } from "./analyzer";
-import { loadPatchLibrary, writePatchLibrary } from "./patchLibrary";
+import { loadPresetLibrary, writePresetLibrary } from "./presetLibrary";
 import * as fs from "fs-extra";
 import { log } from "./utils/log";
 import { getConfig } from "./config";
-import { createFullyRandomPatches } from "./randomizer";
-import * as packageJson from "../package.json"
+import { createFullyRandomPresets } from "./randomizer";
+
+const packageJson = fs.readJSONSync(__dirname + '/../package.json')
 
 log.info('======================================================================')
-log.info('u-he Patch Randomizer CLI v' + packageJson.version)
+log.info('u-he Preset Randomizer CLI v' + packageJson.version)
 log.info('======================================================================')
 
 const config = getConfig();
 
-const patchLibrary = loadPatchLibrary(config.synthName)
+const presetLibrary = loadPresetLibrary(config.synthName)
 
 if (config.debug) {
   fs.outputFileSync(
-    "./patchLibrary.json",
-    JSON.stringify(patchLibrary, null, 2)
+    "./tmp/presetLibrary.json",
+    JSON.stringify(presetLibrary, null, 2)
   );
 }
 
-const paramsModel = analyzeParamsTypeAndRange(patchLibrary)
+const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
 
 if (config.debug) {
   fs.outputFileSync(
-    "./paramsModel.json",
+    "./tmp/paramsModel.json",
     JSON.stringify(paramsModel, null, 2)
   );
 }
 
-const generatedPatches = createFullyRandomPatches(patchLibrary, paramsModel, config.amount)
+const generatedPresets = createFullyRandomPresets(presetLibrary, paramsModel, config.amount)
 
-writePatchLibrary(generatedPatches)
+writePresetLibrary(generatedPresets)

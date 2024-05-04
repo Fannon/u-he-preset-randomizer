@@ -1,17 +1,23 @@
 {
-  "name": "u-he-synth-preset-randomizer",
-  "version": "0.1.0",
+  "$schema": "https://json.schemastore.org/package",
+  "name": "u-he-preset-randomizer",
+  "version": "0.1.3",
   "description": "Create random u-he synth presets through randomization and merging of your existing presets.",
   "main": "dist/index.js",
-  "bin": "dist/cli.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "u-he-preset-randomizer": "./dist/cli.js"
+  },
   "scripts": {
     "build-ts": "tsc",
+    "clean": "rimraf dist/",
     "build": "npm run build-ts",
-    "test": "npm run build"
+    "test": "npm run build",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Fannon/u-he-synth-preset-randomizer.git"
+    "url": "git+https://github.com/Fannon/u-he-preset-randomizer.git"
   },
   "keywords": [
     "u-he",
@@ -19,14 +25,20 @@
     "random",
     "randomization",
     "presets",
-    "patches"
+    "presets"
   ],
   "author": "Simon Heimler",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Fannon/u-he-synth-preset-randomizer/issues"
+    "url": "https://github.com/Fannon/u-he-preset-randomizer/issues"
   },
-  "homepage": "https://github.com/Fannon/u-he-synth-preset-randomizer#readme",
+  "files": [
+    "README.md",
+    "package.json",
+    "src/**/*",
+    "dist/**/*"
+  ],
+  "homepage": "https://github.com/Fannon/u-he-preset-randomizer#readme",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -41,6 +53,7 @@
   "dependencies": {
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
+    "rimraf": "^5.0.5",
     "tslog": "^4.9.2",
     "unique-names-generator": "^4.7.1",
     "yargs": "^17.7.2"

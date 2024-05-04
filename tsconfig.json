@@ -2,13 +2,12 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
         // https://www.npmjs.com/package/@tsconfig/node20
-        "lib": ["es2023"],
-        "target": "es2022",
-        "strict": true,
+        "lib": ["ES2020"],
+        "module": "commonjs",
         "esModuleInterop": true,
-        "skipLibCheck": true,
-        // "module": "node16",
-        // "moduleResolution": "node16",
+        "allowSyntheticDefaultImports": true,
+        "target": "es6",
+        "noImplicitAny": true,
         "moduleResolution": "node",
 
         "outDir": "dist",

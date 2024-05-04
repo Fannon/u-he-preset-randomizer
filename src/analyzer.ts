@@ -1,5 +1,5 @@
 import { getKeyForParam } from "./parser";
-import { PatchLibrary } from "./patchLibrary";
+import { PresetLibrary } from "./presetLibrary";
 
 export interface ParamsModel {
   [key: string]: {
@@ -12,9 +12,9 @@ export interface ParamsModel {
   }
 }
 
-export function analyzeParamsTypeAndRange(patchLibrary: PatchLibrary) {
+export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
   const paramsModel: ParamsModel = {};
-  for (const preset of patchLibrary.patches) {
+  for (const preset of presetLibrary.presets) {
     for (const param of preset.params) {
       const key = getKeyForParam(param);
       if (!paramsModel[key]) {

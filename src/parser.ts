@@ -1,20 +1,20 @@
 import * as path from "path";
 
-export interface Patch {
+export interface preset {
   /** Relative filePath to preset folder */
   filePath: string;
   /** Preset file name, without file extension or sub-folders */
   presetName: string;
-  meta: PatchMetaEntry[];
-  params: PatchParam[];
+  meta: PresetMetaEntry[];
+  params: PresetParam[];
 }
 
-export interface PatchMetaEntry {
+export interface PresetMetaEntry {
   key: string;
   value: string | string[];
 }
 
-export interface PatchParam {
+export interface PresetParam {
   key: string;
   section: string;
   value: string | number;
@@ -26,16 +26,16 @@ export interface PatchParam {
 // PARSER FUNCTIONS                     //
 //////////////////////////////////////////
 
-export function parseUhePatch(fileString: string, filePath: string): Patch {
+export function parseUhePreset(fileString: string, filePath: string): preset {
   return {
     filePath: filePath,
     presetName: path.parse(filePath).name,
-    meta: getPatchMetadata(fileString),
-    params: getPatchParams(fileString),
+    meta: getPresetMetadata(fileString),
+    params: getPresetParams(fileString),
   };
 }
 
-export function getPatchMetadata(fileString: string) {
+export function getPresetMetadata(fileString: string) {
   const split = fileString.split("*/");
   const metadataHeader = split[0]!
     .replace("/*@Meta", "")
@@ -58,17 +58,17 @@ export function getPatchMetadata(fileString: string) {
   return metadata;
 }
 
-export function getPatchParams(fileString: string) {
+export function getPresetParams(fileString: string) {
   const split = fileString.split("*/");
   const paramBody = split[1]!.split("// Section")[0];
 
   if (!paramBody) {
-    throw new Error("Could not parse patch parameter body");
+    throw new Error("Could not parse preset parameter body");
   }
 
   const cleanedRows = paramBody.split("\n").filter((el) => el);
 
-  const params: PatchParam[] = [];
+  const params: PresetParam[] = [];
   let currentSection = "MAIN";
   for (let i = 0; i < cleanedRows.length; i++) {
     const paramSplit = cleanedRows[i]!.split("=");
@@ -78,7 +78,7 @@ export function getPatchParams(fileString: string) {
     if (key === "#cm") {
       currentSection = value;
     }
-    const param: PatchParam = {
+    const param: PresetParam = {
       key: key,
       section: currentSection,
       value: value,
@@ -103,12 +103,12 @@ export function getPatchParams(fileString: string) {
 // SERIALIZER FUNCTIONS                 //
 //////////////////////////////////////////
 
-export function serializePatchToFile(patch: Patch): string {
+export function serializePresetToFile(preset: preset): string {
   let file = "";
 
   // Add meta header
   file += "/*@Meta\n\n";
-  for (const entry of patch.meta) {
+  for (const entry of preset.meta) {
     file += `${entry.key}:\n`;
     if (Array.isArray(entry.value)) {
       file += `'${entry.value.join(", ")}'\n\n`;
@@ -119,7 +119,7 @@ export function serializePatchToFile(patch: Patch): string {
   file += "*/\n\n";
 
   // Add params
-  for (const param of patch.params) {
+  for (const param of preset.params) {
     file += `${param.key}=${param.value}\n`;
   }
 
@@ -134,7 +134,7 @@ export function serializePatchToFile(patch: Patch): string {
   return file;
 }
 
-export function getKeyForParam(param: PatchParam): string {
+export function getKeyForParam(param: PresetParam): string {
   let key = `${param.section}/${param.key}`
   if (param.key === '#ms') {
     key += `/${param.index}`
