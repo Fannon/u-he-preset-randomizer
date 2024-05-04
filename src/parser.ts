@@ -1,7 +1,9 @@
 import * as path from "path";
 
 interface Patch {
+  /** Relative filePath to preset folder */
   filePath: string;
+  /** Preset file name, without file extension or sub-folders */
   presetName: string;
   meta: PatchMetaEntry[];
   params: PatchParam[];
@@ -130,6 +132,14 @@ export function serializePatchToFile(patch: Patch): string {
   file += ``; // binary end of file marker?
 
   return file;
+}
+
+export function getKeyForParam(param: PatchParam): string {
+  let key = `${param.section}/${param.key}`
+  if (param.key === '#ms') {
+    key += `/${param.index}`
+  }
+  return key;
 }
 
 //////////////////////////////////////////
