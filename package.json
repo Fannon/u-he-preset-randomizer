@@ -32,11 +32,17 @@
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.12.8",
+    "@types/yargs": "^17.0.32",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "tslog": "^4.9.2"
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "tslog": "^4.9.2",
+    "unique-names-generator": "^4.7.1",
+    "yargs": "^17.7.2"
   }
 }

@@ -1,6 +1,6 @@
 import * as path from "path";
 
-interface Patch {
+export interface Patch {
   /** Relative filePath to preset folder */
   filePath: string;
   /** Preset file name, without file extension or sub-folders */
@@ -9,12 +9,12 @@ interface Patch {
   params: PatchParam[];
 }
 
-interface PatchMetaEntry {
+export interface PatchMetaEntry {
   key: string;
   value: string | string[];
 }
 
-interface PatchParam {
+export interface PatchParam {
   key: string;
   section: string;
   value: string | number;
