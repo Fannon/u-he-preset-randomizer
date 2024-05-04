@@ -23,6 +23,10 @@ If you have a recent [Node.js](https://nodejs.org/en) runtime installed, running
 npx u-he-preset-randomizer --synth Diva --amount 3
 ```
 
+The generated patches will be put into your preset directory, under a `/RANDOM` folder.
+
+![CLI Screenshot](./assets/cli-screenshot.png)
+
 ### CLI Arguments
 
 * `--synth`: Choose the u-he synth. Not all synths have been tested, but the randomizer tries to be generic.
