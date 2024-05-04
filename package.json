@@ -1,0 +1,42 @@
+{
+  "name": "u-he-synth-preset-randomizer",
+  "version": "0.1.0",
+  "description": "Create random u-he synth presets through randomization and merging of your existing presets.",
+  "main": "src/index.js",
+  "bin": "dist/cli.js",
+  "scripts": {
+    "build-ts": "tsc",
+    "build": "npm run build-ts",
+    "test": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fannon/u-he-synth-preset-randomizer.git"
+  },
+  "keywords": [
+    "u-he",
+    "synth",
+    "random",
+    "randomization",
+    "presets",
+    "patches"
+  ],
+  "author": "Simon Heimler",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Fannon/u-he-synth-preset-randomizer/issues"
+  },
+  "homepage": "https://github.com/Fannon/u-he-synth-preset-randomizer#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^20.12.8",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "tslog": "^4.9.2"
+  }
+}

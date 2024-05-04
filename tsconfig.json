@@ -1,0 +1,36 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        // https://www.npmjs.com/package/@tsconfig/node20
+        "lib": ["es2023"],
+        "target": "es2022",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        // "module": "node16",
+        // "moduleResolution": "node16",
+        "moduleResolution": "node",
+
+        "outDir": "dist",
+        "baseUrl": ".",
+        "allowUnusedLabels": false,
+        "allowUnreachableCode": false,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "forceConsistentCasingInFileNames": true,
+        "declaration": true,
+        "sourceMap": true,
+        "resolveJsonModule": true,
+    },
+    "include": [
+        "src",
+        "test"
+    ],
+    "exclude": [
+        "dist",
+        "bundle",
+        "node_modules"
+    ]
+}
