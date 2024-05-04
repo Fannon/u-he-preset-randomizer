@@ -1,6 +1,6 @@
 import * as path from "path";
 
-export interface preset {
+export interface Preset {
   /** Relative filePath to preset folder */
   filePath: string;
   /** Preset file name, without file extension or sub-folders */
@@ -15,6 +15,7 @@ export interface PresetMetaEntry {
 }
 
 export interface PresetParam {
+  id: string;
   key: string;
   section: string;
   value: string | number;
@@ -26,7 +27,7 @@ export interface PresetParam {
 // PARSER FUNCTIONS                     //
 //////////////////////////////////////////
 
-export function parseUhePreset(fileString: string, filePath: string): preset {
+export function parseUhePreset(fileString: string, filePath: string): Preset {
   return {
     filePath: filePath,
     presetName: path.parse(filePath).name,
@@ -79,12 +80,19 @@ export function getPresetParams(fileString: string) {
       currentSection = value;
     }
     const param: PresetParam = {
+      id: `${currentSection}/${key}`,
       key: key,
       section: currentSection,
       value: value,
       index: i,
       type: "string",
     };
+
+    // Some parameters appear more than once in the same section
+    // Here we need to add the index of their appearance to get a unique ID
+    if (key === '#ms') {
+      param.id += `/${param.index}`
+    }
 
     if (isInt(value)) {
       param.value = parseInt(value);
@@ -103,7 +111,7 @@ export function getPresetParams(fileString: string) {
 // SERIALIZER FUNCTIONS                 //
 //////////////////////////////////////////
 
-export function serializePresetToFile(preset: preset): string {
+export function serializePresetToFile(preset: Preset): string {
   let file = "";
 
   // Add meta header
@@ -132,14 +140,6 @@ export function serializePresetToFile(preset: preset): string {
   file += ``; // binary end of file marker?
 
   return file;
-}
-
-export function getKeyForParam(param: PresetParam): string {
-  let key = `${param.section}/${param.key}`
-  if (param.key === '#ms') {
-    key += `/${param.index}`
-  }
-  return key;
 }
 
 //////////////////////////////////////////

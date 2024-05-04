@@ -15,6 +15,7 @@ export interface Config {
   amount: number;
   preset?: string | undefined;
   randomness: number;
+  merge?: string | string[];
 }
 
 export function getDefaultConfig(): Config {
@@ -45,5 +46,9 @@ export function getConfig() {
   if (argv['randomness']) {
     config.randomness = parseInt(argv.randomness);
   }
+  if (argv['merge']) {
+    config.merge = argv.merge;
+  }
+  // console.debug(argv)
   return config;
 }

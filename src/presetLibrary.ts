@@ -3,12 +3,12 @@ const os = require("os");
 const fs = require("fs-extra");
 const fg = require("fast-glob");
 import { SynthName } from "./config";
-import { preset, parseUhePreset, serializePresetToFile } from "./parser";
+import { Preset, parseUhePreset, serializePresetToFile } from "./parser";
 import { log } from "./utils/log";
 
 export interface PresetLibrary {
   presetRootFolder: string;
-  presets: preset[];
+  presets: Preset[];
 }
 
 export function loadPresetLibrary(synthName: SynthName): PresetLibrary {

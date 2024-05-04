@@ -1,4 +1,3 @@
-import { getKeyForParam } from "./parser";
 import { PresetLibrary } from "./presetLibrary";
 
 export interface ParamsModel {
@@ -16,7 +15,7 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
   const paramsModel: ParamsModel = {};
   for (const preset of presetLibrary.presets) {
     for (const param of preset.params) {
-      const key = getKeyForParam(param);
+      const key = param.id;
       if (!paramsModel[key]) {
         paramsModel[key] = {
           type: param.type,

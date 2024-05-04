@@ -5,9 +5,9 @@ Create random [u-he](https://u-he.com/) synth presets through randomization and 
 This is only a MVP, with limited functionality:
 * Generate fully random presets based on real values in your preset library
 * Explicitly pick which existing presets to use for randomization and define amount of randomness applied to them
+* Merge multiple chosen presets together, with randomness introduced by different ratios between them.
 
 Future features could be:
-* Merge chosen presets into the chosen base preset
 * Refine method of randomization:
   * "Clustered randomization", which keeps consistency within a module
   * "Stable mode", which doesn't introduce randomization into some parameters, which tend to produce unstable results, e.g. pitch. Which params those are, depends on synth.
@@ -25,7 +25,12 @@ npx u-he-preset-randomizer --synth Diva --amount 3
 
 ```bash
 # This command create 5 random variations of the "HS Greek Horn" preset, with 20% randomization ratio
-npx u-he-preset-randomizer --synth Diva --preset "HS Greek Horn" --randomness 20 --amount 5
+npx u-he-preset-randomizer --synth Diva --amount 5 --preset "HS Greek Horn" --randomness 20
+```
+
+```bash
+# Merge multiple presets together. Randomness comes only from random ratios between multiple presets.
+npx u-he-preset-randomizer --synth Diva --amount 5 --merge "HS Greek Horn" --merge "HS Strumpet" --merge "HS Baroqualog"
 ```
 
 The generated patches will be put into your preset directory, under a `/RANDOM` folder.
@@ -35,9 +40,10 @@ The generated patches will be put into your preset directory, under a `/RANDOM` 
 ### CLI Arguments
 
 * `--synth`: Choose the u-he synth. Not all synths have been tested, but the randomizer tries to be generic. The name must match the folder name convention of u-he. E.g. `Diva`, `Hive`, `ZebraHZ`.
-* `--amount`: How many presets to generate
-* `--preset`: If given, an existing preset will be used as a based and randomized by `--randomness` ratio
-* `--randomness`: Amount of randomness (in percentage) to apply, when randomizing or merging existing presets. Value needs to be between 0 and 100.
+* `--amount`: How many presets to generate. Positive integer number.
+* `--preset`: If given, an existing preset will be used as a based and randomized by `--randomness` ratio.
+* `--randomness`: Amount of randomness (in percentage) to apply, when randomizing existing presets. Value needs to be between 0 and 100.
+* `--merge`: Can be provided multiple times, for each preset that should be part of the merging. Ratio between merged presets is random and NOT driven by the `--randomness` parameter.
 * `--debug`: Enables some optional debug logging and file exporting
 
 ## Developer Guide
