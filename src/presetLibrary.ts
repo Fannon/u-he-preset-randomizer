@@ -16,27 +16,38 @@ export function loadPresetLibrary(synthName: SynthName): PresetLibrary {
     os.homedir(),
     `/Documents/u-he/${synthName}.data/Presets/${synthName}`
   );
+  const userPresetsFolder = path.join(
+    os.homedir(),
+    `/Documents/u-he/${synthName}.data/UserPresets/${synthName}`
+  );
 
   const presetLibrary: PresetLibrary = {
     presetRootFolder: presetFolder,
     presets: [],
   };
 
-  const presets = fg.sync(["**/*.h2p"], { cwd: presetFolder });
+  const libraryPresets = fg.sync(["**/*.h2p"], { cwd: presetFolder });
+  for (const presetPath of libraryPresets) {
+    const presetString = fs
+    .readFileSync(path.join(presetFolder, presetPath))
+    .toString();
+    presetLibrary.presets.push(parseUhePreset(presetString, presetPath));
+  }
 
-  if (presets.length === 0) {
+  const userPresets = fg.sync(["**/*.h2p"], { cwd: userPresetsFolder });
+  for (const presetPath of userPresets) {
+    const presetString = fs
+    .readFileSync(path.join(userPresetsFolder, presetPath))
+    .toString();
+    presetLibrary.presets.push(parseUhePreset(presetString, presetPath));
+  }
+
+  if (presetLibrary.presets.length === 0) {
     log.error('No presets found: ' + presetFolder)
     process.exit(1)
   }
 
-  for (const presetPath of presets) {
-    const presetString = fs
-      .readFileSync(path.join(presetFolder, presetPath))
-      .toString();
-    presetLibrary.presets.push(parseUhePreset(presetString, presetPath));
-  }
-
-  log.info(`Found and loaded ${presets.length} ${synthName} presets`);
+  log.info(`Found and loaded ${presetLibrary.presets.length} ${synthName} presets`);
 
   return presetLibrary;
 }
@@ -48,6 +59,6 @@ export function writePresetLibrary(presetLibrary: PresetLibrary) {
     const filePath = path.join(presetLibrary.presetRootFolder, preset.filePath)
     const fileContent = serializePresetToFile(preset)
     fs.outputFileSync(filePath, fileContent)
-    log.info(`Written preset: "${filePath}"`)
+    log.info(`Written preset: ${filePath}`)
   }
 }
