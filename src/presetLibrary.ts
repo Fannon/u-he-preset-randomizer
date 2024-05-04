@@ -42,7 +42,7 @@ export function loadPresetLibrary(synthName: SynthName): PresetLibrary {
 }
 
 export function writePresetLibrary(presetLibrary: PresetLibrary) {
-  log.info(`Writing preset Library with ${presetLibrary.presets.length} presets to ${presetLibrary.presetRootFolder}`)
+  log.info(`Generated ${presetLibrary.presets.length} presets. Writing to ${presetLibrary.presetRootFolder}`)
 
   for (const preset of presetLibrary.presets) {
     const filePath = path.join(presetLibrary.presetRootFolder, preset.filePath)

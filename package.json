@@ -9,6 +9,7 @@
     "u-he-preset-randomizer": "./dist/cli.js"
   },
   "scripts": {
+    "start": "ts-node src/cli.ts",
     "build-ts": "tsc",
     "clean": "rimraf dist/",
     "build": "npm run build-ts",
