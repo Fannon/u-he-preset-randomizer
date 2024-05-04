@@ -4,7 +4,7 @@ import { loadPresetLibrary, writePresetLibrary } from "./presetLibrary";
 import * as fs from "fs-extra";
 import { log } from "./utils/log";
 import { getConfig } from "./config";
-import { createFullyRandomPresets } from "./randomizer";
+import { generateFullyRandomPresets, generateRandomizedPresets } from "./randomizer";
 
 const packageJson = fs.readJSONSync(__dirname + '/../package.json')
 
@@ -32,6 +32,13 @@ if (config.debug) {
   );
 }
 
-const generatedPresets = createFullyRandomPresets(presetLibrary, paramsModel, config.amount)
+if (config.preset) {
+  // Randomize a particular preset
+  const generatedPresets = generateRandomizedPresets(presetLibrary, paramsModel, config.preset, config.randomness, config.amount)
+  writePresetLibrary(generatedPresets)
+} else {
+  // Generate fully randomized presets
+  const generatedPresets = generateFullyRandomPresets(presetLibrary, paramsModel, config.amount)
+  writePresetLibrary(generatedPresets)
+}
 
-writePresetLibrary(generatedPresets)

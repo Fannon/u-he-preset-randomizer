@@ -2,5 +2,11 @@
     "cSpell.words": [
         "randomizer",
         "Zebralette"
-    ]
+    ],
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/bower_components": true,
+      "**/*.code-search": true,
+      "dist/**/*": true,
+    }
 }

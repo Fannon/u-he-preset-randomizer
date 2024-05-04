@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "ts-node",
       "runtimeExecutable": "node",
-      "args": ["${file}"],
+      "args": ["src/cli.ts", "--preset", "BS Deep Space Diva"],
       "runtimeArgs": [
         "--nolazy",
         "-r",
