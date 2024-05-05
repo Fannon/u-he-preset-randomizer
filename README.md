@@ -1,6 +1,7 @@
 # u-he-preset-randomizer
 
 Create random [u-he](https://u-he.com/) synth presets through randomization and merging of your existing presets.
+In theory it should work with all u-he synths, but so far I haven't tested this (also, I don't own all of them).
 
 This is only a MVP, with limited functionality:
 * Generate fully random presets based on real values in your preset library
@@ -11,29 +12,47 @@ Future features could be:
 * Refine method of randomization:
   * "Clustered randomization", which keeps consistency within a module
   * "Stable mode", which doesn't introduce randomization into some parameters, which tend to produce unstable results, e.g. pitch. Which params those are, depends on synth.
+* Add a fully interactive CLI mode. When no arguments are given, the user will be asked for all values, with some guidance.
+* Theoretically, a UI can be built on top, e.g. as an Electron application. But that would take significant amount of time, which I likely won't have.
 
 ## How to use
 
 This is a CLI application that you need to run in your terminal / command line.
 
-If you have a recent [Node.js](https://nodejs.org/en) runtime installed, running the following command will download the latest `u-he-preset-randomizer` CLI and execute it:
+First you need to install the [Node.js](https://nodejs.org/en) runtime.
+Then you can open your Terminal / Console / Command Prompt and start it by entering a command with some arguments.
+They start with `npx u-he-preset-randomizer`, which will download and run the latest version of this tool.
+Then some arguments follow where you pick what you want to do with the tool.
 
-```bash
-# This command will run the randomizer to generate 3 random Diva presets
+The generated patches will be put into your selected synth preset directory, under a `/RANDOM` folder.
+
+### Generate Fully Randomized Presets
+
+This command will run the randomizer to generate 3 fully randomized Diva presets.
+Random values will be based on real values (and their distribution) of your actual presets. 
+
+```sh
 npx u-he-preset-randomizer --synth Diva --amount 3
 ```
 
-```bash
-# This command create 5 random variations of the "HS Greek Horn" preset, with 20% randomization ratio
+### Randomize a particular Preset
+
+This command will take one particular preset "HS Greek Horn" and create 5 random variations of it, with a 20% randomization ratio.
+
+```sh
 npx u-he-preset-randomizer --synth Diva --amount 5 --preset "HS Greek Horn" --randomness 20
 ```
 
+### Merge multiple Presets together
+
+This command will merge multiple presets together, with a random ratio on how much weight each one has in the "inheritance". 
+The following example will take three Diva presets (each indicated with `--merge`) and create 5 merged variants out of them.
+
 ```bash
-# Merge multiple presets together. Randomness comes only from random ratios between multiple presets.
 npx u-he-preset-randomizer --synth Diva --amount 5 --merge "HS Greek Horn" --merge "HS Strumpet" --merge "HS Baroqualog"
 ```
 
-The generated patches will be put into your preset directory, under a `/RANDOM` folder.
+### Example Screenshot
 
 ![CLI Screenshot](./assets/cli-screenshot.png)
 
