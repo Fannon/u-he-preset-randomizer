@@ -175,20 +175,13 @@ export function generateMergedPresets(
 
   log.info(`Merging presets: ${mergePresets.map((el) => el.presetName).join(', ')}`)
 
-  // Create random ratios, that still add up to 1 total
-  const randomNumbers: number[] = []
-  let randomTotal = 0;
-  for (const _preset of mergePresets) {
-    const rnd = Math.random()
-    randomNumbers.push(rnd);
-    randomTotal += rnd;
-  }
-  const mergeRatios = randomNumbers.map((el) => {
-    return el / randomTotal
-  })
+  
 
   for (let i = 0; i < config.amount; i++) {
     const newPreset: Preset = JSON.parse(JSON.stringify(getRandomArrayItem<Preset>(mergePresets)));
+
+    // Create random ratios, that still add up to 1 total
+    const mergeRatios = calculateRandomMergeRatios(mergePresets);
 
     for (const param of newPreset.params) {
       const oldParamValue = JSON.parse(JSON.stringify(param.value))
@@ -250,10 +243,25 @@ export function generateMergedPresets(
   return newPresetLibrary;
 }
 
+
 //////////////////////////////////////////
 // HELPER FUNCTIONS                     //
 //////////////////////////////////////////
 
 export function getRandomArrayItem<T>(list: T[]) {
   return list[Math.floor(Math.random() * list.length)];
+}
+
+function calculateRandomMergeRatios(mergePresets: Preset[]) {
+  const randomNumbers: number[] = [];
+  let randomTotal = 0;
+  for (const _preset of mergePresets) {
+    const rnd = Math.random();
+    randomNumbers.push(rnd);
+    randomTotal += rnd;
+  }
+  const mergeRatios = randomNumbers.map((el) => {
+    return el / randomTotal;
+  });
+  return mergeRatios;
 }
