@@ -99,15 +99,7 @@ async function runInteractiveMode() {
   if (mode.value === "Fully randomized presets") {
     // MODE 1: Generate fully randomized presets
 
-    // Choose number of presets to generate
-    const amount = await prompt<{value: number}>({
-      type: 'number',
-      name: 'value',
-      message: 'How many presets to generate?',
-      initial: 16
-    })
-    config.amount = amount.value
-
+    config.amount = await chooseAmountOfPresets(16)
     const generatedPresets = generateFullyRandomPresets(presetLibrary, paramsModel, config.amount)
     writePresetLibrary(generatedPresets)
 
@@ -144,14 +136,7 @@ async function runInteractiveMode() {
     })
     config.randomness = randomness.value
 
-    // Choose number of presets to generate
-    const amount = await prompt<{value: number}>({
-      type: 'number',
-      name: 'value',
-      message: 'How many presets to generate?',
-      initial: 8
-    })
-    config.amount = amount.value
+    config.amount = await chooseAmountOfPresets(8)
 
     const generatedPresets = generateRandomizedPresets(presetLibrary, paramsModel, config)
     writePresetLibrary(generatedPresets)
@@ -194,23 +179,17 @@ async function runInteractiveMode() {
       process.exit(1)
     }
 
-    // Choose number of presets to generate
-    const amount = await prompt<{value: number}>({
-      type: 'number',
-      name: 'value',
-      message: 'How many presets to generate?',
-      initial: 8
-    })
-    config.amount = amount.value
-
+    config.amount = await chooseAmountOfPresets(8)
     const generatedPresets = generateMergedPresets(presetLibrary, config)
     writePresetLibrary(generatedPresets)
   }
 
   console.log('======================================================================')
-  console.log('Successfully completed. To run the tool with the same configuration, execute:')
+  console.log('Successfully completed.')
+  console.log('')
+  console.log('To run it with the same configuration again, execute:')
 
-  let cliCommand = `npx u-he-preset-randomizer --synth ${config.synth} --amount ${config.amount}`
+  let cliCommand = `npx u-he-preset-randomizer@latest --synth ${config.synth} --amount ${config.amount}`
   if (config.preset) {
     cliCommand += ` --preset "${config.preset}" --random ${config.randomness}`
   } else if (config.merge) {
@@ -221,3 +200,17 @@ async function runInteractiveMode() {
   console.log(cliCommand)
 }
 
+//////////////////////////////////////////
+// HELPER FUNCTIONS                     //
+//////////////////////////////////////////
+
+/** Choose number of presets to generate */
+async function chooseAmountOfPresets(initial: number = 8): Promise<number> {
+  const amount = await prompt<{value: number}>({
+    type: 'number',
+    name: 'value',
+    message: 'How many presets to generate?',
+    initial: initial
+  })
+  return amount.value
+}

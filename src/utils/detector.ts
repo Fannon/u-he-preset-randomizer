@@ -32,7 +32,7 @@ export function detectPresetLibraryLocations(synthName?: string): DetectedPreset
         if (fs.existsSync(pathToCheck)) {
           detectedPresetLibraries[synthName] = {
             root: pathToCheck,
-            presets: `/Library/Audio/Presets/u-he/__SynthName__/`,
+            presets: `/Library/Audio/Presets/u-he/${synthName}/`,
             userPresets: path.join(pathToCheck, `/UserPresets/${synthName}`),
           }
           break;
