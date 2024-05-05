@@ -1,4 +1,5 @@
 import { Logger } from 'tslog'
 export const log = new Logger({ 
-    prettyLogTemplate: "{{hh}}:{{MM}}:{{ss}} {{logLevelName}} ", 
+    prettyLogTemplate: "{{logLevelName}} ", 
+    // prettyLogTemplate: "{{hh}}:{{MM}}:{{ss}} {{logLevelName}} ", 
 });

@@ -162,6 +162,11 @@ export function generateMergedPresets(
     config.merge = [config.merge]
   }
 
+  if ((mergePresets.length + config.merge.length) < 2) {
+    log.error('Merge presets only works when at least two presets have been chosen');
+    process.exit(1)
+  }
+
   for (const presetTitle of config.merge) {
     const mergePreset = presetLibrary.presets.find((el) => {
       return el.filePath.includes(presetTitle)
@@ -174,8 +179,6 @@ export function generateMergedPresets(
   }
 
   log.info(`Merging presets: ${mergePresets.map((el) => el.presetName).join(', ')}`)
-
-  
 
   for (let i = 0; i < config.amount; i++) {
     const newPreset: Preset = JSON.parse(JSON.stringify(getRandomArrayItem<Preset>(mergePresets)));

@@ -16,8 +16,14 @@ This is a CLI application that you need to run in your terminal / command line.
 
 First you need to install the [Node.js](https://nodejs.org/en) runtime.
 Then you can open your Terminal / Console / Command Prompt and start it by entering a command with some arguments.
-They start with `npx u-he-preset-randomizer`, which will download and run the latest version of this tool.
-Then some arguments follow where you pick what you want to do with the tool.
+They start with `npx u-he-preset-randomizer`, which will download and run the latest version of this tool:
+
+```sh
+npx u-he-preset-randomizer
+```
+
+This will start the tool in interactive mode. It will guide you though the necessary choices.
+Alternatively, you can pass some arguments if you already know the choices (non interactive).
 
 The generated patches will be put into your selected synth preset directory, under a `/RANDOM` folder.
 

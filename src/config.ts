@@ -20,7 +20,7 @@ export interface Config {
 
 export function getDefaultConfig(): Config {
   return {
-    synthName: 'Diva',
+    synthName: '',
     debug: false,
     amount: 4,
     preset: undefined,
@@ -28,8 +28,9 @@ export function getDefaultConfig(): Config {
   }
 }
 
-export function getConfig() {
-  const config = getDefaultConfig();
+let config = getDefaultConfig();
+
+export function getConfigFromParameters() {
   const argv = yargs.argv as any;
   if (argv['synth']) {
     config.synthName = argv['synth']
@@ -49,6 +50,16 @@ export function getConfig() {
   if (argv['merge']) {
     config.merge = argv.merge;
   }
-  // console.debug(argv)
   return config;
+}
+
+export function getConfig() {
+  return config;
+}
+
+export function setConfig(newConfig: Partial<Config>) {
+  config = {
+    ...config,
+    ...newConfig,
+  }
 }
