@@ -19,7 +19,7 @@ Then you can open your Terminal / Console / Command Prompt and start it by enter
 They start with `npx u-he-preset-randomizer`, which will download and run the latest version of this tool:
 
 ```sh
-npx u-he-preset-randomizer
+npx u-he-preset-randomizer@latest
 ```
 
 This will start the tool in interactive mode. It will guide you though the necessary choices.
@@ -33,7 +33,7 @@ This command will run the randomizer to generate 3 fully randomized Diva presets
 Random values will be based on real values (and their distribution) of your actual presets. 
 
 ```sh
-npx u-he-preset-randomizer --synth Diva --amount 3
+npx u-he-preset-randomizer@latest --synth Diva --amount 3
 ```
 
 ### Randomize a particular Preset
@@ -41,7 +41,7 @@ npx u-he-preset-randomizer --synth Diva --amount 3
 This command will take one particular preset "HS Greek Horn" and create 5 random variations of it, with a 20% randomization ratio.
 
 ```sh
-npx u-he-preset-randomizer --synth Diva --amount 5 --preset "HS Greek Horn" --randomness 20
+npx u-he-preset-randomizer@latest --synth Diva --amount 5 --preset "HS Greek Horn" --randomness 20
 ```
 
 ### Merge multiple Presets together
@@ -50,7 +50,7 @@ This command will merge multiple presets together, with a random ratio on how mu
 The following example will take three Diva presets (each indicated with `--merge`) and create 5 merged variants out of them.
 
 ```bash
-npx u-he-preset-randomizer --synth Diva --amount 5 --merge "HS Greek Horn" --merge "HS Strumpet" --merge "HS Baroqualog"
+npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn" --merge "HS Strumpet" --merge "HS Baroqualog"
 ```
 
 ### Example Screenshot
