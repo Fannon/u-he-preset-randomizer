@@ -30,6 +30,8 @@ Alternatively, you can pass some arguments if you already know the choices (non 
 
 The generated patches will be put into your selected synth preset directory, under a `/RANDOM` folder.
 
+![GIF Recording](./assets/u-he-preset-randomizer.gif)
+
 ### Generate Fully Randomized Presets
 
 This command will run the randomizer to generate 3 fully randomized Diva presets.
@@ -55,10 +57,6 @@ The following example will take three Diva presets (each indicated with `--merge
 ```bash
 npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn" --merge "HS Strumpet" --merge "HS Baroqualog"
 ```
-
-### Example Screenshot
-
-![CLI Screenshot](./assets/cli-screenshot.png)
 
 ### CLI Arguments
 
@@ -92,7 +90,6 @@ Future features could be:
   * "Clustered randomization", which keeps consistency within a module
   * "Stable mode", which doesn't introduce randomization into some parameters, which tend to produce unstable results, e.g. pitch. Which params those are, depends on synth.
   * Figure out which parameters / section are not active in the patch and ignore them?
-* Add a fully interactive CLI mode. When no arguments are given, the user will be asked for all values, with some guidance.
 * Allow to pass one or multiple `.uhe-fav` files, which would either limit the presets for randomization or could be used as a selector which presets to merge (suggested by [AtomOfScent KVR User](https://www.kvraudio.com/forum/viewtopic.php?p=8898429#p8898429)).
 * Theoretically, a UI can be built on top, e.g. as an Electron application. But that would take significant amount of time, which I likely won't have.
 
