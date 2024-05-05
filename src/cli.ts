@@ -2,13 +2,11 @@
 import { analyzeParamsTypeAndRange } from "./analyzer";
 import { loadPresetLibrary, writePresetLibrary } from "./presetLibrary";
 import * as fs from "fs-extra";
-import * as path from "path";
-import * as os from "os";
-import * as fg from "fast-glob";
 import { log } from "./utils/log";
 import { getConfigFromParameters } from "./config";
 import { generateFullyRandomPresets, generateMergedPresets, generateRandomizedPresets } from "./randomizer";
 import { prompt } from "enquirer"
+import { detectPresetLibraryLocations } from "./utils/detector";
 
 const packageJson = fs.readJSONSync(__dirname + '/../package.json')
 
@@ -70,19 +68,14 @@ function runWithoutInteractivity() {
 async function runInteractiveMode() {
 
   // 1) Detect available u-he synths and offer user choice
-  const uheDocuments = path.join(
-    os.homedir(),
-    `/Documents/u-he/`
-  );
-  const synthFolders = fg.sync(["*.data"], { cwd: uheDocuments, deep: 1, onlyDirectories: true });
-  const availableSynths = synthFolders.map((el) => {
-    return el.replace('.data', '')
-  })
+  
+  // Detect correct Preset Library Location
+  const locations = detectPresetLibraryLocations()
   const synth = await prompt<{value: string}>({
     type: 'autocomplete',
     name: 'value',
     message: 'Which u-he synth to generate presets for?',
-    choices: availableSynths
+    choices: Object.keys(locations)
   })
   config.synth = synth.value
 

@@ -16,7 +16,7 @@ export function generateFullyRandomPresets(
   number: number
 ): PresetLibrary {
   const newPresetLibrary: PresetLibrary = {
-    presetRootFolder: presetLibrary.presetRootFolder + '/RANDOM',
+    userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
     presets: []
   }
   for (let i = 0; i < number; i++) {
@@ -68,7 +68,7 @@ export function generateRandomizedPresets(
   preset?: Preset 
 ): PresetLibrary {
   const newPresetLibrary: PresetLibrary = {
-    presetRootFolder: presetLibrary.presetRootFolder + '/RANDOM',
+    userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
     presets: []
   }
 
@@ -141,7 +141,7 @@ export function generateMergedPresets(
   config: Config
 ): PresetLibrary {
   const newPresetLibrary: PresetLibrary = {
-    presetRootFolder: presetLibrary.presetRootFolder + '/RANDOM',
+    userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
     presets: []
   }
 
