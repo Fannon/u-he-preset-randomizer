@@ -8,6 +8,7 @@ import { log } from "./utils/log";
 
 export interface PresetLibrary {
   presetRootFolder: string;
+  factoryLibraryRootFolder?: string;
   presets: Preset[];
 }
 
@@ -22,24 +23,39 @@ export function loadPresetLibrary(synth: SynthName): PresetLibrary {
   );
 
   const presetLibrary: PresetLibrary = {
-    presetRootFolder: presetFolder,
+    presetRootFolder: userPresetsFolder,
+    factoryLibraryRootFolder: presetFolder,
     presets: [],
   };
 
   const libraryPresets = fg.sync(["**/*.h2p"], { cwd: presetFolder });
   for (const presetPath of libraryPresets) {
-    const presetString = fs
-    .readFileSync(path.join(presetFolder, presetPath))
-    .toString();
-    presetLibrary.presets.push(parseUhePreset(presetString, presetPath));
+    try {
+      const presetString = fs
+      .readFileSync(path.join(presetFolder, presetPath))
+      .toString();
+      const parsedPreset = parseUhePreset(presetString, presetPath)
+      if (parsedPreset.params.length && parsedPreset.meta.length) {
+        presetLibrary.presets.push(parsedPreset);
+      }
+    } catch (err) {
+      log.warn(`Could not load and parse preset: ${presetPath}`, err)
+    }
   }
 
   const userPresets = fg.sync(["**/*.h2p"], { cwd: userPresetsFolder });
   for (const presetPath of userPresets) {
-    const presetString = fs
-    .readFileSync(path.join(userPresetsFolder, presetPath))
-    .toString();
-    presetLibrary.presets.push(parseUhePreset(presetString, presetPath));
+    try {
+      const presetString = fs
+      .readFileSync(path.join(userPresetsFolder, presetPath))
+      .toString();
+      const parsedPreset = parseUhePreset(presetString, presetPath)
+      if (parsedPreset.params.length && parsedPreset.meta.length) {
+        presetLibrary.presets.push(parsedPreset);
+      }
+    } catch (err) {
+      log.warn(`Could not load and parse preset: ${presetPath}`, err)
+    }
   }
 
   if (presetLibrary.presets.length === 0) {

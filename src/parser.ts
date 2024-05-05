@@ -46,7 +46,14 @@ export function getPresetMetadata(fileString: string) {
 
   const metadata = [];
   for (let i = 0; i < cleanedRows.length; i = i + 2) {
-    const key = cleanedRows[i]!.replace(":", "");
+    if (!cleanedRows[i]) {
+      continue;
+    }
+    const key = cleanedRows[i].replace(":", "");
+
+    if (!cleanedRows[i + 1]) {
+      continue;
+    }
     let value: string | string[] = cleanedRows[i + 1]!.split("'").join("");
     if (value.includes(", ")) {
       value = value.split(", ");
@@ -60,7 +67,13 @@ export function getPresetMetadata(fileString: string) {
 }
 
 export function getPresetParams(fileString: string) {
+  const params: PresetParam[] = [];
   const split = fileString.split("*/");
+
+  if (!split[1]) {
+    return params;
+  }
+
   const paramBody = split[1]!.split("// Section")[0];
 
   if (!paramBody) {
@@ -69,7 +82,6 @@ export function getPresetParams(fileString: string) {
 
   const cleanedRows = paramBody.split("\n").filter((el) => el);
 
-  const params: PresetParam[] = [];
   let currentSection = "MAIN";
   for (let i = 0; i < cleanedRows.length; i++) {
     const paramSplit = cleanedRows[i]!.split("=");
