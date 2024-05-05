@@ -8,6 +8,9 @@ Currently it can generate random presets in three different modes:
 * Explicitly pick which existing presets to use for randomization and define amount of randomness applied to them
 * Merge multiple chosen presets together, with randomness introduced by different ratios between them.
 
+> Currently it only works for Windows, as I don't have a Mac and cannot test it. 
+> If you have one and are willing to test, please reach out.
+
 See [Future Features and Ideas](#future-features--ideas) on what else could be added.
 
 ## How to use
