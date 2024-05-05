@@ -10,7 +10,7 @@ export type SynthName =
   | string;
 
 export interface Config {
-  synthName: SynthName;
+  synth: SynthName;
   debug: boolean;
   amount: number;
   preset?: string | undefined;
@@ -20,7 +20,7 @@ export interface Config {
 
 export function getDefaultConfig(): Config {
   return {
-    synthName: '',
+    synth: '',
     debug: false,
     amount: 4,
     preset: undefined,
@@ -33,7 +33,7 @@ let config = getDefaultConfig();
 export function getConfigFromParameters() {
   const argv = yargs.argv as any;
   if (argv['synth']) {
-    config.synthName = argv['synth']
+    config.synth = argv['synth']
   }
   if (argv['debug']) {
     config.debug = true;

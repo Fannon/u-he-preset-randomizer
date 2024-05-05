@@ -11,14 +11,14 @@ export interface PresetLibrary {
   presets: Preset[];
 }
 
-export function loadPresetLibrary(synthName: SynthName): PresetLibrary {
+export function loadPresetLibrary(synth: SynthName): PresetLibrary {
   const presetFolder = path.join(
     os.homedir(),
-    `/Documents/u-he/${synthName}.data/Presets/${synthName}`
+    `/Documents/u-he/${synth}.data/Presets/${synth}`
   );
   const userPresetsFolder = path.join(
     os.homedir(),
-    `/Documents/u-he/${synthName}.data/UserPresets/${synthName}`
+    `/Documents/u-he/${synth}.data/UserPresets/${synth}`
   );
 
   const presetLibrary: PresetLibrary = {
@@ -47,18 +47,18 @@ export function loadPresetLibrary(synthName: SynthName): PresetLibrary {
     process.exit(1)
   }
 
-  log.info(`Found and loaded ${presetLibrary.presets.length} ${synthName} presets`);
+  console.log(`Found and loaded ${presetLibrary.presets.length} ${synth} presets`);
 
   return presetLibrary;
 }
 
 export function writePresetLibrary(presetLibrary: PresetLibrary) {
-  log.info(`Generated ${presetLibrary.presets.length} presets. Writing to ${presetLibrary.presetRootFolder}`)
+  console.log(`Generated ${presetLibrary.presets.length} presets. Writing to ${presetLibrary.presetRootFolder}`)
 
   for (const preset of presetLibrary.presets) {
     const filePath = path.join(presetLibrary.presetRootFolder, preset.filePath)
     const fileContent = serializePresetToFile(preset)
     fs.outputFileSync(filePath, fileContent)
-    log.info(`Written preset: ${filePath}`)
+    console.log(`Written preset: ${filePath}`)
   }
 }

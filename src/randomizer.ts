@@ -52,7 +52,7 @@ export function generateFullyRandomPresets(
       }
     ],
 
-    log.info(`Generated random preset: ${randomPreset.filePath}`);
+    console.log(`Generated random preset: ${randomPreset.filePath}`);
     newPresetLibrary.presets.push(randomPreset)
   }
   return newPresetLibrary;
@@ -127,7 +127,7 @@ export function generateRandomizedPresets(
     randomPreset.filePath = `/RND ${randomName} ${randomPreset.presetName}.h2p`;
     randomPreset.presetName = `RND ${randomName} ${randomPreset.presetName}`;
 
-    log.info(`Generated random preset: ${randomPreset.filePath}`);
+    console.log(`Generated random preset: ${randomPreset.filePath}`);
     newPresetLibrary.presets.push(randomPreset)
   }
   return newPresetLibrary;
@@ -178,7 +178,7 @@ export function generateMergedPresets(
     mergePresets.push(mergePreset)
   }
 
-  log.info(`Merging presets: ${mergePresets.map((el) => el.presetName).join(', ')}`)
+  console.log(`Merging presets: ${mergePresets.map((el) => el.presetName).join(', ')}`)
 
   for (let i = 0; i < config.amount; i++) {
     const newPreset: Preset = JSON.parse(JSON.stringify(getRandomArrayItem<Preset>(mergePresets)));
@@ -240,7 +240,7 @@ export function generateMergedPresets(
       }
     ],
 
-    log.info(`Generated merged preset: ${newPreset.filePath}`);
+    console.log(`Generated merged preset: ${newPreset.filePath}`);
     newPresetLibrary.presets.push(newPreset)
   }
   return newPresetLibrary;

@@ -12,15 +12,15 @@ import { prompt } from "enquirer"
 
 const packageJson = fs.readJSONSync(__dirname + '/../package.json')
 
-log.info('======================================================================')
-log.info('u-he Preset Randomizer CLI v' + packageJson.version)
-log.info('======================================================================')
+console.log('======================================================================')
+console.log('u-he Preset Randomizer CLI v' + packageJson.version)
+console.log('======================================================================')
 
 const config = getConfigFromParameters();
 
 (async () => {
   
-  if (!config.synthName) {
+  if (!config.synth) {
     // If no synth is given, we'll go into fully interactive CLI mode
     await runInteractiveMode()
   } else {
@@ -33,7 +33,7 @@ const config = getConfigFromParameters();
 });
 
 function runWithoutInteractivity() {
-  const presetLibrary = loadPresetLibrary(config.synthName)
+  const presetLibrary = loadPresetLibrary(config.synth)
   if (config.debug) {
     fs.outputFileSync(
       "./tmp/presetLibrary.json",
@@ -76,13 +76,13 @@ async function runInteractiveMode() {
   const availableSynths = synthFolders.map((el) => {
     return el.replace('.data', '')
   })
-  const synthName = await prompt<{value: string}>({
+  const synth = await prompt<{value: string}>({
     type: 'autocomplete',
     name: 'value',
     message: 'Which u-he synth to generate presets for?',
     choices: availableSynths
   })
-  config.synthName = synthName.value
+  config.synth = synth.value
 
   // 2) Choose random generation mode
   const mode = await prompt<{value: string}>({
@@ -96,8 +96,8 @@ async function runInteractiveMode() {
     ]
   })
 
-  log.info('Loading and analyzing preset library...')
-  const presetLibrary = loadPresetLibrary(config.synthName)
+  console.log('Loading and analyzing preset library...')
+  const presetLibrary = loadPresetLibrary(config.synth)
   const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
 
@@ -120,7 +120,7 @@ async function runInteractiveMode() {
 
     // MODE 2: Randomize existing preset
 
-    log.info('Now choose one presets to merge. Type for autocomplete, enter to select.')
+    console.log('Now choose one presets to merge. Type for autocomplete, enter to select.')
     const confirm = await prompt<{value: boolean}>({
       type: 'confirm',
       name: 'value',
@@ -140,6 +140,15 @@ async function runInteractiveMode() {
     })
     config.preset = presetChoice.value
 
+    // Choose amount of randomness
+    const randomness = await prompt<{value: number}>({
+      type: 'number',
+      name: 'value',
+      message: 'How much randomness to apply (0-100)?',
+      initial: 20
+    })
+    config.randomness = randomness.value
+
     // Choose number of presets to generate
     const amount = await prompt<{value: number}>({
       type: 'number',
@@ -155,8 +164,8 @@ async function runInteractiveMode() {
 
     // MODE 3: Merge Random Presets
 
-    log.info('Now choose at least two presets to merge. Type for autocomplete, enter to select.')
-    log.info('Complete selection by pressing enter without a selection.')
+    console.log('Now choose at least two presets to merge. Type for autocomplete, enter to select.')
+    console.log('Complete selection by pressing enter without a selection.')
     const confirm = await prompt<{value: boolean}>({
       type: 'confirm',
       name: 'value',
@@ -184,7 +193,7 @@ async function runInteractiveMode() {
       }
     }
 
-    log.info(`Selection: ${config.merge.join(', ')}`)
+    console.log(`Selection: ${config.merge.join(', ')}`)
 
     if (config.merge.length < 2) {
       log.error(`At least two presets need to be chosen. Will abort.`)
@@ -204,5 +213,17 @@ async function runInteractiveMode() {
     writePresetLibrary(generatedPresets)
   }
 
+  console.log('======================================================================')
+  console.log('Successfully completed. To run the tool with the same configuration, execute:')
+
+  let cliCommand = `npx u-he-preset-randomizer --synth ${config.synth} --amount ${config.amount}`
+  if (config.preset) {
+    cliCommand += ` --preset "${config.preset}" --random ${config.randomness}`
+  } else if (config.merge) {
+    for (const merge of config.merge) {
+      cliCommand += ` --merge "${merge}"`
+    }
+  }
+  console.log(cliCommand)
 }
 
