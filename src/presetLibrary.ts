@@ -25,34 +25,42 @@ export function loadPresetLibrary(synth: SynthName): PresetLibrary {
 
   // Load preset library
   const libraryPresets = fg.sync(["**/*.h2p"], { cwd:  presetLibrary.presetsFolder });
-  for (const presetPath of libraryPresets) {
-    try {
-      const presetString = fs
-      .readFileSync(path.join( presetLibrary.presetsFolder, presetPath))
-      .toString();
-      const parsedPreset = parseUhePreset(presetString, presetPath)
-      if (parsedPreset.params.length && parsedPreset.meta.length) {
-        presetLibrary.presets.push(parsedPreset);
+  if (libraryPresets.length > 0) {
+    for (const presetPath of libraryPresets) {
+      try {
+        const presetString = fs
+        .readFileSync(path.join( presetLibrary.presetsFolder, presetPath))
+        .toString();
+        const parsedPreset = parseUhePreset(presetString, presetPath)
+        if (parsedPreset.params.length && parsedPreset.meta.length) {
+          presetLibrary.presets.push(parsedPreset);
+        }
+      } catch (err) {
+        log.warn(`Could not load and parse preset: ${presetPath}`, err)
       }
-    } catch (err) {
-      log.warn(`Could not load and parse preset: ${presetPath}`, err)
     }
+  } else {
+    log.warn(`Could not find presets in library: ${presetLibrary.presetsFolder}`)
   }
 
   // Load user preset library
   const userPresets = fg.sync(["**/*.h2p"], { cwd: presetLibrary.userPresetsFolder });
-  for (const presetPath of userPresets) {
-    try {
-      const presetString = fs
-      .readFileSync(path.join(presetLibrary.userPresetsFolder, presetPath))
-      .toString();
-      const parsedPreset = parseUhePreset(presetString, presetPath)
-      if (parsedPreset.params.length && parsedPreset.meta.length) {
-        presetLibrary.presets.push(parsedPreset);
+  if (userPresets.length > 0) {
+    for (const presetPath of userPresets) {
+      try {
+        const presetString = fs
+        .readFileSync(path.join(presetLibrary.userPresetsFolder, presetPath))
+        .toString();
+        const parsedPreset = parseUhePreset(presetString, presetPath)
+        if (parsedPreset.params.length && parsedPreset.meta.length) {
+          presetLibrary.presets.push(parsedPreset);
+        }
+      } catch (err) {
+        log.warn(`Could not load and parse preset: ${presetPath}`, err)
       }
-    } catch (err) {
-      log.warn(`Could not load and parse preset: ${presetPath}`, err)
     }
+  } else {
+    log.warn(`Could not find presets in user library: ${presetLibrary.userPresetsFolder}`)
   }
 
   if (presetLibrary.presets.length === 0) {
