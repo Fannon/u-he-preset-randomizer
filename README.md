@@ -3,19 +3,12 @@
 Create random [u-he](https://u-he.com/) synth presets through randomization and merging of your existing presets.
 In theory it should work with all u-he synths, but so far I haven't tested this (also, I don't own all of them).
 
-This is only a MVP, with limited functionality:
+Currently it can generate random presets in three different modes:
 * Generate fully random presets based on real values in your preset library
 * Explicitly pick which existing presets to use for randomization and define amount of randomness applied to them
 * Merge multiple chosen presets together, with randomness introduced by different ratios between them.
 
-Future features could be:
-* Refine method of randomization:
-  * "Clustered randomization", which keeps consistency within a module
-  * "Stable mode", which doesn't introduce randomization into some parameters, which tend to produce unstable results, e.g. pitch. Which params those are, depends on synth.
-  * Figure out which parameters / section are not active in the patch and ignore them?
-* Add a fully interactive CLI mode. When no arguments are given, the user will be asked for all values, with some guidance.
-* Allow to pass one or multiple `.uhe-fav` files, which would either limit the presets for randomization or could be used as a selector which presets to merge (suggested by [AtomOfScent KVR User](https://www.kvraudio.com/forum/viewtopic.php?p=8898429#p8898429)).
-* Theoretically, a UI can be built on top, e.g. as an Electron application. But that would take significant amount of time, which I likely won't have.
+See [Future Features and Ideas](#future-features--ideas) on what else could be added.
 
 ## How to use
 
@@ -81,6 +74,18 @@ ts-node src/cli.ts --synth Diva --amount 3
 ```
 
 I've also exposed the u-he preset parser / serializer functions in the NPM module, so they could be used programmatically by other projects. However, you might inherit more dependencies than necessary if you're just interested in the parser. See [./src/parser.ts](./src/parser.ts).
+
+## Future Features / Ideas
+
+Future features could be:
+
+* Refine method of randomization:
+  * "Clustered randomization", which keeps consistency within a module
+  * "Stable mode", which doesn't introduce randomization into some parameters, which tend to produce unstable results, e.g. pitch. Which params those are, depends on synth.
+  * Figure out which parameters / section are not active in the patch and ignore them?
+* Add a fully interactive CLI mode. When no arguments are given, the user will be asked for all values, with some guidance.
+* Allow to pass one or multiple `.uhe-fav` files, which would either limit the presets for randomization or could be used as a selector which presets to merge (suggested by [AtomOfScent KVR User](https://www.kvraudio.com/forum/viewtopic.php?p=8898429#p8898429)).
+* Theoretically, a UI can be built on top, e.g. as an Electron application. But that would take significant amount of time, which I likely won't have.
 
 ## Help / Feedback
 
