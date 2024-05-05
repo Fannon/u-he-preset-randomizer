@@ -187,7 +187,6 @@ async function runInteractiveMode() {
         message: 'Choose multiple presets to merge.',
         choices: [""].concat(foundPresets)
       })
-      console.log(presetChoice)
       if (presetChoice.value) {
         config.merge.push(presetChoice.value)
       } else {
@@ -195,7 +194,7 @@ async function runInteractiveMode() {
       }
     }
 
-    console.log(`Selection: ${config.merge.join(', ')}`)
+    console.log(`Selected Presets: \n > ${config.merge.join('\n > ')}`)
 
     if (config.merge.length < 2) {
       log.error(`At least two presets need to be chosen. Will abort.`)
