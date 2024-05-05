@@ -53,12 +53,10 @@ export function loadPresetLibrary(synth: SynthName): PresetLibrary {
 }
 
 export function writePresetLibrary(presetLibrary: PresetLibrary) {
-  console.log(`Generated ${presetLibrary.presets.length} presets. Writing to ${presetLibrary.presetRootFolder}`)
-
   for (const preset of presetLibrary.presets) {
     const filePath = path.join(presetLibrary.presetRootFolder, preset.filePath)
     const fileContent = serializePresetToFile(preset)
     fs.outputFileSync(filePath, fileContent)
-    console.log(`Written preset: ${filePath}`)
+    console.log(`Written: ${filePath}`)
   }
 }

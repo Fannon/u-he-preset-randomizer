@@ -63,6 +63,8 @@ function runWithoutInteractivity() {
     writePresetLibrary(generatedPresets)
   }
 
+  console.log('======================================================================')
+  console.log('Successfully completed.')
 }
 
 async function runInteractiveMode() {
