@@ -16,6 +16,8 @@ export interface Config {
   preset?: string | undefined;
   randomness: number;
   merge?: string | string[];
+  /** Pattern to narrow down presets to load from library */
+  pattern?: string;
 }
 
 export function getDefaultConfig(): Config {
@@ -25,6 +27,7 @@ export function getDefaultConfig(): Config {
     amount: 4,
     preset: undefined,
     randomness: 20,
+    pattern: '**/*' // all subfolders, all files
   }
 }
 
@@ -49,6 +52,9 @@ export function getConfigFromParameters() {
   }
   if (argv['merge']) {
     config.merge = argv.merge;
+  }
+  if (argv['pattern']) {
+    config.pattern = argv.pattern;
   }
   return config;
 }

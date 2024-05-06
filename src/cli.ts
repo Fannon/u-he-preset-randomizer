@@ -4,7 +4,7 @@ import { loadPresetLibrary, writePresetLibrary } from "./presetLibrary";
 import * as fs from "fs-extra";
 import { log } from "./utils/log";
 import { getConfigFromParameters } from "./config";
-import { generateFullyRandomPresets, generateMergedPresets, generateRandomizedPresets } from "./randomizer";
+import { generateFullyRandomPresets, generateMergedPresets, generateRandomizedPresets, getRandomArrayItem } from "./randomizer";
 import { prompt } from "enquirer"
 import { detectPresetLibraryLocations } from "./utils/detector";
 
@@ -108,6 +108,7 @@ async function runInteractiveMode() {
     // MODE 2: Randomize existing preset
 
     console.log('Now choose one presets to merge. Type for autocomplete, enter to select.')
+    console.log('Enter ? to choose a random preset')
     const confirm = await prompt<{value: boolean}>({
       type: 'confirm',
       name: 'value',
@@ -123,9 +124,13 @@ async function runInteractiveMode() {
       type: 'autocomplete',
       name: 'value',
       message: 'Choose a preset to randomize. Type for autocomplete.',
-      choices: foundPresets
+      choices: ["?"].concat(foundPresets)
     })
-    config.preset = presetChoice.value
+    if (presetChoice.value === "?") {
+      config.preset = getRandomArrayItem(foundPresets)
+    } else {
+      config.preset = presetChoice.value
+    }
 
     // Choose amount of randomness
     const randomness = await prompt<{value: number}>({
@@ -145,7 +150,9 @@ async function runInteractiveMode() {
     // MODE 3: Merge Random Presets
 
     console.log('Now choose at least two presets to merge. Type for autocomplete, enter to select.')
-    console.log('Complete selection by pressing enter without a selection.')
+    console.log('Enter ? to select a random preset')
+    console.log('Enter * to select all presets (use with care!)')
+    console.log('Enter without selection to complete your selection')
     const confirm = await prompt<{value: boolean}>({
       type: 'confirm',
       name: 'value',
@@ -163,10 +170,17 @@ async function runInteractiveMode() {
         type: 'autocomplete',
         name: 'value',
         message: 'Choose multiple presets to merge.',
-        choices: [""].concat(foundPresets)
+        choices: ["", "?", "*"].concat(foundPresets)
       })
       if (presetChoice.value) {
-        config.merge.push(presetChoice.value)
+        if (presetChoice.value === "?") {
+          config.merge.push(getRandomArrayItem(foundPresets))
+        } else if (presetChoice.value === "*") {
+          config.merge = foundPresets
+          break;
+        } else {
+          config.merge.push(presetChoice.value)
+        }
       } else {
         break;
       }
