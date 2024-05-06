@@ -10,7 +10,8 @@
       "name": "ts-node",
       "runtimeExecutable": "node",
       // "args": ["src/cli.ts", "--preset", "BS Deep Space Diva", "--merge", "HS Strumpet", "--merge", "HS Baroqualog"],
-      "args": ["src/cli.ts", "--synth", "ZebraHZ"],
+      // "args": ["src/cli.ts", "--synth", "ZebraHZ"],
+      "args": ["src/cli.ts"],
       "runtimeArgs": [
         "--nolazy",
         "-r",

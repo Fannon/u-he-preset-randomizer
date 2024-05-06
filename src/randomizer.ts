@@ -64,22 +64,26 @@ export function generateFullyRandomPresets(
 export function generateRandomizedPresets(
   presetLibrary: PresetLibrary,
   paramModel: ParamsModel,
-  config: Config,
-  preset?: Preset 
+  config: Config
 ): PresetLibrary {
   const newPresetLibrary: PresetLibrary = {
     userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
     presets: []
   }
 
-  // If preset is passed in via argument, don't search in PresetLibrary via --preset parameter
-  const basePreset = preset || presetLibrary.presets.find((el) => {
-    return el.filePath.includes(config.preset)
-  })
+  let basePreset: Preset;
 
-  if (!basePreset) {
-    log.error(`No preset with name ${config.preset} found!`)
-    process.exit(1)
+  // If no preset given or "?" is passed, choose a random preset
+  if (config.preset === '?' || !config.preset) {
+    basePreset = getRandomArrayItem(presetLibrary.presets)
+  } else {
+    basePreset = presetLibrary.presets.find((el) => {
+      return el.filePath.includes(config.preset)
+    })
+    if (!basePreset) {
+      log.error(`No preset with name ${config.preset} found!`)
+      process.exit(1)
+    }
   }
 
   const randomRatio = Math.min(Math.max(0, config.randomness / 100), 100);
@@ -145,38 +149,41 @@ export function generateMergedPresets(
     presets: []
   }
 
-  const mergePresets: Preset[] = []
-
-  if (config.preset) {
-    const basePreset = presetLibrary.presets.find((el) => {
-      return el.filePath.includes(config.preset)
-    })
-    if (!basePreset) {
-      log.error(`No preset with name ${config.preset} found!`)
-      process.exit(1)
-    }
-    mergePresets.push(basePreset)
-  }
+  let mergePresets: Preset[] = []
 
   if (!Array.isArray(config.merge)) {
     config.merge = [config.merge]
   }
 
-  if ((mergePresets.length + config.merge.length) < 2) {
+  for (const presetTitle of config.merge) {
+    let mergePreset: Preset;
+
+     // If no preset given or "?" is passed, choose a random preset
+    if (presetTitle === '?') {
+      mergePresets.push(getRandomArrayItem(presetLibrary.presets))
+    } else if (presetTitle === '*') {
+      mergePresets = presetLibrary.presets.filter((el) => {
+        return el && el.presetName
+      });
+      break;
+    } else {
+      mergePreset = presetLibrary.presets.find((el) => {
+        return el.filePath.includes(presetTitle)
+      })
+      if (!mergePreset) {
+        log.error(`No preset with name ${presetTitle} found!`)
+        process.exit(1)
+      }
+      mergePresets.push(mergePreset)
+    }
+  }
+  
+  if ((mergePresets.length) < 2) {
     log.error('Merge presets only works when at least two presets have been chosen');
     process.exit(1)
   }
 
-  for (const presetTitle of config.merge) {
-    const mergePreset = presetLibrary.presets.find((el) => {
-      return el.filePath.includes(presetTitle)
-    })
-    if (!mergePreset) {
-      log.error(`No preset with name ${config.preset} found!`)
-      process.exit(1)
-    }
-    mergePresets.push(mergePreset)
-  }
+  console.log(mergePresets)
 
   console.log(`Merging presets: ${mergePresets.map((el) => el.presetName).join(', ')}`)
 

@@ -13,9 +13,9 @@ export interface Config {
   synth: SynthName;
   debug: boolean;
   amount: number;
-  preset?: string | undefined;
+  preset?: string | '?';
   randomness: number;
-  merge?: string | string[];
+  merge?: string | string[] | '*' | '?';
   /** Pattern to narrow down presets to load from library */
   pattern?: string;
 }
