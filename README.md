@@ -65,6 +65,7 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 * `--preset`: If given, an existing preset will be used as a based and randomized by `--randomness` ratio.
 * `--randomness`: Amount of randomness (in percentage) to apply, when randomizing existing presets. Value needs to be between 0 and 100.
 * `--merge`: Can be provided multiple times, for each preset that should be part of the merging. Ratio between merged presets is random and NOT driven by the `--randomness` parameter.
+* `--pattern`: Define a [glob pattern](https://code.visualstudio.com/docs/editor/glob-patterns), which presets should be loaded. By default, it's `**/*` which will load all presets from all sub-folders.
 * `--debug`: Enables some optional debug logging and file exporting
 
 ## Developer Guide

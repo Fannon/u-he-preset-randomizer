@@ -91,8 +91,17 @@ async function runInteractiveMode() {
     ]
   })
 
+  const pattern = await prompt<{value: string}>({
+    type: 'text',
+    name: 'value',
+    message: 'Chose glob-pattern (ask Google), which presets should be loaded for randomization.\n "**/*" (default) will load all presets in all folders.\n "Some Folder/**/*" will load all presets in Some Folder\n "**/PD *" will load all presets starting with "PD ".',
+    
+    initial: '**/*'
+  })
+  config.pattern = pattern.value
+
   console.log('Loading and analyzing preset library...')
-  const presetLibrary = loadPresetLibrary(config.synth)
+  const presetLibrary = loadPresetLibrary(config.synth, config.pattern)
   const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
 

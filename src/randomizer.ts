@@ -183,8 +183,6 @@ export function generateMergedPresets(
     process.exit(1)
   }
 
-  console.log(mergePresets)
-
   console.log(`Merging presets: ${mergePresets.map((el) => el.presetName).join(', ')}`)
 
   for (let i = 0; i < config.amount; i++) {

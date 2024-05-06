@@ -12,7 +12,7 @@ export interface PresetLibrary {
   presets: Preset[];
 }
 
-export function loadPresetLibrary(synth: SynthName): PresetLibrary {
+export function loadPresetLibrary(synth: SynthName, pattern: string = '**/*'): PresetLibrary {
 
   // Detect correct Preset Library Location
   const location = detectPresetLibraryLocations(synth)[synth]
@@ -24,7 +24,7 @@ export function loadPresetLibrary(synth: SynthName): PresetLibrary {
   };
 
   // Load preset library
-  const libraryPresets = fg.sync(["**/*.h2p"], { cwd:  presetLibrary.presetsFolder });
+  const libraryPresets = fg.sync([`${pattern}.h2p`], { cwd:  presetLibrary.presetsFolder });
   if (libraryPresets.length > 0) {
     for (const presetPath of libraryPresets) {
       try {
@@ -40,11 +40,11 @@ export function loadPresetLibrary(synth: SynthName): PresetLibrary {
       }
     }
   } else {
-    log.warn(`Could not find presets in library: ${presetLibrary.presetsFolder}`)
+    log.warn(`Could not find presets with glob pattern: ${pattern} in library: ${presetLibrary.presetsFolder}`)
   }
 
   // Load user preset library
-  const userPresets = fg.sync(["**/*.h2p"], { cwd: presetLibrary.userPresetsFolder });
+  const userPresets = fg.sync([`${pattern}.h2p`], { cwd: presetLibrary.userPresetsFolder });
   if (userPresets.length > 0) {
     for (const presetPath of userPresets) {
       try {
@@ -60,11 +60,11 @@ export function loadPresetLibrary(synth: SynthName): PresetLibrary {
       }
     }
   } else {
-    log.warn(`Could not find presets in user library: ${presetLibrary.userPresetsFolder}`)
+    log.warn(`Could not find presets with glob pattern: ${pattern} in user library: ${presetLibrary.userPresetsFolder}`)
   }
 
   if (presetLibrary.presets.length === 0) {
-    log.error('No presets found: ' + presetLibrary.presetsFolder)
+    log.error(`No presets found with glob pattern: ${pattern} in` + presetLibrary.presetsFolder)
     process.exit(1)
   }
 
