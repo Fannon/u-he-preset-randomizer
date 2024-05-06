@@ -10,7 +10,7 @@ export interface DetectedPresetLibraries {
   };
 }
 
-const uheSynthNames = ["Diva", "Zebra2", "ZebraHZ", "Hive", "Repro-1", "Bazille", "Zebralette3", "Zebra3", "TyrellN6", "ACE", "Podolski", "TripleCheese"]
+const uheSynthNames = ["ACE", "Bazille", "Diva", "Hive", "Repro-1", "Zebra2", "ZebraHZ", "Zebralette3", "Zebra3", "TyrellN6", "Podolski", "TripleCheese"]
 
 /**
  * Detects Preset Library locations
