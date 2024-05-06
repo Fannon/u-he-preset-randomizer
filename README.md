@@ -63,9 +63,15 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 * `--synth`: Choose the u-he synth. Not all synths have been tested, but the randomizer tries to be generic. The name must match the folder name convention of u-he. E.g. `Diva`, `Hive`, `ZebraHZ`.
 * `--amount`: How many presets to generate. Positive integer number.
 * `--preset`: If given, an existing preset will be used as a based and randomized by `--randomness` ratio.
+  * Use "?" to choose random preset
 * `--randomness`: Amount of randomness (in percentage) to apply, when randomizing existing presets. Value needs to be between 0 and 100.
 * `--merge`: Can be provided multiple times, for each preset that should be part of the merging. Ratio between merged presets is random and NOT driven by the `--randomness` parameter.
-* `--pattern`: Define a [glob pattern](https://code.visualstudio.com/docs/editor/glob-patterns), which presets should be loaded. By default, it's `**/*` which will load all presets from all sub-folders.
+  * Use "?" to choose random preset
+  * Use "*?*" to select all presets (careful! Better first reduce via `--pattern`.)
+* `--pattern`: Define a [glob pattern](https://code.visualstudio.com/docs/editor/glob-patterns), which presets should be loaded. 
+  * By default, it's `**/*` which will load all presets from all sub-folders.
+  * To select a subfolder, use e.g. `My Folder/**/*`
+  * To select presets starting with something, use e.g. `**/PD *`
 * `--debug`: Enables some optional debug logging and file exporting
 
 ## Developer Guide
