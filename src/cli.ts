@@ -128,6 +128,7 @@ async function runInteractiveMode() {
     })
     if (presetChoice.value === "?") {
       config.preset = getRandomArrayItem(foundPresets)
+      console.log('Randomly choice: ' + config.preset)
     } else {
       config.preset = presetChoice.value
     }
@@ -174,7 +175,9 @@ async function runInteractiveMode() {
       })
       if (presetChoice.value) {
         if (presetChoice.value === "?") {
-          config.merge.push(getRandomArrayItem(foundPresets))
+          const randomChoice = getRandomArrayItem(foundPresets)
+          config.merge.push(randomChoice)
+          console.log('Randomly choice: ' + randomChoice)
         } else if (presetChoice.value === "*") {
           config.merge = foundPresets
           break;

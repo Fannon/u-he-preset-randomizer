@@ -39,7 +39,7 @@ export function generateFullyRandomPresets(
       style: "capital",
     });
 
-    randomPreset.filePath = `/RND ${randomName}.h2p`;
+    randomPreset.filePath = `/Fully Random/RND ${randomName}.h2p`;
     randomPreset.presetName = `RND ${randomName}`;
     randomPreset.meta = [
       {
@@ -124,10 +124,10 @@ export function generateRandomizedPresets(
       style: "capital",
     });
 
-    randomPreset.filePath = `/RND ${randomName} ${randomPreset.presetName}.h2p`;
+    randomPreset.filePath = `/Randomized Preset/${randomPreset.presetName}/RND ${randomName} ${randomPreset.presetName}.h2p`;
     randomPreset.presetName = `RND ${randomName} ${randomPreset.presetName}`;
 
-    console.log(`Generated random preset: ${randomPreset.filePath}`);
+    console.log(`Generated randomized preset: ${randomPreset.filePath}`);
     newPresetLibrary.presets.push(randomPreset)
   }
   return newPresetLibrary;
@@ -227,7 +227,7 @@ export function generateMergedPresets(
       style: "capital",
     });
 
-    newPreset.filePath = `/RND ${randomName}.h2p`;
+    newPreset.filePath = `/Merged Preset/RND ${randomName}.h2p`;
     newPreset.presetName = `RND ${randomName}`;
     newPreset.meta = [
       {
