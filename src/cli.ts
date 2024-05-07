@@ -209,6 +209,9 @@ async function runInteractiveMode() {
       cliCommand += ` --merge "${merge}"`
     }
   }
+  if (config.pattern && config.pattern !== '**/*') {
+    cliCommand += ` --pattern "${pattern}"`
+  }
   console.log(cliCommand)
 }
 
