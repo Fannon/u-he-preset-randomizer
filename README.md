@@ -1,15 +1,17 @@
 # u-he-preset-randomizer
 
 Create random [u-he](https://u-he.com/) synth presets through randomization and merging of your existing presets.
-Its build very generically and should work with all u-he synths, but some may work better due to their simpler architecture (u-he Diva, Hive). Bazille, Zebra also works, but you may get more "varied" results.
 
 Currently it can generate random presets in three different modes:
-* Generate fully random presets based on real values in your preset library
-* Explicitly pick which existing presets to use for randomization and define amount of randomness applied to them
+* Generate fully random presets based on real values and value distributions in your preset library
+* Randomize existing presets, with a customizable amount of randomness
 * Merge multiple chosen presets together, with randomness introduced by different ratios between them.
 
-> Currently it only works for Windows, as I don't have a Mac and cannot test it. 
-> If you have one and are willing to test, please reach out.
+The randomization / merging approach is very generic and should work for all u-he synths.
+Some may work better due to their simpler architecture (u-he Diva, Hive). 
+More modular synths like Bazille, Zebra also work, but you may get more "varied" results.
+
+> I could only test it on Windows so far. It might work on MacOS, but someone might need to confirm it.
 
 See [Future Features and Ideas](#future-features--ideas) on what else could be added.
 
