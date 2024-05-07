@@ -1,4 +1,5 @@
 import * as path from "path";
+import { log } from "./utils/log";
 
 export interface Preset {
   /** Relative filePath to preset folder */
@@ -82,7 +83,9 @@ export function getPresetParams(fileString: string) {
 
   const cleanedRows = paramBody.split("\n").filter((el) => el);
 
+  let repeatCounter = 1;
   let currentSection = "MAIN";
+  let currentSectionAndKey = "";
   for (let i = 0; i < cleanedRows.length; i++) {
     const paramSplit = cleanedRows[i]!.split("=");
     const key = paramSplit[0]!;
@@ -99,11 +102,25 @@ export function getPresetParams(fileString: string) {
       index: i,
       type: "string",
     };
-
+    
     // Some parameters appear more than once in the same section
     // Here we need to add the index of their appearance to get a unique ID
-    if (key === '#ms') {
-      param.id += `/${param.index}`
+    if (currentSectionAndKey === param.id) {
+      currentSectionAndKey = param.id;
+      param.id += `/${repeatCounter}`;
+      if (repeatCounter === 1) {
+        params[params.length -1].id += `/0`;
+      }
+      repeatCounter++;
+
+      if (!param.id.includes('#mv') && !param.id.includes('#ms')) {
+        log.warn(`Unexpected duplicated header + key for: ${param.id}`)
+      } 
+
+      
+    } else {
+      currentSectionAndKey = param.id;
+      repeatCounter = 1;
     }
 
     if (isInt(value)) {

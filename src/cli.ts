@@ -31,7 +31,7 @@ const config = getConfigFromParameters();
 });
 
 function runWithoutInteractivity() {
-  const presetLibrary = loadPresetLibrary(config.synth)
+  const presetLibrary = loadPresetLibrary(config.synth, config.pattern)
   if (config.debug) {
     fs.outputFileSync(
       "./tmp/presetLibrary.json",

@@ -1,7 +1,6 @@
 const path = require("path");
 const fs = require("fs-extra");
 const fg = require("fast-glob");
-import { SynthName } from "./config";
 import { Preset, parseUhePreset, serializePresetToFile } from "./parser";
 import { detectPresetLibraryLocations } from "./utils/detector";
 import { log } from "./utils/log";
@@ -12,7 +11,7 @@ export interface PresetLibrary {
   presets: Preset[];
 }
 
-export function loadPresetLibrary(synth: SynthName, pattern: string = '**/*'): PresetLibrary {
+export function loadPresetLibrary(synth: string, pattern: string = '**/*'): PresetLibrary {
 
   // Detect correct Preset Library Location
   const location = detectPresetLibraryLocations(synth)[synth]

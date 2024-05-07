@@ -1,16 +1,7 @@
 import * as yargs from "yargs";
-// import { hideBin } from "yargs/helpers"
-
-export type SynthName =
-  | "Diva"
-  | "Hive"
-  | "Zebra2"
-  | "ZebraHZ"
-  | "Zebralette3"
-  | string;
 
 export interface Config {
-  synth: SynthName;
+  synth: string;
   debug: boolean;
   amount: number;
   preset?: string | '?';
