@@ -11,7 +11,7 @@ export interface PresetLibrary {
   presets: Preset[];
 }
 
-export function loadPresetLibrary(synth: string, pattern: string = '**/*'): PresetLibrary {
+export function loadPresetLibrary(synth: string, pattern: string = '**/*', binary?: boolean): PresetLibrary {
 
   // Detect correct Preset Library Location
   const location = detectPresetLibraryLocations(synth)[synth]
@@ -30,7 +30,7 @@ export function loadPresetLibrary(synth: string, pattern: string = '**/*'): Pres
         const presetString = fs
         .readFileSync(path.join( presetLibrary.presetsFolder, presetPath))
         .toString();
-        const parsedPreset = parseUhePreset(presetString, presetPath)
+        const parsedPreset = parseUhePreset(presetString, presetPath, binary)
         if (parsedPreset.params.length && parsedPreset.meta.length) {
           presetLibrary.presets.push(parsedPreset);
         }
@@ -50,7 +50,7 @@ export function loadPresetLibrary(synth: string, pattern: string = '**/*'): Pres
         const presetString = fs
         .readFileSync(path.join(presetLibrary.userPresetsFolder, presetPath))
         .toString();
-        const parsedPreset = parseUhePreset(presetString, presetPath)
+        const parsedPreset = parseUhePreset(presetString, presetPath, binary)
         if (parsedPreset.params.length && parsedPreset.meta.length) {
           presetLibrary.presets.push(parsedPreset);
         }

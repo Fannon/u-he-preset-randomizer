@@ -8,6 +8,7 @@ export interface Preset {
   presetName: string;
   meta: PresetMetaEntry[];
   params: PresetParam[];
+  binary?: string;
 }
 
 export interface PresetMetaEntry {
@@ -28,12 +29,13 @@ export interface PresetParam {
 // PARSER FUNCTIONS                     //
 //////////////////////////////////////////
 
-export function parseUhePreset(fileString: string, filePath: string): Preset {
+export function parseUhePreset(fileString: string, filePath: string, binary: boolean): Preset {
   return {
     filePath: filePath,
     presetName: path.parse(filePath).name,
     meta: getPresetMetadata(fileString),
     params: getPresetParams(fileString),
+    binary: binary ? getPresetBinarySection(fileString) : undefined,
   };
 }
 
@@ -136,6 +138,11 @@ export function getPresetParams(fileString: string) {
   return params;
 }
 
+export function getPresetBinarySection(fileString: string) {
+  const split = fileString.split("// Section for ugly compressed binary Data\n// DON'T TOUCH THIS\n");
+  return split[1].trim();
+}
+
 //////////////////////////////////////////
 // SERIALIZER FUNCTIONS                 //
 //////////////////////////////////////////
@@ -165,6 +172,10 @@ export function serializePresetToFile(preset: Preset): string {
   file += "\n\n\n\n";
   file += "// Section for ugly compressed binary Data\n";
   file += "// DON'T TOUCH THIS\n\n";
+
+  if (preset.binary) {
+    file += preset.binary
+  }
 
   file += ``; // binary end of file marker?
 

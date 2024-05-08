@@ -31,7 +31,7 @@ const config = getConfigFromParameters();
 });
 
 function runWithoutInteractivity() {
-  const presetLibrary = loadPresetLibrary(config.synth, config.pattern)
+  const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
   if (config.debug) {
     fs.outputFileSync(
       "./tmp/presetLibrary.json",
@@ -101,7 +101,7 @@ async function runInteractiveMode() {
   config.pattern = pattern.value
 
   console.log('Loading and analyzing preset library...')
-  const presetLibrary = loadPresetLibrary(config.synth, config.pattern)
+  const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
   const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
 

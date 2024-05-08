@@ -9,6 +9,8 @@ export interface Config {
   merge?: string | string[] | '*' | '?';
   /** Pattern to narrow down presets to load from library */
   pattern?: string;
+  /** Binary part of the preset, if enabled that its read and written back again */
+  binary?: boolean;
 }
 
 export function getDefaultConfig(): Config {
@@ -46,6 +48,9 @@ export function getConfigFromParameters() {
   }
   if (argv['pattern']) {
     config.pattern = argv.pattern;
+  }
+  if (argv['binary']) {
+    config.binary = argv.binary;
   }
   return config;
 }
