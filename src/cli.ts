@@ -210,7 +210,7 @@ async function runInteractiveMode() {
     }
   }
   if (config.pattern && config.pattern !== '**/*') {
-    cliCommand += ` --pattern "${pattern}"`
+    cliCommand += ` --pattern "${config.pattern}"`
   }
   console.log(cliCommand)
 }
