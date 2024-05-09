@@ -140,7 +140,11 @@ export function getPresetParams(fileString: string) {
 
 export function getPresetBinarySection(fileString: string) {
   const split = fileString.split("// Section for ugly compressed binary Data\n// DON'T TOUCH THIS\n");
-  return split[1].trim();
+  if (split[1]) {
+    return split[1].trim();
+  } else {
+    return ''
+  }
 }
 
 //////////////////////////////////////////
