@@ -1,6 +1,6 @@
 # u-he-preset-randomizer
 
-Create random [u-he](https://u-he.com/) synth presets through randomization and merging of your existing presets.
+Generate [u-he](https://u-he.com/) synth presets through randomization and merging of your existing presets.
 
 Currently it can generate random presets in three different modes:
 * Generate fully random presets based on real values and value distributions in your preset library
@@ -75,6 +75,7 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
   * To select a subfolder, use e.g. `My Folder/**/*`
   * To select presets starting with something, use e.g. `**/PD *`
 - `--binary`: Keep the binary part of the u-he presets. They will not be changed, but randomly generated presets will now include the binary section of either a random preset or the base preset that is randomized.
+  * ⚠ Since the randomizer doesn't really parse and understand the binary section, this may lead to broken presets that may crash your synth plugin when loading. Use with care.
 * `--debug`: Enables some optional debug logging and file exporting
 
 ## Developer Guide
