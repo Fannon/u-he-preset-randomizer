@@ -1,7 +1,11 @@
-import * as yargs from "yargs";
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import { SynthNames } from './utils/detector.js';
+
+const argv = yargs(hideBin(process.argv)).parse() as any;
 
 export interface Config {
-  synth: string;
+  synth?: SynthNames;
   debug: boolean;
   amount: number;
   preset?: string | '?';
@@ -15,19 +19,19 @@ export interface Config {
 
 export function getDefaultConfig(): Config {
   return {
-    synth: '',
+    synth: undefined,
     debug: false,
     amount: 4,
     preset: undefined,
     randomness: undefined,
-    pattern: '**/*' // all subfolders, all files
+    pattern: undefined // all subfolders, all files
   }
 }
 
 let config = getDefaultConfig();
 
 export function getConfigFromParameters() {
-  const argv = yargs.argv as any;
+  
   if (argv['synth']) {
     config.synth = argv['synth']
   }

@@ -1,7 +1,9 @@
 {
     "cSpell.words": [
-        "randomizer",
-        "Zebralette"
+      "Baroqualog",
+      "randomizer",
+      "tslog",
+      "Zebralette"
     ],
     "search.exclude": {
       "**/node_modules": true,

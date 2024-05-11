@@ -1,4 +1,4 @@
-import { PresetLibrary } from "./presetLibrary";
+import { PresetLibrary } from "./presetLibrary.js";
 
 export interface ParamsModel {
   [key: string]: {

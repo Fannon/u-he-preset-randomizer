@@ -1,14 +1,14 @@
-import { ParamsModel } from "./analyzer";
-import { Preset } from "./parser";
-import { PresetLibrary } from "./presetLibrary";
-import { log } from "./utils/log";
+import { ParamsModel } from "./analyzer.js";
+import { Preset } from "./parser.js";
+import { PresetLibrary } from "./presetLibrary.js";
+import { log } from "./utils/log.js";
 import {
   uniqueNamesGenerator,
   adjectives,
   colors,
   names,
 } from "unique-names-generator";
-import { Config } from "./config";
+import { Config } from "./config.js";
 
 /**
  * Fully randomized presets, with real values from library
@@ -18,7 +18,9 @@ export function generateFullyRandomPresets(
   paramModel: ParamsModel,
   number: number
 ): PresetLibrary {
+  console.log('----------------------------------------------------------------------')
   const newPresetLibrary: PresetLibrary = {
+    synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
     presets: [],
   };
@@ -65,7 +67,9 @@ export function generateRandomizedPresets(
   paramModel: ParamsModel,
   config: Config
 ): PresetLibrary {
+  console.log('----------------------------------------------------------------------')
   const newPresetLibrary: PresetLibrary = {
+    synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
     presets: [],
   };
@@ -110,7 +114,9 @@ export function generateMergedPresets(
   paramModel: ParamsModel,
   config: Config,
 ): PresetLibrary {
+  console.log('----------------------------------------------------------------------')
   const newPresetLibrary: PresetLibrary = {
+    synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
     presets: [],
   };
@@ -152,7 +158,7 @@ export function generateMergedPresets(
   }
 
   console.log(
-    `Merging presets: ${mergePresets.map((el) => el.presetName).join(", ")}`
+    `Merging presets:\n * ${mergePresets.map((el) => el.presetName).join("\n * ")}\n`
   );
 
   for (let i = 0; i < config.amount; i++) {
@@ -266,9 +272,9 @@ export function randomizePreset(
         randomParamValue = (oldParamValue as number) * stableRatio + (randomParamValue as number) * randomRatio;
 
         if (param.type === "integer") {
-          randomParamValue = Math.round(randomParamValue);
+          randomParamValue = Math.round(randomParamValue as number);
         } else if (param.type === "float") {
-          randomParamValue = Math.trunc(randomParamValue * 100) / 100;
+          randomParamValue = Math.trunc(randomParamValue as number * 100) / 100;
         }
       } else {
         // Randomly decide between the two values by randomness ratio

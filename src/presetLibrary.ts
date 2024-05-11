@@ -1,22 +1,24 @@
-const path = require("path");
-const fs = require("fs-extra");
-const fg = require("fast-glob");
-import { Preset, parseUhePreset, serializePresetToFile } from "./parser";
-import { detectPresetLibraryLocations } from "./utils/detector";
-import { log } from "./utils/log";
+import path from "path"
+import fs from "fs-extra"
+import fg from "fast-glob"
+import { Preset, parseUhePreset, serializePresetToFile } from "./parser.js";
+import { SynthNames, detectPresetLibraryLocations } from "./utils/detector.js";
+import { log } from "./utils/log.js";
 
 export interface PresetLibrary {
+  synth: string;
   userPresetsFolder: string;
   presetsFolder?: string;
   presets: Preset[];
 }
 
-export function loadPresetLibrary(synth: string, pattern: string = '**/*', binary?: boolean): PresetLibrary {
+export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', binary?: boolean): PresetLibrary {
 
   // Detect correct Preset Library Location
-  const location = detectPresetLibraryLocations(synth)[synth]
+  const location = detectPresetLibraryLocations(synth)[0]
 
   const presetLibrary: PresetLibrary = {
+    synth: synth,
     userPresetsFolder: location.userPresets,
     presetsFolder: location.presets,
     presets: [],
@@ -73,6 +75,7 @@ export function loadPresetLibrary(synth: string, pattern: string = '**/*', binar
 }
 
 export function writePresetLibrary(presetLibrary: PresetLibrary) {
+  console.log('----------------------------------------------------------------------')
   for (const preset of presetLibrary.presets) {
     const filePath = path.join(presetLibrary.userPresetsFolder, preset.filePath)
     const fileContent = serializePresetToFile(preset)

@@ -1,23 +1,25 @@
-import * as path from "path";
-import * as os from "os";
-import * as fs from "fs-extra";
+import path from "path";
+import os from "os";
+import fs from "fs-extra";
 
-export interface DetectedPresetLibraries {
-  [name: string]: {
-    root: string;
-    presets: string;
-    userPresets: string;
-  };
+export type DetectedPresetLibrary = {
+  synthName: SynthNames;
+  root: string;
+  presets: string;
+  userPresets: string;
 }
 
-const uheSynthNames = ["ACE", "Bazille", "Diva", "Hive", "Repro-1", "Zebra2", "ZebraHZ", "Zebralette3", "Zebra3", "TyrellN6", "Podolski", "TripleCheese"]
+const uheSynthNames = <const> ["ACE", "Bazille", "Diva", "Hive", "Repro-1", "Zebra2", "ZebraHZ", "Zebralette3", "Zebra3", "TyrellN6", "Podolski", "TripleCheese"]
+
+export type SynthNames = typeof uheSynthNames[number];
+
 
 /**
  * Detects Preset Library locations
  */
-export function detectPresetLibraryLocations(synthName?: string): DetectedPresetLibraries {
+export function detectPresetLibraryLocations(synthName?: SynthNames): DetectedPresetLibrary[] {
 
-  const detectedPresetLibraries: DetectedPresetLibraries = {}
+  const detectedPresetLibraries: DetectedPresetLibrary[] = []
   const synthNamesToTry = synthName ? [synthName] : uheSynthNames;
 
   // TODO: MacOS support is not tested and might not work.
@@ -30,11 +32,12 @@ export function detectPresetLibraryLocations(synthName?: string): DetectedPreset
       for (const location of userLocationsToTry) {
         const pathToCheck = location.replace('__SynthName__', synthName)
         if (fs.existsSync(pathToCheck)) {
-          detectedPresetLibraries[synthName] = {
+          detectedPresetLibraries.push({
+            synthName: synthName,
             root: pathToCheck,
             presets: `/Library/Audio/Presets/u-he/${synthName}/`,
             userPresets: path.join(pathToCheck, `/UserPresets/${synthName}`),
-          }
+          })
           break;
         }
       }
@@ -55,11 +58,12 @@ export function detectPresetLibraryLocations(synthName?: string): DetectedPreset
     for (const location of locationsToTry) {
       const pathToCheck = location.replace('__SynthName__', synthName)
       if (fs.existsSync(pathToCheck)) {
-        detectedPresetLibraries[synthName] = {
+        detectedPresetLibraries.push({
+          synthName: synthName,
           root: pathToCheck,
           presets: path.join(pathToCheck, `/Presets/${synthName}`),
           userPresets: path.join(pathToCheck, `/UserPresets/${synthName}`),
-        }
+        })
         break;
       }
     }

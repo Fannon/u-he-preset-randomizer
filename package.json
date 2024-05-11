@@ -1,15 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "u-he-preset-randomizer",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "Create random u-he synth presets through randomization and merging of your existing presets.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "u-he-preset-randomizer": "./dist/cli.js"
   },
+  "type": "module",
   "scripts": {
-    "start": "ts-node src/cli.ts",
+    "start": "tsx src/cli.ts",
     "build-ts": "tsc",
     "clean": "rimraf dist/",
     "build": "npm run build-ts",
@@ -46,16 +47,19 @@
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^20.12.8",
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.12.11",
     "@types/yargs": "^17.0.32",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.9.4",
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "enquirer": "^2.4.1",
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
-    "rimraf": "^5.0.5",
+    "inquirer": "^9.2.20",
+    "inquirer-autocomplete-prompt": "^3.0.1",
+    "inquirer-autocomplete-standalone": "^0.8.1",
+    "rimraf": "^5.0.6",
     "tslog": "^4.9.2",
     "unique-names-generator": "^4.7.1",
     "yargs": "^17.7.2"
