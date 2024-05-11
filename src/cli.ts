@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { analyzeParamsTypeAndRange } from "./analyzer.js";
+import { analyzeParamsTypeAndRange, convertParamsModelBySection } from "./analyzer.js";
 import { loadPresetLibrary, writePresetLibrary } from "./presetLibrary.js";
 import fs from "fs-extra";
 import { log } from "./utils/log.js";
@@ -36,18 +36,18 @@ const config = getConfigFromParameters();
 
 function runWithoutInteractivity() {
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
-  if (config.debug) {
-    fs.outputFileSync(
-      "./tmp/presetLibrary.json",
-      JSON.stringify(presetLibrary, null, 2)
-    );
-  }
-  
+
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
+
   if (config.debug) {
+    // Write a cleaned up parameter model to ./tmp/paramsModel.json
+    const outputParamsModel = JSON.parse(JSON.stringify(paramsModel))
+    for (const paramKey in outputParamsModel) {
+      delete outputParamsModel[paramKey].values;
+    }
     fs.outputFileSync(
       "./tmp/paramsModel.json",
-      JSON.stringify(paramsModel, null, 2)
+      JSON.stringify(convertParamsModelBySection(outputParamsModel), null, 2)
     );
   }
   
@@ -61,7 +61,7 @@ function runWithoutInteractivity() {
     writePresetLibrary(generatedPresets)
   } else {
     // Generate fully randomized presets
-    const generatedPresets = generateFullyRandomPresets(presetLibrary, paramsModel, config.amount)
+    const generatedPresets = generateFullyRandomPresets(presetLibrary, paramsModel, config)
     writePresetLibrary(generatedPresets)
   }
 
@@ -110,6 +110,25 @@ async function runInteractiveMode() {
     ]
   }])
 
+  // 2.5) Choose optional modifiers for randomization
+  if (!config.stable || !config.binary) {
+    const modifiers = await inquirer.prompt([{
+      name: 'value',
+      type: 'checkbox',
+      message: 'Any randomization modifiers?',
+      choices: [
+        { value: "stable", name: '[Stable] More stable randomization approach' },
+        { value: "binary", name: '[Binary] Include binary section (WARNING: Very unstable!)' },
+      ]
+    }])
+    if (modifiers.value.includes('stable')) {
+      config.stable = true;
+    }
+    if (modifiers.value.includes('binary')) {
+      config.binary = true;
+    }
+  }
+
   // 3) Pattern to load presets
   if (!config.pattern) {
     const p3 = await inquirer.prompt([{
@@ -133,8 +152,10 @@ async function runInteractiveMode() {
     // MODE 1: Generate fully randomized presets    //
     //////////////////////////////////////////////////
 
-    config.amount = await chooseAmountOfPresets(16)
-    const generatedPresets = generateFullyRandomPresets(presetLibrary, paramsModel, config.amount)
+    if (!config.amount) {
+      config.amount = await chooseAmountOfPresets(16)
+    }
+    const generatedPresets = generateFullyRandomPresets(presetLibrary, paramsModel, config)
     writePresetLibrary(generatedPresets)
 
   } else if (mode.value === "Randomize existing preset") {
@@ -148,8 +169,12 @@ async function runInteractiveMode() {
       process.exit(0)
     }
 
-    config.randomness = await chooseRandomness(20)
-    config.amount = await chooseAmountOfPresets(8)
+    if (!config.randomness) {
+      config.randomness = await chooseRandomness(20)
+    }
+    if (!config.amount) {
+      config.amount = await chooseAmountOfPresets(8)
+    }
 
     const generatedPresets = generateRandomizedPresets(presetLibrary, paramsModel, config)
     writePresetLibrary(generatedPresets)
@@ -159,22 +184,6 @@ async function runInteractiveMode() {
     //////////////////////////////////////////////////
     // MODE 3: Merge Random Presets                 //
     //////////////////////////////////////////////////
-
-    // console.log('Choose at least two presets to merge:')
-    // console.log(' Type for autocomplete, enter to select.')
-    // console.log(' Enter ? to select a random preset')
-    // console.log(' Enter * to select all presets (use with care!)')
-    // console.log(' Enter without selection to complete your selection')
-    // const confirm = await prompt<{value: boolean}>({
-    //   type: 'confirm',
-    //   name: 'value',
-    //   message: 'Ready? (Y/n)',
-    //   initial: true,
-    // })
-
-    // if (!confirm.value) {
-    //   process.exit(0)
-    // }
 
     config.merge = []
     while (true) {
@@ -190,8 +199,12 @@ async function runInteractiveMode() {
     }
 
     // Choose amount of randomness
-    config.randomness = await chooseRandomness(0)
-    config.amount = await chooseAmountOfPresets(8)
+    if (!config.randomness) {
+      config.randomness = await chooseRandomness(0)
+    }
+    if (!config.amount) {
+      config.amount = await chooseAmountOfPresets(8)
+    }
     const generatedPresets = generateMergedPresets(presetLibrary, paramsModel, config)
     writePresetLibrary(generatedPresets)
   }
@@ -211,6 +224,12 @@ async function runInteractiveMode() {
   }
   if (config.pattern && config.pattern !== '**/*') {
     cliCommand += ` --pattern "${config.pattern}"`
+  }
+  if (config.debug) {
+    cliCommand += ` --debug"`
+  }
+  if (config.stable) {
+    cliCommand += ` --stable"`
   }
   console.log(cliCommand)
 }

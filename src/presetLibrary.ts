@@ -12,7 +12,7 @@ export interface PresetLibrary {
   presets: Preset[];
 }
 
-export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', binary?: boolean): PresetLibrary {
+export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', binary: boolean = false): PresetLibrary {
 
   // Detect correct Preset Library Location
   const location = detectPresetLibraryLocations(synth)[0]

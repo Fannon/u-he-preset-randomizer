@@ -86,7 +86,7 @@ export function getPresetParams(fileString: string, presetPath: string) {
   const cleanedRows = paramBody.split("\n").filter((el) => el);
 
   let repeatCounter = 1;
-  let currentSection = "MAIN";
+  let currentSection = "HEAD";
   let currentSectionAndKey = "";
   for (let i = 0; i < cleanedRows.length; i++) {
     const paramSplit = cleanedRows[i]!.split("=");
