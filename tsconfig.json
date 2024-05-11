@@ -5,12 +5,10 @@
     "lib": [
       "ES2020"
     ],
-    "module": "commonjs",
+    "target": "ES2022",
+    "module": "Node16",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es6",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
     "outDir": "dist",
     "baseUrl": ".",
     "allowUnusedLabels": false,
@@ -23,6 +21,9 @@
     "declaration": true,
     "sourceMap": true,
     "resolveJsonModule": true
+  },
+  "ts-node": {
+    "esm": true
   },
   "include": [
     "src",

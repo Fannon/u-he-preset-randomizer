@@ -1,5 +1,5 @@
 import * as path from "path";
-import { log } from "./utils/log";
+import { log } from "./utils/log.js";
 
 export interface Preset {
   /** Relative filePath to preset folder */

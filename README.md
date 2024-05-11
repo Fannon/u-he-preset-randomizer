@@ -87,8 +87,8 @@ npm i
 npm run build
 npm run start -- --synth Diva --amount 3
 
-# or use ts-node:
-ts-node src/cli.ts --synth Diva --amount 3
+# or use tsx (install via npm i -g tsx):
+tsx src/cli.ts --synth Diva --amount 3
 ```
 
 I've also exposed the u-he preset parser / serializer functions in the NPM module, so they could be used programmatically by other projects. However, you might inherit more dependencies than necessary if you're just interested in the parser. See [./src/parser.ts](./src/parser.ts).
