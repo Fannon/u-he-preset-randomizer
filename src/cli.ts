@@ -85,6 +85,7 @@ async function runInteractiveMode() {
     name: 'value',
     type: 'autocomplete',
     message: 'Which u-he synth to generate presets for?',
+    pageSize: synthChoices.length,
     source: async (_answersSoFar, input: string) => {
       if (!input) {
         return synthChoices
@@ -262,6 +263,7 @@ async function choosePreset(foundPresets: string[], allowSelectAll: boolean = fa
     name: 'value',
     type: 'autocomplete',
     message: 'Which preset to randomize?',
+    pageSize: 12,
     source: async (_answersSoFar, input) => {
       if (!input) {
         return allChoices

@@ -75,6 +75,7 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
 }
 
 export function writePresetLibrary(presetLibrary: PresetLibrary) {
+  console.log('----------------------------------------------------------------------')
   for (const preset of presetLibrary.presets) {
     const filePath = path.join(presetLibrary.userPresetsFolder, preset.filePath)
     const fileContent = serializePresetToFile(preset)

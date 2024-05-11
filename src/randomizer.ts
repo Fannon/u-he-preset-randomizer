@@ -18,6 +18,7 @@ export function generateFullyRandomPresets(
   paramModel: ParamsModel,
   number: number
 ): PresetLibrary {
+  console.log('----------------------------------------------------------------------')
   const newPresetLibrary: PresetLibrary = {
     synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
@@ -66,6 +67,7 @@ export function generateRandomizedPresets(
   paramModel: ParamsModel,
   config: Config
 ): PresetLibrary {
+  console.log('----------------------------------------------------------------------')
   const newPresetLibrary: PresetLibrary = {
     synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
@@ -112,6 +114,7 @@ export function generateMergedPresets(
   paramModel: ParamsModel,
   config: Config,
 ): PresetLibrary {
+  console.log('----------------------------------------------------------------------')
   const newPresetLibrary: PresetLibrary = {
     synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
