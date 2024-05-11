@@ -34,7 +34,7 @@ export function parseUhePreset(fileString: string, filePath: string, binary: boo
     filePath: filePath,
     presetName: path.parse(filePath).name,
     meta: getPresetMetadata(fileString),
-    params: getPresetParams(fileString),
+    params: getPresetParams(fileString, filePath),
     binary: binary ? getPresetBinarySection(fileString) : undefined,
   };
 }
@@ -69,7 +69,7 @@ export function getPresetMetadata(fileString: string) {
   return metadata;
 }
 
-export function getPresetParams(fileString: string) {
+export function getPresetParams(fileString: string, presetPath: string) {
   const params: PresetParam[] = [];
   const split = fileString.split("*/");
 
@@ -86,7 +86,7 @@ export function getPresetParams(fileString: string) {
   const cleanedRows = paramBody.split("\n").filter((el) => el);
 
   let repeatCounter = 1;
-  let currentSection = "MAIN";
+  let currentSection = "HEAD";
   let currentSectionAndKey = "";
   for (let i = 0; i < cleanedRows.length; i++) {
     const paramSplit = cleanedRows[i]!.split("=");
@@ -116,10 +116,9 @@ export function getPresetParams(fileString: string) {
       repeatCounter++;
 
       if (!param.id.includes('#mv') && !param.id.includes('#ms')) {
-        log.warn(`Unexpected duplicated header + key for: ${param.id}`)
+        log.warn(`Unexpected duplicated header + key for: ${param.id} in preset "${presetPath}"`)
       } 
 
-      
     } else {
       currentSectionAndKey = param.id;
       repeatCounter = 1;

@@ -74,6 +74,9 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
   * By default, it's `**/*` which will load all presets from all sub-folders.
   * To select a subfolder, use e.g. `My Folder/**/*`
   * To select presets starting with something, use e.g. `**/PD *`
+- `--stable`: Uses more stable randomization approach
+  * For fully random presets, it will randomize not per parameter, but per section (e.g. the entire OSC1 together)
+  * Only parameters with numeric non-binary assignments will be further randomized. Otherwise they stay consistent with the chosen base preset or a random starter preset.
 - `--binary`: Keep the binary part of the u-he presets. They will not be changed, but randomly generated presets will now include the binary section of either a random preset or the base preset that is randomized.
   * ⚠ Since the randomizer doesn't really parse and understand the binary section, this may lead to broken presets that may crash your synth plugin when loading. Use with care.
 * `--debug`: Enables some optional debug logging and file exporting

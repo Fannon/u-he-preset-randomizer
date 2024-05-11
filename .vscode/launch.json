@@ -7,16 +7,16 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "ts-node",
+      "name": "tsx",
       "runtimeExecutable": "node",
-      "args": ["src/cli.ts", "--synth", "Diva", "--merge", "BS Deep Space Diva", "--merge", "HS Strumpet", "--merge", "HS Baroqualog"],
+      // "args": ["src/cli.ts", "--synth", "Diva", "--merge", "BS Deep Space Diva", "--merge", "HS Strumpet", "--merge", "HS Baroqualog"],
       // "args": ["src/cli.ts", "--synth", "Hive", "--pattern", "**/PD *", "--debug"],
       // "args": ["src/cli.ts", "--synth", "Hive", "--pattern", "**/PD *", "--merge", ],
+      "args": ["src/cli.ts", "--synth", "Diva", "--amount", "4", "--stable"],
       // "args": ["src/cli.ts"],
       "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register/transpile-only"
+        "--import",
+        "tsx/esm"
       ],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart",

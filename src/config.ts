@@ -5,9 +5,9 @@ import { SynthNames } from './utils/detector.js';
 const argv = yargs(hideBin(process.argv)).parse() as any;
 
 export interface Config {
-  synth?: SynthNames;
   debug: boolean;
-  amount: number;
+  synth?: SynthNames;
+  amount?: number;
   preset?: string | '?';
   randomness?: number;
   merge?: string | string[] | '*' | '?';
@@ -15,16 +15,12 @@ export interface Config {
   pattern?: string;
   /** Binary part of the preset, if enabled that its read and written back again */
   binary?: boolean;
+  stable?: boolean;
 }
 
 export function getDefaultConfig(): Config {
   return {
-    synth: undefined,
-    debug: false,
-    amount: 4,
-    preset: undefined,
-    randomness: undefined,
-    pattern: undefined // all subfolders, all files
+    debug: false
   }
 }
 
@@ -55,6 +51,9 @@ export function getConfigFromParameters() {
   }
   if (argv['binary']) {
     config.binary = argv.binary;
+  }
+  if (argv['stable']) {
+    config.stable = argv.stable;
   }
   return config;
 }

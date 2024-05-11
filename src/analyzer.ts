@@ -11,6 +11,20 @@ export interface ParamsModel {
   }
 }
 
+
+export interface ParamsModelBySection {
+  [section: string]: {
+    [id: string]: {
+      type: "string" | "float" | "integer";
+      values: Array<string | number>;
+      distinctValues: Array<string | number>;
+      maxValue?: number;
+      minValue?: number;
+      avgValue?: number;
+    }
+  }
+}
+
 export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
   const paramsModel: ParamsModel = {};
   for (const preset of presetLibrary.presets) {
@@ -49,6 +63,20 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
   }
 
   return paramsModel;
+}
+
+export function convertParamsModelBySection(paramsModel: ParamsModel): ParamsModelBySection {
+  const paramsModelBySection: ParamsModelBySection = {}
+  for (const id in paramsModel) {
+    const split = id.split('/')
+    const section = split[0]
+
+    if (!paramsModelBySection[section]) {
+      paramsModelBySection[section] = {}
+    }
+    paramsModelBySection[section][id] = paramsModel[id]
+  }
+  return paramsModelBySection;
 }
 
 function average(arr: number[]) {
