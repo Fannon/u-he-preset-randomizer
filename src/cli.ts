@@ -49,7 +49,7 @@ function runWithoutInteractivity() {
   
   if (config.merge) {
     // Merge multiple presets together, with additional randomness
-    const generatedPresets = generateMergedPresets(presetLibrary, config)
+    const generatedPresets = generateMergedPresets(presetLibrary, paramsModel, config)
     writePresetLibrary(generatedPresets)
   } else if (config.preset) {
     // Randomize a particular preset
@@ -188,10 +188,19 @@ async function runInteractiveMode() {
       }
     }
 
+    // Choose amount of randomness
+    const randomness = await prompt<{value: number}>({
+      type: 'number',
+      name: 'value',
+      message: 'How much randomness to apply (0-100)?',
+      initial: 0
+    })
+    config.randomness = randomness.value
+
     console.log(`Selected Presets: \n > ${config.merge.join('\n > ')}`)
 
     config.amount = await chooseAmountOfPresets(8)
-    const generatedPresets = generateMergedPresets(presetLibrary, config)
+    const generatedPresets = generateMergedPresets(presetLibrary, paramsModel, config)
     writePresetLibrary(generatedPresets)
   }
 

@@ -9,8 +9,9 @@
       "request": "launch",
       "name": "ts-node",
       "runtimeExecutable": "node",
-      // "args": ["src/cli.ts", "--preset", "BS Deep Space Diva", "--merge", "HS Strumpet", "--merge", "HS Baroqualog"],
-      "args": ["src/cli.ts", "--synth", "Hive", "--pattern", "**/PD *", "--debug"],
+      "args": ["src/cli.ts", "--synth", "Diva", "--merge", "BS Deep Space Diva", "--merge", "HS Strumpet", "--merge", "HS Baroqualog"],
+      // "args": ["src/cli.ts", "--synth", "Hive", "--pattern", "**/PD *", "--debug"],
+      // "args": ["src/cli.ts", "--synth", "Hive", "--pattern", "**/PD *", "--merge", ],
       // "args": ["src/cli.ts"],
       "runtimeArgs": [
         "--nolazy",

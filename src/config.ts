@@ -5,7 +5,7 @@ export interface Config {
   debug: boolean;
   amount: number;
   preset?: string | '?';
-  randomness: number;
+  randomness?: number;
   merge?: string | string[] | '*' | '?';
   /** Pattern to narrow down presets to load from library */
   pattern?: string;
@@ -19,7 +19,7 @@ export function getDefaultConfig(): Config {
     debug: false,
     amount: 4,
     preset: undefined,
-    randomness: 20,
+    randomness: undefined,
     pattern: '**/*' // all subfolders, all files
   }
 }

@@ -66,7 +66,7 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 * `--amount`: How many presets to generate. Positive integer number.
 * `--preset`: If given, an existing preset will be used as a based and randomized by `--randomness` ratio.
   * Use "?" to choose random preset
-* `--randomness`: Amount of randomness (in percentage) to apply, when randomizing existing presets. Value needs to be between 0 and 100.
+* `--randomness`: Amount of randomness (in percentage) to apply, when randomizing existing presets or resulting merged presets. Value needs to be between 0 and 100.
 * `--merge`: Can be provided multiple times, for each preset that should be part of the merging. Ratio between merged presets is random and NOT driven by the `--randomness` parameter.
   * Use "?" to choose random preset
   * Use "*?*" to select all presets (careful! Better first reduce via `--pattern`.)
