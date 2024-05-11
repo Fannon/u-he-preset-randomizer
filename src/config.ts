@@ -24,7 +24,7 @@ export function getDefaultConfig(): Config {
     amount: 4,
     preset: undefined,
     randomness: undefined,
-    pattern: '**/*' // all subfolders, all files
+    pattern: undefined // all subfolders, all files
   }
 }
 

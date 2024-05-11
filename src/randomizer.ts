@@ -155,7 +155,7 @@ export function generateMergedPresets(
   }
 
   console.log(
-    `Merging presets: ${mergePresets.map((el) => el.presetName).join(", ")}`
+    `Merging presets:\n * ${mergePresets.map((el) => el.presetName).join("\n * ")}\n`
   );
 
   for (let i = 0; i < config.amount; i++) {
