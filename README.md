@@ -101,10 +101,7 @@ I've also exposed the u-he preset parser / serializer functions in the NPM modul
 Future features could be:
 
 * Refine method of randomization:
-  * "Clustered randomization", which keeps consistency within a module
-  * "Stable mode", which doesn't introduce randomization into some parameters, which tend to produce unstable results, e.g. pitch. Which params those are, depends on synth.
   * Figure out which parameters / section are not active in the patch and ignore them?
-* Allow to pass one or multiple `.uhe-fav` files, which would either limit the presets for randomization or could be used as a selector which presets to merge (suggested by [AtomOfScent KVR User](https://www.kvraudio.com/forum/viewtopic.php?p=8898429#p8898429)).
 * Theoretically, a UI can be built on top, e.g. as an Electron application. But that would take significant amount of time, which I likely won't have.
 
 ## Help / Feedback
