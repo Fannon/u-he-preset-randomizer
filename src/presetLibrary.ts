@@ -15,10 +15,10 @@ export interface PresetLibrary {
 export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', binary: boolean = false): PresetLibrary {
 
   // Detect correct Preset Library Location
-  const location = detectPresetLibraryLocations().find(el => el.synthName === synth)
+  const location = detectPresetLibraryLocations().find(el => el.synthName.toLowerCase() === synth.toLowerCase())
 
   const presetLibrary: PresetLibrary = {
-    synth: synth,
+    synth: location.synthName,
     userPresetsFolder: location.userPresets,
     presetsFolder: location.presets,
     presets: [],
