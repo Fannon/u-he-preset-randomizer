@@ -19,6 +19,8 @@ export function generateFullyRandomPresets(
   config: Config
 ): PresetLibrary {
   console.log('----------------------------------------------------------------------')
+  console.log(`Fully random presets with modes: stable=${config.stable}, binary=${config.binary}, category=${config.category}`)
+
   const newPresetLibrary: PresetLibrary = {
     synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
@@ -66,6 +68,9 @@ export function generateFullyRandomPresets(
     });
 
     randomPreset.filePath = `/Fully Random/RND ${randomName}.h2p`;
+    if (config.category && config.category !== true) {
+      randomPreset.filePath = `/Fully Random/${config.category}/RND ${randomName}.h2p`;
+    }
     randomPreset.presetName = `RND ${randomName}`;
     (randomPreset.meta = [
       {
@@ -75,10 +80,9 @@ export function generateFullyRandomPresets(
       {
         key: "Description",
         value:
-          `Fully random preset, generated on ${new Date().toISOString()} by https://github.com/Fannon/u-he-preset-randomizer`,
+          `Fully random preset. ${getPresetDescriptionSuffix(config)}`,
       },
     ]),
-    console.log(`Generated random preset: ${randomPreset.filePath} ${config.stable ? 'with stable modifier' : ''} ${config.binary ? 'with binary modifier' : ''}`);
     newPresetLibrary.presets.push(randomPreset);
   }
   return newPresetLibrary;
@@ -93,6 +97,8 @@ export function generateRandomizedPresets(
   config: Config
 ): PresetLibrary {
   console.log('----------------------------------------------------------------------')
+  console.log(`Randomizing preset with modes: stable=${config.stable}, binary=${config.binary}, category=${config.category}`)
+
   const newPresetLibrary: PresetLibrary = {
     synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
@@ -127,10 +133,9 @@ export function generateRandomizedPresets(
 
     let descriptionMeta = randomPreset.meta.find(el => el.key === 'Description')
     if (descriptionMeta) {
-      descriptionMeta.value += `. Randomized existing preset. Generated on ${new Date().toISOString()} by https://github.com/Fannon/u-he-preset-randomizer`
+      descriptionMeta.value += `. Randomized existing preset: ${randomPreset.presetName}. ${getPresetDescriptionSuffix(config)}`
     }
 
-    console.log(`Generated randomized preset: ${randomPreset.filePath} ${config.stable ? 'with stable modifier' : ''} ${config.binary ? 'with binary modifier' : ''}`);
     newPresetLibrary.presets.push(randomPreset);
   }
   return newPresetLibrary;
@@ -145,6 +150,8 @@ export function generateMergedPresets(
   config: Config,
 ): PresetLibrary {
   console.log('----------------------------------------------------------------------')
+  console.log(`Merging presets with modes: stable=${config.stable}, binary=${config.binary}, category=${config.category}`)
+
   const newPresetLibrary: PresetLibrary = {
     synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
@@ -251,10 +258,9 @@ export function generateMergedPresets(
           .map((el) => el.presetName)
           .join(
             ", "
-          )}. Generated on ${new Date().toISOString()} by https://github.com/Fannon/u-he-preset-randomizer`,
+          )}. ${getPresetDescriptionSuffix(config)}`,
       },
     ],
-    console.log(`Generated merged preset: ${newPreset.filePath} ${config.stable ? 'with stable modifier' : ''} ${config.binary ? 'with binary modifier' : ''}`);
     newPresetLibrary.presets.push(newPreset);
   }
   return newPresetLibrary;
@@ -325,4 +331,18 @@ export function randomizePreset(
     }
   }
   return randomPreset;
+}
+
+function getPresetDescriptionSuffix(config: Config): string {
+  let suffix = `Generated on ${new Date().toISOString()} by https://github.com/Fannon/u-he-preset-randomizer.`
+  if (config.category) {
+    suffix += ` Based on presets of category: ${config.category}.`;
+  }
+  if (config.stable) {
+    suffix += ` Randomization mode=stable.`;
+  }
+  if (config.binary) {
+    suffix += ` Randomization mode=binary.`;
+  }
+  return suffix;
 }
