@@ -360,17 +360,18 @@ async function choosePreset(foundPresets: string[], allowSelectAll: boolean = fa
 }
 
 function narrowDownByCategory(presetLibrary: PresetLibrary, category: string) {
+  console.log(category)
   const filteredPresets = presetLibrary.presets.filter((el) => {
     if (!el.categories.length) {
       return false;
     }
-    for (const category of el.categories) {
-      if (category.startsWith(category as string)) {
+    for (const ownCategory of el.categories) {
+      if (ownCategory.startsWith(category as string)) {
         return true;
       }
     }
     return false;
   })
-  console.log(`Narrowed down by category "${category}" to ${presetLibrary.presets.length} presets`)
+  console.log(`Narrowed down by category "${category}" to ${filteredPresets.length} presets`)
   return filteredPresets;
 }
