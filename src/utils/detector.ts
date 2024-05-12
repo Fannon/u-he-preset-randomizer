@@ -9,7 +9,7 @@ export type DetectedPresetLibrary = {
   userPresets: string;
 }
 
-const uheSynthNames = <const> ["ACE", "Bazille", "Diva", "Hive", "Repro-1", "Zebra2", "ZebraHZ", "Zebralette3", "Zebra3", "TyrellN6", "Podolski", "TripleCheese"]
+const uheSynthNames = <const> ["ACE", "Bazille", "Diva", "Hive", "Repro-1", "Repro-5", "Zebra2", "ZebraHZ", "Zebralette3", "Zebra3", "TyrellN6", "Podolski", "TripleCheese"]
 
 export type SynthNames = typeof uheSynthNames[number];
 
@@ -17,10 +17,9 @@ export type SynthNames = typeof uheSynthNames[number];
 /**
  * Detects Preset Library locations
  */
-export function detectPresetLibraryLocations(synthName?: SynthNames): DetectedPresetLibrary[] {
+export function detectPresetLibraryLocations(): DetectedPresetLibrary[] {
 
   const detectedPresetLibraries: DetectedPresetLibrary[] = []
-  const synthNamesToTry = synthName ? [synthName] : uheSynthNames;
 
   // TODO: MacOS support is not tested and might not work.
   if (process.platform === 'darwin') {
@@ -28,7 +27,7 @@ export function detectPresetLibraryLocations(synthName?: SynthNames): DetectedPr
       path.join(os.homedir(),`/Library/Audio/Presets/u-he/__SynthName__/`)
     ]
 
-    for (const synthName of synthNamesToTry) {
+    for (const synthName of uheSynthNames) {
       for (const location of userLocationsToTry) {
         const pathToCheck = location.replace('__SynthName__', synthName)
         if (fs.existsSync(pathToCheck)) {
@@ -38,6 +37,14 @@ export function detectPresetLibraryLocations(synthName?: SynthNames): DetectedPr
             presets: `/Library/Audio/Presets/u-he/${synthName}/`,
             userPresets: path.join(pathToCheck, `/UserPresets/${synthName}`),
           })
+          if (synthName === 'Repro-1') {
+            detectedPresetLibraries.push({
+              synthName: 'Repro-5',
+              root: pathToCheck,
+              presets: `/Library/Audio/Presets/u-he/Repro-5/`,
+            userPresets: path.join(pathToCheck, `/UserPresets/Repro-5`),
+            })
+          }
           break;
         }
       }
@@ -54,7 +61,7 @@ export function detectPresetLibraryLocations(synthName?: SynthNames): DetectedPr
     `C:/VstPlugins/u-he/__SynthName__.data/`,
   ]
 
-  for (const synthName of synthNamesToTry) {
+  for (const synthName of uheSynthNames) {
     for (const location of locationsToTry) {
       const pathToCheck = location.replace('__SynthName__', synthName)
       if (fs.existsSync(pathToCheck)) {
@@ -64,6 +71,14 @@ export function detectPresetLibraryLocations(synthName?: SynthNames): DetectedPr
           presets: path.join(pathToCheck, `/Presets/${synthName}`),
           userPresets: path.join(pathToCheck, `/UserPresets/${synthName}`),
         })
+        if (synthName === 'Repro-1') {
+          detectedPresetLibraries.push({
+            synthName: 'Repro-5',
+            root: pathToCheck,
+            presets: path.join(pathToCheck, `/Presets/Repro-5`),
+            userPresets: path.join(pathToCheck, `/UserPresets/Repro-5`),
+          })
+        }
         break;
       }
     }

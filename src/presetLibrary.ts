@@ -15,7 +15,7 @@ export interface PresetLibrary {
 export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', binary: boolean = false): PresetLibrary {
 
   // Detect correct Preset Library Location
-  const location = detectPresetLibraryLocations(synth)[0]
+  const location = detectPresetLibraryLocations().find(el => el.synthName === synth)
 
   const presetLibrary: PresetLibrary = {
     synth: synth,
@@ -80,6 +80,6 @@ export function writePresetLibrary(presetLibrary: PresetLibrary) {
     const filePath = path.join(presetLibrary.userPresetsFolder, preset.filePath)
     const fileContent = serializePresetToFile(preset)
     fs.outputFileSync(filePath, fileContent)
-    console.log(`Written: ${filePath}`)
+    console.log(`Written: ${path.normalize(filePath)}`)
   }
 }

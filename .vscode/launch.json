@@ -12,7 +12,7 @@
       // "args": ["src/cli.ts", "--synth", "Diva", "--merge", "BS Deep Space Diva", "--merge", "HS Strumpet", "--merge", "HS Baroqualog"],
       // "args": ["src/cli.ts", "--synth", "Hive", "--pattern", "**/PD *", "--debug"],
       // "args": ["src/cli.ts", "--synth", "Hive", "--pattern", "**/PD *", "--merge", ],
-      "args": ["src/cli.ts", "--synth", "Diva", "--amount", "4", "--stable"],
+      "args": ["src/cli.ts", "--synth", "Repro-5", "--amount", "4", "--stable"],
       // "args": ["src/cli.ts"],
       "runtimeArgs": [
         "--import",
