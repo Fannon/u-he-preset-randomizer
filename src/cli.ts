@@ -123,9 +123,9 @@ async function runInteractiveMode() {
       type: 'checkbox',
       message: 'Any randomization modifiers?',
       choices: [
-        { value: "category", name: '[Select Category] Narrow down by category' },
-        { value: "stable", name: '[Stable]          More stable randomization approach' },
-        { value: "binary", name: '[Binary]          Include binary section (WARNING: Very unstable!)' },
+        { value: "category", name: '[Category]   Narrow down by category' },
+        { value: "stable",   name: '[Stable]     More stable randomization approach' },
+        { value: "binary",   name: '[Binary]     Include binary section (WARNING: Very unstable!)' },
       ]
     }])
     if (modifiers.value.includes('category')) {

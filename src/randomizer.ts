@@ -69,7 +69,7 @@ export function generateFullyRandomPresets(
 
     randomPreset.filePath = `/Fully Random/RND ${randomName}.h2p`;
     if (config.category && config.category !== true) {
-      randomPreset.filePath = `/Fully Random/${config.category}/RND ${randomName}.h2p`;
+      randomPreset.filePath = `/Fully Random/${config.category.split(':').join(' ')}/RND ${randomName}.h2p`;
     }
     randomPreset.presetName = `RND ${randomName}`;
     (randomPreset.meta = [
@@ -334,7 +334,8 @@ export function randomizePreset(
 }
 
 function getPresetDescriptionSuffix(config: Config): string {
-  let suffix = `Generated on ${new Date().toISOString()} by https://github.com/Fannon/u-he-preset-randomizer.`
+  const niceDate = new Date().toISOString().split('.')[0].replace('T', ' ')
+  let suffix = `Generated on ${niceDate} by https://github.com/Fannon/u-he-preset-randomizer.`
   if (config.category) {
     suffix += ` Based on presets of category: ${config.category}.`;
   }
