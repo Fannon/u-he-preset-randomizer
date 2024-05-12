@@ -172,14 +172,14 @@ async function runInteractiveMode() {
       }
     }
 
-    const allChoices = []
+    let allChoices = []
     for (const category in availableCategories) {
       allChoices.push({
         value: category,
         name: `${category} (${availableCategories[category]})`
       })
     }
-    allChoices.sort()
+    allChoices.sort((a, b) => a.value.localeCompare(b.value));
 
     const p4 = await inquirer.prompt([{
       name: 'value',
@@ -213,7 +213,7 @@ async function runInteractiveMode() {
     //////////////////////////////////////////////////
 
     if (!config.amount) {
-      config.amount = await chooseAmountOfPresets(16)
+      config.amount = await chooseAmountOfPresets(32)
     }
     const generatedPresets = generateFullyRandomPresets(presetLibrary, paramsModel, config)
     writePresetLibrary(generatedPresets)
@@ -233,7 +233,7 @@ async function runInteractiveMode() {
       config.randomness = await chooseRandomness(20)
     }
     if (!config.amount) {
-      config.amount = await chooseAmountOfPresets(8)
+      config.amount = await chooseAmountOfPresets(16)
     }
 
     const generatedPresets = generateRandomizedPresets(presetLibrary, paramsModel, config)
@@ -263,7 +263,7 @@ async function runInteractiveMode() {
       config.randomness = await chooseRandomness(0)
     }
     if (!config.amount) {
-      config.amount = await chooseAmountOfPresets(8)
+      config.amount = await chooseAmountOfPresets(16)
     }
     const generatedPresets = generateMergedPresets(presetLibrary, paramsModel, config)
     writePresetLibrary(generatedPresets)
