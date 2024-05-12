@@ -186,7 +186,7 @@ async function runInteractiveMode() {
     const p4 = await inquirer.prompt([{
       name: 'value',
       type: 'autocomplete',
-      message: 'Which categories to narrow down to?',
+      message: 'Which category to narrow down to?',
       pageSize: 12,
       source: async (_answersSoFar, input) => {
         if (!input) {
