@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { analyzeParamsTypeAndRange, convertParamsModelBySection } from "./analyzer.js";
-import { loadPresetLibrary, writePresetLibrary } from "./presetLibrary.js";
+import { PresetLibrary, loadPresetLibrary, writePresetLibrary } from "./presetLibrary.js";
 import fs from "fs-extra";
 import { log } from "./utils/log.js";
 import { getConfigFromParameters } from "./config.js";
@@ -50,6 +50,11 @@ function runWithoutInteractivity() {
       "./tmp/paramsModel.json",
       JSON.stringify(convertParamsModelBySection(outputParamsModel), null, 2)
     );
+  }
+
+  // Filter out presets by category (if given)
+  if (config.category && config.category !== true) {
+    presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category)
   }
   
   if (config.merge) {
@@ -118,10 +123,14 @@ async function runInteractiveMode() {
       type: 'checkbox',
       message: 'Any randomization modifiers?',
       choices: [
-        { value: "stable", name: '[Stable] More stable randomization approach' },
-        { value: "binary", name: '[Binary] Include binary section (WARNING: Very unstable!)' },
+        { value: "category", name: '[Select Category] Narrow down by category' },
+        { value: "stable", name: '[Stable]          More stable randomization approach' },
+        { value: "binary", name: '[Binary]          Include binary section (WARNING: Very unstable!)' },
       ]
     }])
+    if (modifiers.value.includes('category')) {
+      config.category = true;
+    }
     if (modifiers.value.includes('stable')) {
       config.stable = true;
     }
@@ -146,6 +155,56 @@ async function runInteractiveMode() {
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
   const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
+
+  if (config.category === true) {
+
+    const availableCategories = {};
+
+    for (const preset of presetLibrary.presets) {
+      for (const category of preset.categories) {
+        const parentCategory = category.split(':')[0]
+        if (!availableCategories[parentCategory]) {
+          availableCategories[parentCategory] = 0
+        }
+        availableCategories[parentCategory]++;
+        if (!availableCategories[category]) {
+          availableCategories[category] = 0
+        }
+        availableCategories[category]++;
+      }
+    }
+
+    const allChoices = []
+    for (const category in availableCategories) {
+      allChoices.push({
+        value: category,
+        name: `${category} (${availableCategories[category]})`
+      })
+    }
+    allChoices.sort()
+
+    const p4 = await inquirer.prompt([{
+      name: 'value',
+      type: 'autocomplete',
+      message: 'Which categories to narrow down to?',
+      pageSize: 12,
+      source: async (_answersSoFar, input) => {
+        if (!input) {
+          return allChoices
+        } else {
+          return allChoices.filter((el) => {
+            return el.name.toLowerCase().includes(input.toLowerCase())
+          })
+        }
+      }
+    }])
+    config.category = p4.value
+  }
+
+  // Filter out presets by category (if given)
+  if (config.category && config.category !== true) {
+    presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category)
+  }
 
   if (mode.value === "Fully randomized presets") {
 
@@ -226,11 +285,14 @@ async function runInteractiveMode() {
   if (config.pattern && config.pattern !== '**/*') {
     cliCommand += ` --pattern "${config.pattern}"`
   }
+  if (config.category) {
+    cliCommand += ` --category "${config.category}"`
+  }
   if (config.debug) {
-    cliCommand += ` --debug"`
+    cliCommand += ` --debug`
   }
   if (config.stable) {
-    cliCommand += ` --stable"`
+    cliCommand += ` --stable`
   }
   console.log(cliCommand)
 }
@@ -295,4 +357,20 @@ async function choosePreset(foundPresets: string[], allowSelectAll: boolean = fa
     }
   }])
   return presetChoice.value
+}
+
+function narrowDownByCategory(presetLibrary: PresetLibrary, category: string) {
+  const filteredPresets = presetLibrary.presets.filter((el) => {
+    if (!el.categories.length) {
+      return false;
+    }
+    for (const category of el.categories) {
+      if (category.startsWith(category as string)) {
+        return true;
+      }
+    }
+    return false;
+  })
+  console.log(`Narrowed down by category "${category}" to ${presetLibrary.presets.length} presets`)
+  return filteredPresets;
 }

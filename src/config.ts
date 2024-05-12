@@ -16,6 +16,7 @@ export interface Config {
   /** Binary part of the preset, if enabled that its read and written back again */
   binary?: boolean;
   stable?: boolean;
+  category?: boolean | string;
 }
 
 export function getDefaultConfig(): Config {
@@ -54,6 +55,9 @@ export function getConfigFromParameters() {
   }
   if (argv['stable']) {
     config.stable = argv.stable;
+  }
+  if (argv['category']) {
+    config.category = argv.category;
   }
   return config;
 }

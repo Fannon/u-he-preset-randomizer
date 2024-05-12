@@ -6,6 +6,7 @@ export interface Preset {
   filePath: string;
   /** Preset file name, without file extension or sub-folders */
   presetName: string;
+  categories: string[]
   meta: PresetMetaEntry[];
   params: PresetParam[];
   binary?: string;
@@ -30,16 +31,27 @@ export interface PresetParam {
 //////////////////////////////////////////
 
 export function parseUhePreset(fileString: string, filePath: string, binary: boolean): Preset {
+  const meta = getPresetMetadata(fileString)
+  let categories = []
+  const categoriesMeta = meta.find(el => el.key === 'Categories')
+  if (categoriesMeta && categoriesMeta.value) {
+    if (Array.isArray(categoriesMeta.value)) {
+      categories = categoriesMeta.value
+    } else {
+      categories.push(categoriesMeta.value)
+    }
+  }
   return {
     filePath: filePath,
     presetName: path.parse(filePath).name,
-    meta: getPresetMetadata(fileString),
+    meta: meta,
     params: getPresetParams(fileString, filePath),
     binary: binary ? getPresetBinarySection(fileString) : undefined,
+    categories: categories
   };
 }
 
-export function getPresetMetadata(fileString: string) {
+export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
   const split = fileString.split("*/");
   const metadataHeader = split[0]!
     .replace("/*@Meta", "")
@@ -69,7 +81,7 @@ export function getPresetMetadata(fileString: string) {
   return metadata;
 }
 
-export function getPresetParams(fileString: string, presetPath: string) {
+export function getPresetParams(fileString: string, presetPath: string): PresetParam[] {
   const params: PresetParam[] = [];
   const split = fileString.split("*/");
 
@@ -137,7 +149,7 @@ export function getPresetParams(fileString: string, presetPath: string) {
   return params;
 }
 
-export function getPresetBinarySection(fileString: string) {
+export function getPresetBinarySection(fileString: string): string {
   const split = fileString.split("// Section for ugly compressed binary Data\n// DON'T TOUCH THIS\n");
   if (split[1]) {
     return split[1].trim();
