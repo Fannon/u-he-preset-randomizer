@@ -82,7 +82,13 @@ export function generateFullyRandomPresets(
         value:
           `Fully random preset. ${getPresetDescriptionSuffix(config)}`,
       },
-    ]),
+    ])
+    if (config.category) {
+      randomPreset.meta.push({
+        key: "Categories",
+        value: [config.category as string]
+      })
+    }
     newPresetLibrary.presets.push(randomPreset);
   }
   return newPresetLibrary;
@@ -260,7 +266,13 @@ export function generateMergedPresets(
             ", "
           )}. ${getPresetDescriptionSuffix(config)}`,
       },
-    ],
+    ]
+    if (config.category) {
+      newPreset.meta.push({
+        key: "Categories",
+        value: [config.category as string]
+      })
+    }
     newPresetLibrary.presets.push(newPreset);
   }
   return newPresetLibrary;
