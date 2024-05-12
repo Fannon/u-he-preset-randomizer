@@ -1,5 +1,4 @@
 import * as path from "path";
-import { log } from "./utils/log.js";
 
 export interface Preset {
   /** Relative filePath to preset folder */
@@ -128,7 +127,7 @@ export function getPresetParams(fileString: string, presetPath: string): PresetP
       repeatCounter++;
 
       if (!param.id.includes('#mv') && !param.id.includes('#ms')) {
-        log.warn(`Unexpected duplicated header + key for: ${param.id} in preset "${presetPath}"`)
+        console.warn(`Unexpected duplicated header + key for: ${param.id} in preset "${presetPath}"`)
       } 
 
     } else {

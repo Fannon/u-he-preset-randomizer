@@ -2,7 +2,6 @@
 import { analyzeParamsTypeAndRange, convertParamsModelBySection } from "./analyzer.js";
 import { PresetLibrary, loadPresetLibrary, writePresetLibrary } from "./presetLibrary.js";
 import fs from "fs-extra";
-import { log } from "./utils/log.js";
 import { getConfigFromParameters } from "./config.js";
 import { generateFullyRandomPresets, generateMergedPresets, generateRandomizedPresets } from "./randomizer.js";
 import { DetectedPresetLibrary, detectPresetLibraryLocations } from "./utils/detector.js";
@@ -30,7 +29,7 @@ const config = getConfigFromParameters();
   }
 
 })().catch((err) => {
-  log.error(err)
+  console.error(err)
   process.exit(1)
 });
 

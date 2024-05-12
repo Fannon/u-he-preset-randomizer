@@ -3,7 +3,6 @@ import fs from "fs-extra"
 import fg from "fast-glob"
 import { Preset, parseUhePreset, serializePresetToFile } from "./parser.js";
 import { SynthNames, detectPresetLibraryLocations } from "./utils/detector.js";
-import { log } from "./utils/log.js";
 
 export interface PresetLibrary {
   synth: string;
@@ -37,11 +36,11 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
           presetLibrary.presets.push(parsedPreset);
         }
       } catch (err) {
-        log.warn(`Could not load and parse preset: ${presetPath}`, err)
+        console.warn(`Could not load and parse preset: ${presetPath}`, err)
       }
     }
   } else {
-    log.warn(`Could not find presets with glob pattern: ${pattern} in library: ${presetLibrary.presetsFolder}`)
+    console.warn(`Could not find presets with glob pattern: ${pattern} in library: ${presetLibrary.presetsFolder}`)
   }
 
   // Load user preset library
@@ -57,15 +56,15 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
           presetLibrary.presets.push(parsedPreset);
         }
       } catch (err) {
-        log.warn(`Could not load and parse preset: ${presetPath}`, err)
+        console.warn(`Could not load and parse preset: ${presetPath}`, err)
       }
     }
   } else {
-    log.warn(`Could not find presets with glob pattern: ${pattern} in user library: ${presetLibrary.userPresetsFolder}`)
+    console.warn(`Could not find presets with glob pattern: ${pattern} in user library: ${presetLibrary.userPresetsFolder}`)
   }
 
   if (presetLibrary.presets.length === 0) {
-    log.error(`No presets found with glob pattern: ${pattern} in` + presetLibrary.presetsFolder)
+    console.error(`No presets found with glob pattern: ${pattern} in` + presetLibrary.presetsFolder)
     process.exit(1)
   }
 

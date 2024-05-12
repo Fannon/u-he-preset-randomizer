@@ -1,7 +1,6 @@
 import { ParamsModel } from "./analyzer.js";
 import { Preset } from "./parser.js";
 import { PresetLibrary } from "./presetLibrary.js";
-import { log } from "./utils/log.js";
 import {
   uniqueNamesGenerator,
   adjectives,
@@ -121,7 +120,7 @@ export function generateRandomizedPresets(
       return el.filePath.includes(config.preset);
     });
     if (!basePreset) {
-      log.error(`No preset with name ${config.preset} found!`);
+      console.error(`No preset with name ${config.preset} found!`);
       process.exit(1);
     }
   }
@@ -186,7 +185,7 @@ export function generateMergedPresets(
         return el.filePath.includes(presetTitle);
       });
       if (!mergePreset) {
-        log.error(`No preset with name ${presetTitle} found!`);
+        console.error(`No preset with name ${presetTitle} found!`);
         process.exit(1);
       }
       mergePresets.push(mergePreset);
@@ -194,7 +193,7 @@ export function generateMergedPresets(
   }
 
   if (mergePresets.length < 2) {
-    log.error(
+    console.error(
       "Merge presets only works when at least two presets have been chosen"
     );
     process.exit(1);
