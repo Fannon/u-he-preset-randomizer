@@ -42,6 +42,7 @@ function runWithoutInteractivity() {
   if (config.debug) {
     // Write a cleaned up parameter model to ./tmp/paramsModel.json
     const outputParamsModel = JSON.parse(JSON.stringify(paramsModel))
+    // Remove values from debug paramsModel, as it would blow up the result too much.
     for (const paramKey in outputParamsModel) {
       delete outputParamsModel[paramKey].values;
     }

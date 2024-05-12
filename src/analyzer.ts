@@ -53,6 +53,11 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
   for (const paramName in paramsModel) {
     const param = paramsModel[paramName]!;
     param.distinctValues = [...new Set(param.values)];
+
+    if (param.distinctValues.length === 1) {
+      // Save some memory by compacting `values` to a single value if they are the same anyway
+      param.values = param.distinctValues;
+    }
     
     if (param.type !== "string") {
       const values = param.values as number[]
