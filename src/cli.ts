@@ -36,8 +36,13 @@ const config = getConfigFromParameters();
 function runWithoutInteractivity() {
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
 
+  // Filter out presets by category (if given)
+  if (config.category && config.category !== true) {
+    presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category)
+  }
+  
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
-
+  
   if (config.debug) {
     // Write a cleaned up parameter model to ./tmp/paramsModel.json
     const outputParamsModel = JSON.parse(JSON.stringify(paramsModel))
@@ -49,11 +54,6 @@ function runWithoutInteractivity() {
       "./tmp/paramsModel.json",
       JSON.stringify(convertParamsModelBySection(outputParamsModel), null, 2)
     );
-  }
-
-  // Filter out presets by category (if given)
-  if (config.category && config.category !== true) {
-    presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category)
   }
   
   if (config.merge) {
@@ -153,7 +153,6 @@ async function runInteractiveMode() {
   console.log('Loading and analyzing preset library...')
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
   const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
-  const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
 
   if (config.category === true) {
 
@@ -204,6 +203,8 @@ async function runInteractiveMode() {
   if (config.category && config.category !== true) {
     presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category)
   }
+
+  const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
 
   if (mode.value === "Fully randomized presets") {
 
