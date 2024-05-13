@@ -235,13 +235,16 @@ export function generateMergedPresets(
       if (param.type === "string") {
         // Randomly pick a string enum value from one of the merge patches
         const pick = getRandomArrayItem<Preset>(mergePresets);
-        newParamValue = pick.params.find((el) => el.id === param.id);
+        const findParam = pick.params.find((el) => el.id === param.id);
+        if (findParam && findParam.value) {
+          newParamValue = findParam.value;
+        }
       } else {
         let newParamValue = 0;
 
         for (const [i, preset] of mergePresets.entries()) {
           const findParam = preset.params.find((el) => el.id === param.id);
-          if (findParam) {
+          if (findParam && findParam.value) {
             newParamValue += (findParam.value as number) * mergeRatios[i];
           } else {
             newParamValue += oldParamValue * mergeRatios[i];
@@ -254,6 +257,11 @@ export function generateMergedPresets(
           newParamValue = Math.trunc(newParamValue * 100) / 100;
         }
       }
+
+      if (typeof newParamValue === 'object') {
+        console.error('new param value is object, but should not be.', newPreset.filePath, newParamValue)
+      }
+
       param.value = newParamValue;
     }
 

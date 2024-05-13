@@ -13,7 +13,8 @@
       // "args": ["src/cli.ts", "--synth", "Hive", "--pattern", "**/PD *", "--debug"],
       // "args": ["src/cli.ts", "--synth", "Hive", "--pattern", "**/PD *", "--merge", ],
       // "args": ["src/cli.ts", "--synth", "Repro-5", "--amount", "4", "--stable"],
-      "args": ["src/cli.ts", "--synth", "Diva", "--amount", "4", "--category", "Pads"],
+      // "args": ["src/cli.ts", "--synth", "Diva", "--amount", "4", "--category", "Pads"],
+      "args": ["src/cli.ts", "--synth", "Diva", "--amount", "4", "--merge", "*deep space*"],
       // "args": ["src/cli.ts"],
       "runtimeArgs": [
         "--import",

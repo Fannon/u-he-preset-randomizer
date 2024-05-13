@@ -277,11 +277,14 @@ async function runInteractiveMode() {
 
   let cliCommand = `npx u-he-preset-randomizer@latest --synth ${config.synth} --amount ${config.amount}`
   if (config.preset) {
-    cliCommand += ` --preset "${config.preset}" --random ${config.randomness}`
+    cliCommand += ` --preset "${config.preset}"`
   } else if (config.merge) {
     for (const merge of config.merge) {
       cliCommand += ` --merge "${merge}"`
     }
+  }
+  if (config.randomness) {
+    cliCommand += ` --randomness "${config.randomness}"`
   }
   if (config.pattern && config.pattern !== '**/*') {
     cliCommand += ` --pattern "${config.pattern}"`
@@ -289,11 +292,11 @@ async function runInteractiveMode() {
   if (config.category) {
     cliCommand += ` --category "${config.category}"`
   }
-  if (config.debug) {
-    cliCommand += ` --debug`
-  }
   if (config.stable) {
     cliCommand += ` --stable`
+  }
+  if (config.debug) {
+    cliCommand += ` --debug`
   }
   console.log(cliCommand)
 }
