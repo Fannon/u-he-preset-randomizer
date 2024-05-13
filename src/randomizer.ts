@@ -180,6 +180,11 @@ export function generateMergedPresets(
         return el && el.presetName;
       });
       break;
+    } else if (presetTitle.startsWith("*")) {
+      mergePresets.push(...presetLibrary.presets.filter((el) => {
+        const searchString = presetTitle.split('*').join('').toLowerCase();
+        return el && el.filePath && el.filePath.toLowerCase().includes(searchString);
+      }));
     } else {
       mergePreset = presetLibrary.presets.find((el) => {
         return el.filePath.includes(presetTitle);
@@ -200,7 +205,7 @@ export function generateMergedPresets(
   }
 
   console.log(
-    `Merging presets:\n * ${mergePresets.map((el) => el.presetName).join("\n * ")}\n`
+    `Merging ${mergePresets.length} presets:\n * ${mergePresets.map((el) => el.presetName).join("\n * ")}\n`
   );
 
   for (let i = 0; i < (config.amount || 8); i++) {

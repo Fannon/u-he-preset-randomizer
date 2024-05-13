@@ -16,6 +16,8 @@ const packageJson = fs.readJSONSync(__dirname + '/../package.json')
 console.log('======================================================================')
 console.log('u-he Preset Randomizer CLI v' + packageJson.version)
 console.log('======================================================================')
+console.log('Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme')
+console.log('')
 
 const config = getConfigFromParameters();
 
@@ -143,8 +145,7 @@ async function runInteractiveMode() {
     const p3 = await inquirer.prompt([{
       name: 'pattern',
       type: 'input',
-      message: 'Which presets should be loaded for randomization (glob pattern)?',
-      suffix: '\n "**/*"              will load all presets in all folders (default).\n "Some Folder/**/*"  will load all presets in Some Folder\n "**/PD *"           will load all presets starting with "PD ".\n',
+      message: 'Which presets to load for consideration (glob pattern)? Just enter to load everything.',
       default: '**/*'
     }])
     config.pattern = p3.pattern
@@ -260,7 +261,7 @@ async function runInteractiveMode() {
 
     // Choose amount of randomness
     if (!config.randomness) {
-      config.randomness = await chooseRandomness(0)
+      config.randomness = await chooseRandomness(5)
     }
     if (!config.amount) {
       config.amount = await chooseAmountOfPresets(16)
@@ -327,7 +328,7 @@ async function chooseRandomness(initial: number = 20): Promise<number> {
 
 async function choosePreset(foundPresets: string[], allowSelectAll: boolean = false): Promise<string> {
   const controlChoices = [
-    { value: '', name: '  (no choice / complete)' },
+    { value: '',  name: '  (no choice / complete)' },
     { value: '?', name: '? (random pick)' },
   ]
   if (allowSelectAll) {
@@ -344,15 +345,22 @@ async function choosePreset(foundPresets: string[], allowSelectAll: boolean = fa
   const presetChoice = await inquirer.prompt([{
     name: 'value',
     type: 'autocomplete',
-    message: 'Which preset to randomize?',
+    message: 'Select preset(s):',
     pageSize: 12,
     source: async (_answersSoFar, input) => {
       if (!input) {
         return allChoices
       } else {
-        return allChoices.filter((el) => {
+        const staticChoices = []
+        if (allowSelectAll) {
+          staticChoices.push({
+            value: `*${input}*`,  
+            name: `*${input}* (all presets including search string)`
+          })
+        }
+        return staticChoices.concat(allChoices.filter((el) => {
           return el.name.toLowerCase().includes(input.toLowerCase())
-        })
+        }))
       }
     }
   }])

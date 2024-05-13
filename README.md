@@ -2,15 +2,15 @@
 
 Generate [u-he](https://u-he.com/) synth presets through randomization and merging of your existing presets.
 
-Currently it can generate random presets in three different modes:
-* Generate fully random presets based on real values and value distributions in your preset library
-* Randomize existing presets, with a customizable amount of randomness
-* Merge multiple chosen presets together, with randomness introduced by different ratios between them.
+This tool can generate random presets in three different modes:
+* Generate **fully random presets** based on real values and value distributions in your preset library
+* **Randomize existing presets**, with a customizable amount of randomness
+* **Merge multiple presets** together, with randomness introduced by different ratios between them.
 
 The randomization / merging approach is very generic and should work for all u-he synths.
 Some may work better due to their simpler architecture (u-he Diva, Hive). 
 More modular synths like Bazille, Zebra also work, but you may get more "varied" results.
-
+ 
 > I could only test it on Windows so far. It might work on MacOS, but someone might need to confirm it.
 
 See [Future Features and Ideas](#future-features--ideas) on what else could be added.
@@ -60,7 +60,7 @@ The following example will take three Diva presets (each indicated with `--merge
 npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn" --merge "HS Strumpet" --merge "HS Baroqualog"
 ```
 
-### CLI Arguments
+### CLI Arguments / Configuration
 
 * `--synth`: Choose the u-he synth. Not all synths have been tested, but the randomizer tries to be generic. The name must match the folder name convention of u-he. E.g. `Diva`, `Hive`, `ZebraHZ`.
 * `--amount`: How many presets to generate. Positive integer number.
