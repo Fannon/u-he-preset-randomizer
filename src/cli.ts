@@ -358,6 +358,10 @@ async function choosePreset(foundPresets: string[], allowSelectAll: boolean = fa
             name: `*${input}* (all presets including search string)`
           })
         }
+        staticChoices.push({
+          value: `?${input}?`,  
+          name: `?${input}? (random pick of presets including search string)`
+        })
         return staticChoices.concat(allChoices.filter((el) => {
           return el.name.toLowerCase().includes(input.toLowerCase())
         }))

@@ -115,6 +115,11 @@ export function generateRandomizedPresets(
   // If no preset given or "?" is passed, choose a random preset
   if (config.preset === "?" || !config.preset) {
     basePreset = getRandomArrayItem(presetLibrary.presets);
+  } else if (config.preset.startsWith("?")) {
+    basePreset = getRandomArrayItem(presetLibrary.presets.filter((el) => {
+      const searchString = config.preset.split('?').join('').toLowerCase();
+      return el && el.filePath && el.filePath.toLowerCase().includes(searchString);
+    }));
   } else {
     basePreset = presetLibrary.presets.find((el) => {
       return el.filePath.includes(config.preset);
@@ -124,6 +129,8 @@ export function generateRandomizedPresets(
       process.exit(1);
     }
   }
+
+  console.log('Randomizing base preset: ' + basePreset.filePath);
 
   for (let i = 0; i < (config.amount || 8); i++) {
     const randomPreset = randomizePreset(basePreset, paramModel, config)
@@ -185,17 +192,26 @@ export function generateMergedPresets(
         const searchString = presetTitle.split('*').join('').toLowerCase();
         return el && el.filePath && el.filePath.toLowerCase().includes(searchString);
       }));
+    } else if (presetTitle.startsWith("?")) {
+      mergePresets.push(getRandomArrayItem(presetLibrary.presets.filter((el) => {
+        const searchString = presetTitle.split('?').join('').toLowerCase();
+        return el && el.filePath && el.filePath.toLowerCase().includes(searchString);
+      })));
     } else {
       mergePreset = presetLibrary.presets.find((el) => {
         return el.filePath.includes(presetTitle);
       });
       if (!mergePreset) {
-        console.error(`No preset with name ${presetTitle} found!`);
+        console.error(`No preset with name "${presetTitle}" found!`);
         process.exit(1);
       }
       mergePresets.push(mergePreset);
     }
   }
+
+  console.log(
+    `Merging ${mergePresets.length} presets:\n * ${mergePresets.map((el) => el.presetName).join("\n * ")}\n`
+  );
 
   if (mergePresets.length < 2) {
     console.error(
@@ -203,10 +219,6 @@ export function generateMergedPresets(
     );
     process.exit(1);
   }
-
-  console.log(
-    `Merging ${mergePresets.length} presets:\n * ${mergePresets.map((el) => el.presetName).join("\n * ")}\n`
-  );
 
   for (let i = 0; i < (config.amount || 8); i++) {
     let newPreset: Preset = JSON.parse(
