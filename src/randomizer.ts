@@ -40,27 +40,34 @@ export function generateFullyRandomPresets(
       
       for (const param of randomPreset.params) {
 
+        if (!presetPerSectionMap[param.section]) {
+          presetPerSectionMap[param.section] = getRandomArrayItem(presetLibrary.presets)
+        }
+
         if (paramModel[param.id].type === 'string' || paramModel[param.id].distinctValues.length <= 2) {
           // Do not randomize string type values or values that only have 1 or 2 distinct values
           continue;
         }
 
-        if (!presetPerSectionMap[param.section]) {
-          presetPerSectionMap[param.section] = getRandomArrayItem(presetLibrary.presets)
+        if (paramModel[param.id].keepStable) {
+          // Do not randomize if parameter is marked as to be kept stable
+          continue;
         }
 
-        let randomNewParam = presetPerSectionMap[param.section].params.find((el) => {
-          return el.id === param.id
-        });
+        let randomNewParam = presetPerSectionMap[param.section].params.find(el => el.id === param.id);
 
         if (randomNewParam) {
           param.value = randomNewParam.value
         } else {
+          // If the preset doesn't have the particular param, fall back to a fully random value
           param.value = getRandomArrayItem(paramModel[param.id]!.values);
         }
       }
     } else {
       for (const param of randomPreset.params) {
+        if (paramModel[param.id].keepStable === 'always') {
+          continue;
+        }
         param.value = getRandomArrayItem(paramModel[param.id]!.values);
       }
     }
@@ -232,9 +239,23 @@ export function generateMergedPresets(
     const mergeRatios = calculateRandomMergeRatios(mergePresets.length);
 
     for (const param of newPreset.params) {
+      
+      if (config.stable) {
+        if (paramModel[param.id].type === 'string' || paramModel[param.id].distinctValues.length <= 2) {
+          // Do not randomize string type values or values that only have 1 or 2 distinct values
+          continue;
+        }
+        if (paramModel[param.id].keepStable) {
+          // Do not randomize if parameter is marked as to be kept stable
+          continue;
+        }
+      }
+      if (paramModel[param.id].keepStable === 'always') {
+        continue;
+      }
+      
       const oldParamValue = JSON.parse(JSON.stringify(param.value));
       let newParamValue = oldParamValue;
-
       if (param.type === "string") {
         // Randomly pick a string enum value from one of the merge patches
         const pick = getRandomArrayItem<Preset>(mergePresets);
@@ -346,6 +367,13 @@ export function randomizePreset(
         // Do not randomize string type values or values that only have 1 or 2 distinct values
         continue;
       }
+      if (paramModel[param.id].keepStable) {
+        // Do not randomize if parameter is marked as to be kept stable
+        continue;
+      }
+    }
+    if (paramModel[param.id].keepStable === 'always') {
+      continue;
     }
 
     let randomParamValue = getRandomArrayItem(paramModel[param.id]!.values);

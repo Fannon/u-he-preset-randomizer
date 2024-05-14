@@ -314,7 +314,7 @@ async function runInteractiveMode() {
 
     // Choose amount of randomness
     if (!config.randomness) {
-      config.randomness = await chooseRandomness(5)
+      config.randomness = await chooseRandomness(0)
     }
     if (!config.amount) {
       config.amount = await chooseAmountOfPresets(16)

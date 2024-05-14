@@ -1,4 +1,5 @@
 import { PresetLibrary } from "./presetLibrary.js";
+import { SynthNames } from "./utils/detector.js";
 
 export interface ParamsModel {
   [key: string]: {
@@ -8,9 +9,9 @@ export interface ParamsModel {
     maxValue?: number;
     minValue?: number;
     avgValue?: number;
+    keepStable?: 'always' | 'stable-mode';
   }
 }
-
 
 export interface ParamsModelBySection {
   [section: string]: {
@@ -31,11 +32,20 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
     for (const param of preset.params) {
       const key = param.id;
       if (!paramsModel[key]) {
+        if (key.includes('[object Object]')) {
+          // Ignore broken presets, the generator did accidentally create in the past
+          continue;
+        }
         paramsModel[key] = {
           type: param.type,
           values: [param.value],
           distinctValues: [],
         };
+        for (const paramHandling of specialParameterHandling) {
+          if (key.includes(paramHandling.id)) {
+            paramsModel[key].keepStable = paramHandling.keepStable;
+          }
+        }
       } else {
         paramsModel[key]!.values.push(param.value);
         if (paramsModel[key]!.type !== param.type) {
@@ -87,3 +97,26 @@ export function convertParamsModelBySection(paramsModel: ParamsModel): ParamsMod
 function average(arr: number[]) {
   return arr.reduce((p, c) => p + c, 0) / arr.length;
 }
+
+interface SpecialParameterHandling {
+  id: string;
+  keepStable: "always" | "stable-mode";
+  restrictToSynth?: SynthNames;
+}
+
+const specialParameterHandling: SpecialParameterHandling[] = [{
+  id: "VCC/Trsp",
+  keepStable: "always",
+},{
+  id: "VCC/FTun",
+  keepStable: "always",
+},{
+  id: "Tune",
+  keepStable: "stable-mode",
+},{
+  id: "main/CcOp",
+  keepStable: "stable-mode",
+},{
+  id: "ZMas/Mast",
+  keepStable: "stable-mode",
+}]
