@@ -13,26 +13,34 @@ More modular synths like Bazille, Zebra also work, but you may get more "varied"
  
 > I could only test it on Windows so far. It might work on MacOS, but someone might need to confirm it.
 
-See [Future Features and Ideas](#future-features--ideas) on what else could be added.
-
 ## How to use
 
 This is a CLI application that you need to run in your terminal / command line.
 
 First you need to install the [Node.js](https://nodejs.org/en) runtime.
-Then you can open your Terminal / Console / Command Prompt and start it by entering a command with some arguments.
-They start with `npx u-he-preset-randomizer`, which will download and run the latest version of this tool:
+Then you can open your Terminal / Console / Command Prompt and start it by entering a command, optionally with some arguments.
+They start with `npx u-he-preset-randomizer@latest`, which will download and run the latest version of this tool:
 
 ```sh
 npx u-he-preset-randomizer@latest
 ```
 
-This will start the tool in interactive mode. It will guide you though the necessary choices.
-Alternatively, you can pass some arguments if you already know the choices (non interactive).
+This will start the tool in **interactive mode**. It will guide you though the necessary choices.
+Alternatively, you can pass some [arguments](#cli-arguments--configuration) if you already know the choices (non interactive).
 
-The generated patches will be put into your selected synth preset directory, under a `/RANDOM` folder.
+The generated patches will be put into your selected synth preset directory, under a `/RANDOM` folder in your user presets.
 
 ![GIF Recording](./assets/u-he-preset-randomizer.gif)
+
+If you want to download the tool for offline use and manual updates:
+
+```sh
+# install it as a global CLI tool
+npm i -g u-he-preset-randomizer
+
+# Now you can run it without npx:
+u-he-preset-randomizer
+```
 
 ### Generate Fully Randomized Presets
 
