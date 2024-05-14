@@ -64,12 +64,15 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 
 * `--synth`: Choose the u-he synth. Not all synths have been tested, but the randomizer tries to be generic. The name must match the folder name convention of u-he. E.g. `Diva`, `Hive`, `ZebraHZ`.
 * `--amount`: How many presets to generate. Positive integer number.
+* `--randomness`: Amount of randomness (in percentage) to apply, when randomizing existing presets or resulting merged presets. Value needs to be between 0 and 100.
 * `--preset`: If given, an existing preset will be used as a based and randomized by `--randomness` ratio.
   * Use "?" to choose random preset
-* `--randomness`: Amount of randomness (in percentage) to apply, when randomizing existing presets or resulting merged presets. Value needs to be between 0 and 100.
+  * Use `?search string?` to choose a random preset containing "search string" in its path and file name.
 * `--merge`: Can be provided multiple times, for each preset that should be part of the merging. Ratio between merged presets is random and NOT driven by the `--randomness` parameter.
-  * Use "?" to choose random preset
-  * Use "*?*" to select all presets (careful! Better first reduce via `--pattern`.)
+  * Use `?` to choose random preset
+  * Use `?search string?` to choose a random preset containing "search string" in its path and file name.
+  * Use `*` to select all presets (careful! Better first reduce via `--pattern`.)
+  * Use `*search string*` to select all presets containing "search string" in its path and file name.
 * `--pattern`: Define a [glob pattern](https://code.visualstudio.com/docs/editor/glob-patterns), which presets should be loaded. 
   * By default, it's `**/*` which will load all presets from all sub-folders.
   * To select a subfolder, use e.g. `My Folder/**/*`
@@ -78,12 +81,12 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
   * For fully random presets, it will randomize not per parameter, but per section (e.g. the entire OSC1 together)
   * Only parameters with numeric non-binary assignments will be further randomized. Otherwise they stay consistent with the chosen base preset or a random starter preset.
 - `--binary`: Keep the binary part of the u-he presets. They will not be changed, but randomly generated presets will now include the binary section of either a random preset or the base preset that is randomized.
-  * ⚠ Since the randomizer doesn't really parse and understand the binary section, this may lead to broken presets that may crash your synth plugin when loading. Use with care.
+  * ⚠ Since the randomizer doesn't really parse and understand the binary section, this may lead to broken presets that may crash your synth plugin when loading. Use with care. For some synths this works better (Diva, Zebralette 3) and for some it frequently leads to invalid presets.
 * `--debug`: Enables some optional debug logging and file exporting
 
 ## Developer Guide
 
-To run this locally, check out the repo and:
+To run this tool locally in developer mode, check out the repo and:
 
 ```sh
 npm i
