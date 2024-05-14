@@ -17,6 +17,7 @@ export interface Config {
   binary?: boolean;
   stable?: boolean;
   category?: boolean | string;
+  author?: boolean | string;
 }
 
 export function getDefaultConfig(): Config {
@@ -58,6 +59,9 @@ export function getConfigFromParameters() {
   }
   if (argv['category']) {
     config.category = argv.category;
+  }
+  if (argv['author']) {
+    config.author = argv.author;
   }
   return config;
 }

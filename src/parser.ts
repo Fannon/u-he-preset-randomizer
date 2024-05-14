@@ -5,7 +5,7 @@ export interface Preset {
   filePath: string;
   /** Preset file name, without file extension or sub-folders */
   presetName: string;
-  categories: string[]
+  categories: string[];
   meta: PresetMetaEntry[];
   params: PresetParam[];
   binary?: string;

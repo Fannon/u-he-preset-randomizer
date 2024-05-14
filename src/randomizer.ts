@@ -20,6 +20,11 @@ export function generateFullyRandomPresets(
   console.log('----------------------------------------------------------------------')
   console.log(`Fully random presets with modes: stable=${config.stable}, binary=${config.binary}, category=${config.category}`)
 
+  if (presetLibrary.presets.length === 0) {
+    console.error('Error: No presets available for randomization.')
+    process.exit(1)
+  }
+
   const newPresetLibrary: PresetLibrary = {
     synth: presetLibrary.synth,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
@@ -125,7 +130,7 @@ export function generateRandomizedPresets(
       return el.filePath.includes(config.preset);
     });
     if (!basePreset) {
-      console.error(`No preset with name ${config.preset} found!`);
+      console.error(`Error: No preset with name ${config.preset} found!`);
       process.exit(1);
     }
   }
@@ -202,7 +207,7 @@ export function generateMergedPresets(
         return el.filePath.includes(presetTitle);
       });
       if (!mergePreset) {
-        console.error(`No preset with name "${presetTitle}" found!`);
+        console.error(`Error: No preset with name "${presetTitle}" found!`);
         process.exit(1);
       }
       mergePresets.push(mergePreset);
@@ -214,9 +219,7 @@ export function generateMergedPresets(
   );
 
   if (mergePresets.length < 2) {
-    console.error(
-      "Merge presets only works when at least two presets have been chosen"
-    );
+    console.error("Error: Merge presets only works when at least two presets have been chosen");
     process.exit(1);
   }
 
@@ -259,7 +262,7 @@ export function generateMergedPresets(
       }
 
       if (typeof newParamValue === 'object') {
-        console.error('new param value is object, but should not be.', newPreset.filePath, newParamValue)
+        console.error('Error: New param value is object, but should not be.', newPreset.filePath, newParamValue)
       }
 
       param.value = newParamValue;

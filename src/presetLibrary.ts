@@ -64,7 +64,7 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
   }
 
   if (presetLibrary.presets.length === 0) {
-    console.error(`No presets found with glob pattern: ${pattern} in` + presetLibrary.presetsFolder)
+    console.error(`Error: No presets found with glob pattern: ${pattern} in` + presetLibrary.presetsFolder)
     process.exit(1)
   }
 
