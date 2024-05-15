@@ -38,13 +38,13 @@ const config = getConfigFromParameters();
 function runWithoutInteractivity() {
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
 
-  // Filter out presets by category (if given)
-  if (config.category && config.category !== true) {
-    presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category)
-  }
   // Filter out presets by author (if given)
   if (config.author && config.author !== true) {
     presetLibrary.presets = narrowDownByAuthor(presetLibrary, config.author)
+  }
+  // Filter out presets by category (if given)
+  if (config.category && config.category !== true) {
+    presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category)
   }
   
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
@@ -128,8 +128,8 @@ async function runInteractiveMode() {
       type: 'checkbox',
       message: 'Any randomization modifiers?',
       choices: [
+        { value: "author",   name: '[Author]     Narrow down by author' },
         { value: "category", name: '[Category]   Narrow down by category' },
-        { value: "author",   name: '[Author]     Narrow down by category' },
         { value: "stable",   name: '[Stable]     More stable randomization approach' },
         { value: "binary",   name: '[Binary]     Include binary section (WARNING: Very unstable!)' },
       ]
@@ -162,6 +162,51 @@ async function runInteractiveMode() {
   console.log('Loading and analyzing preset library...')
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
   const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
+
+  // Optionally: Narrow down by author
+  if (config.author === true) {
+    const availableAuthors = {};
+
+    for (const preset of presetLibrary.presets) {
+      const authorMeta = preset.meta.find(el => el.key === 'Author')
+      if (authorMeta) {
+        if (!availableAuthors[authorMeta.value as string]) {
+          availableAuthors[authorMeta.value as string] = 0;
+        }
+        availableAuthors[authorMeta.value as string]++;
+      }
+    }
+
+    let allChoices = []
+    for (const author in availableAuthors) {
+      allChoices.push({
+        value: author,
+        name: `${author} (${availableAuthors[author]})`
+      })
+    }
+    allChoices.sort((a, b) => a.value.localeCompare(b.value));
+
+    const authorPrompt = await inquirer.prompt([{
+      name: 'value',
+      type: 'autocomplete',
+      message: 'Which author to narrow down to?',
+      pageSize: 12,
+      source: async (_answersSoFar, input) => {
+        if (!input) {
+          return allChoices
+        } else {
+          return allChoices.filter((el) => {
+            return el.name.toLowerCase().includes(input.toLowerCase())
+          })
+        }
+      }
+    }])
+    config.author = authorPrompt.value
+  }
+  // Filter out presets by author (if given)
+  if (config.author && config.author !== true) {
+    presetLibrary.presets = narrowDownByAuthor(presetLibrary, config.author)
+  }
 
   // Optionally: Narrow down by category
   if (config.category === true) {
@@ -208,55 +253,11 @@ async function runInteractiveMode() {
     config.category = categoryPrompt.value
   }
 
-  // Optionally: Narrow down by author
-  if (config.author === true) {
-    const availableAuthors = {};
-
-    for (const preset of presetLibrary.presets) {
-      const authorMeta = preset.meta.find(el => el.key === 'Author')
-      if (authorMeta) {
-        if (!availableAuthors[authorMeta.value as string]) {
-          availableAuthors[authorMeta.value as string] = 0;
-        }
-        availableAuthors[authorMeta.value as string]++;
-      }
-    }
-
-    let allChoices = []
-    for (const author in availableAuthors) {
-      allChoices.push({
-        value: author,
-        name: `${author} (${availableAuthors[author]})`
-      })
-    }
-    allChoices.sort((a, b) => a.value.localeCompare(b.value));
-
-    const authorPrompt = await inquirer.prompt([{
-      name: 'value',
-      type: 'autocomplete',
-      message: 'Which author to narrow down to?',
-      pageSize: 12,
-      source: async (_answersSoFar, input) => {
-        if (!input) {
-          return allChoices
-        } else {
-          return allChoices.filter((el) => {
-            return el.name.toLowerCase().includes(input.toLowerCase())
-          })
-        }
-      }
-    }])
-    config.author = authorPrompt.value
-  }
-
   // Filter out presets by category (if given)
   if (config.category && config.category !== true) {
     presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category)
   }
-  // Filter out presets by category (if given)
-  if (config.author && config.author !== true) {
-    presetLibrary.presets = narrowDownByAuthor(presetLibrary, config.author)
-  }
+
 
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
 
