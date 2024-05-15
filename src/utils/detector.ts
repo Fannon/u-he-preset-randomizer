@@ -52,9 +52,10 @@ export function detectPresetLibraryLocations(): DetectedPresetLibrary[] {
     return detectedPresetLibraries;
   } 
   
-  // Otherwise try Windows file system conventions
+  // Otherwise try Windows or Linux file system conventions
   const locationsToTry = [
     path.join(os.homedir(),`/Documents/u-he/__SynthName__.data/`),
+    path.join(os.homedir(),`/.u-he/__SynthName__.data/`),
     `C:/Program Files/Common Files/VST3/__SynthName__.data/`,
     `C:/Program Files/VSTPlugins/__SynthName__.data/`,
     `C:/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`,
