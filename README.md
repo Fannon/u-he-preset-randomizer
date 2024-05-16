@@ -85,6 +85,7 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
   * By default, it's `**/*` which will load all presets from all sub-folders.
   * To select a subfolder, use e.g. `My Folder/**/*`
   * To select presets starting with something, use e.g. `**/PD *`
+- `--folder`: narrow down presets by folder. Use `/Presets/` or `/UserPresets/` as starting point.
 - `--category`: narrow down presets by preset category (metadata)
 - `--author`: narrow down presets by preset author (metadata)
 - `--stable`: Uses more stable randomization approach
