@@ -32,6 +32,10 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
     pattern = pattern.replace('/Presets/', '')
   }
 
+  if (pattern === '/**/*') {
+    pattern = '**/*'
+  }
+
   // Load preset library
   const libraryPresets = fg.sync([`${pattern}.h2p`], { cwd:  presetLibrary.presetsFolder })
   if (librarySelector !== 'UserPresets') {

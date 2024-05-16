@@ -171,7 +171,6 @@ async function runInteractiveMode() {
     const userFolders = fg.sync("**/*", {
       cwd: location.userPresets,
       onlyDirectories: true,
-      markDirectories: true,
 
     }).map((el) => {
       return `/UserPresets/${el}/`
@@ -185,8 +184,8 @@ async function runInteractiveMode() {
 
     const folders = [
       "/",
-      "/UserPresets",
-      "/Presets",
+      "/UserPresets/",
+      "/Presets/",
       ...userFolders,
       ...presetFolders,
     ].sort()
@@ -206,8 +205,10 @@ async function runInteractiveMode() {
         }
       }
     }])
-    config.folder = folderPrompt.value;
-    config.pattern = `${config.folder}${config.pattern || '**/*'}`;
+    if (folderPrompt.value && folderPrompt.value !== "/") {
+      config.folder = folderPrompt.value;
+      config.pattern = `${config.folder}${config.pattern || '**/*'}`;
+    }
   }
 
   console.log(`> Loading and analyzing preset library with pattern "${config.pattern}" ...`)
