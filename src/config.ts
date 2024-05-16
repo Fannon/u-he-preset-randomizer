@@ -18,6 +18,7 @@ export interface Config {
   stable?: boolean;
   category?: boolean | string;
   author?: boolean | string;
+  folder?: boolean | string;
 }
 
 export function getDefaultConfig(): Config {
@@ -62,6 +63,9 @@ export function getConfigFromParameters() {
   }
   if (argv['author']) {
     config.author = argv.author;
+  }
+  if (argv['folder']) {
+    config.folder = argv.folder;
   }
   return config;
 }

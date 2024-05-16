@@ -2,6 +2,7 @@
 import { analyzeParamsTypeAndRange, convertParamsModelBySection } from "./analyzer.js";
 import { PresetLibrary, loadPresetLibrary, writePresetLibrary } from "./presetLibrary.js";
 import fs from "fs-extra";
+import fg from "fast-glob";
 import { getConfigFromParameters } from "./config.js";
 import { generateFullyRandomPresets, generateMergedPresets, generateRandomizedPresets } from "./randomizer.js";
 import { DetectedPresetLibrary, detectPresetLibraryLocations } from "./utils/detector.js";
@@ -37,6 +38,15 @@ const config = getConfigFromParameters();
 
 function runWithoutInteractivity() {
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
+
+  if (config.debug) {
+    console.debug(config)
+  }
+
+  // Narrow down by folder
+  if (config.folder && config.folder !== true) {
+    config.pattern = `${config.folder}${config.pattern || '**/*'}`;
+  }
 
   // Filter out presets by author (if given)
   if (config.author && config.author !== true) {
@@ -126,14 +136,18 @@ async function runInteractiveMode() {
     const modifiers = await inquirer.prompt([{
       name: 'value',
       type: 'checkbox',
-      message: 'Any randomization modifiers?',
+      message: 'Which modifiers or selectors (multi-choice)?',
       choices: [
-        { value: "author",   name: '[Author]     Narrow down by author' },
+        { value: "folder",   name: '[Folder]     Narrow down by folder' },
         { value: "category", name: '[Category]   Narrow down by category' },
+        { value: "author",   name: '[Author]     Narrow down by author' },
         { value: "stable",   name: '[Stable]     More stable randomization approach' },
         { value: "binary",   name: '[Binary]     Include binary section (WARNING: Very unstable!)' },
       ]
     }])
+    if (modifiers.value.includes('folder')) {
+      config.folder = true;
+    }
     if (modifiers.value.includes('category')) {
       config.category = true;
     }
@@ -147,19 +161,56 @@ async function runInteractiveMode() {
       config.binary = true;
     }
   }
-
+  
   // 3) Pattern to load presets
-  if (!config.pattern) {
-    const p3 = await inquirer.prompt([{
-      name: 'pattern',
-      type: 'input',
-      message: 'Which presets to load for consideration (glob pattern)? Just enter to load everything.',
-      default: '**/*'
+  if (config.folder === true) {
+
+    // Detect correct Preset Library Location
+    const location = detectPresetLibraryLocations().find(el => el.synthName.toLowerCase() === config.synth.toLowerCase())
+
+    const userFolders = fg.sync("**/*", {
+      cwd: location.userPresets,
+      onlyDirectories: true,
+      markDirectories: true,
+
+    }).map((el) => {
+      return `/UserPresets/${el}/`
+    })
+    const presetFolders = fg.sync("**/*", {
+      cwd: location.presets,
+      onlyDirectories: true,
+    }).map((el) => {
+      return `/Presets/${el}/`
+    })
+
+    const folders = [
+      "/",
+      "/UserPresets",
+      "/Presets",
+      ...userFolders,
+      ...presetFolders,
+    ].sort()
+
+    const folderPrompt = await inquirer.prompt([{
+      name: 'value',
+      type: 'autocomplete',
+      message: 'Which folder to narrow down to?',
+      pageSize: 12,
+      source: async (_answersSoFar, input) => {
+        if (!input) {
+          return folders
+        } else {
+          return folders.filter((el) => {
+            return el.toLowerCase().includes(input.toLowerCase())
+          })
+        }
+      }
     }])
-    config.pattern = p3.pattern
+    config.folder = folderPrompt.value;
+    config.pattern = `${config.folder}${config.pattern || '**/*'}`;
   }
 
-  console.log('Loading and analyzing preset library...')
+  console.log(`> Loading and analyzing preset library with pattern "${config.pattern}" ...`)
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
   const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
 
@@ -258,7 +309,6 @@ async function runInteractiveMode() {
     presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category)
   }
 
-
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary)
 
   if (mode.value === "Fully randomized presets") {
@@ -342,6 +392,9 @@ async function runInteractiveMode() {
   }
   if (config.pattern && config.pattern !== '**/*') {
     cliCommand += ` --pattern "${config.pattern}"`
+  }
+  if (config.folder) {
+    cliCommand += ` --folder "${config.folder}"`
   }
   if (config.category) {
     cliCommand += ` --category "${config.category}"`

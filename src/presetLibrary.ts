@@ -23,44 +23,57 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
     presets: [],
   };
 
+  let librarySelector;
+  if (pattern.startsWith('/UserPresets/')) {
+    librarySelector = 'UserPresets'
+    pattern = pattern.replace('/UserPresets/', '')
+  } else if (pattern.startsWith('/Presets/')) {
+    librarySelector = 'Presets'
+    pattern = pattern.replace('/Presets/', '')
+  }
+
   // Load preset library
-  const libraryPresets = fg.sync([`${pattern}.h2p`], { cwd:  presetLibrary.presetsFolder });
-  if (libraryPresets.length > 0) {
-    for (const presetPath of libraryPresets) {
-      try {
-        const presetString = fs
-        .readFileSync(path.join( presetLibrary.presetsFolder, presetPath))
-        .toString();
-        const parsedPreset = parseUhePreset(presetString, presetPath, binary)
-        if (parsedPreset.params.length && parsedPreset.meta.length) {
-          presetLibrary.presets.push(parsedPreset);
+  const libraryPresets = fg.sync([`${pattern}.h2p`], { cwd:  presetLibrary.presetsFolder })
+  if (librarySelector !== 'UserPresets') {
+    if (libraryPresets.length > 0) {
+      for (const presetPath of libraryPresets) {
+        try {
+          const presetString = fs
+          .readFileSync(path.join(presetLibrary.presetsFolder, presetPath))
+          .toString();
+          const parsedPreset = parseUhePreset(presetString, presetPath, binary)
+          if (parsedPreset.params.length && parsedPreset.meta.length) {
+            presetLibrary.presets.push(parsedPreset);
+          }
+        } catch (err) {
+          console.warn(`Could not load and parse preset: ${presetPath}`, err)
         }
-      } catch (err) {
-        console.warn(`Could not load and parse preset: ${presetPath}`, err)
       }
+    } else {
+      console.warn(`Could not find presets with glob pattern: ${pattern} in library: ${presetLibrary.presetsFolder}`)
     }
-  } else {
-    console.warn(`Could not find presets with glob pattern: ${pattern} in library: ${presetLibrary.presetsFolder}`)
   }
 
   // Load user preset library
-  const userPresets = fg.sync([`${pattern}.h2p`], { cwd: presetLibrary.userPresetsFolder });
-  if (userPresets.length > 0) {
-    for (const presetPath of userPresets) {
-      try {
-        const presetString = fs
-        .readFileSync(path.join(presetLibrary.userPresetsFolder, presetPath))
-        .toString();
-        const parsedPreset = parseUhePreset(presetString, presetPath, binary)
-        if (parsedPreset.params.length && parsedPreset.meta.length) {
-          presetLibrary.presets.push(parsedPreset);
+  const userPresets = fg.sync([`${pattern}.h2p`], { cwd: presetLibrary.userPresetsFolder })
+  if (librarySelector !== 'Presets') {
+    if (userPresets.length > 0) {
+      for (const presetPath of userPresets) {
+        try {
+          const presetString = fs
+          .readFileSync(path.join(presetLibrary.userPresetsFolder, presetPath))
+          .toString();
+          const parsedPreset = parseUhePreset(presetString, presetPath, binary)
+          if (parsedPreset.params.length && parsedPreset.meta.length) {
+            presetLibrary.presets.push(parsedPreset);
+          }
+        } catch (err) {
+          console.warn(`Could not load and parse preset: ${presetPath}`, err)
         }
-      } catch (err) {
-        console.warn(`Could not load and parse preset: ${presetPath}`, err)
       }
+    } else {
+      console.warn(`Could not find presets with glob pattern: ${pattern} in user library: ${presetLibrary.userPresetsFolder}`)
     }
-  } else {
-    console.warn(`Could not find presets with glob pattern: ${pattern} in user library: ${presetLibrary.userPresetsFolder}`)
   }
 
   if (presetLibrary.presets.length === 0) {
@@ -68,7 +81,7 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
     process.exit(1)
   }
 
-  console.log(`Found and loaded ${presetLibrary.presets.length} ${synth} presets in ${location.root}`);
+  console.log(`> Found and loaded ${presetLibrary.presets.length} ${synth} presets in ${location.root}`);
 
   return presetLibrary;
 }
