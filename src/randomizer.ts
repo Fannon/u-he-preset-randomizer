@@ -18,7 +18,7 @@ export function generateFullyRandomPresets(
   config: Config
 ): PresetLibrary {
   console.log('----------------------------------------------------------------------')
-  console.log(`Fully random presets with modes: stable=${config.stable}, binary=${config.binary}, category=${config.category}`)
+  console.log(`Fully random presets with modes: stable=${config.stable || false}, binary=${config.binary || false}`)
 
   if (presetLibrary.presets.length === 0) {
     console.error('Error: No presets available for randomization.')
@@ -26,7 +26,7 @@ export function generateFullyRandomPresets(
   }
 
   const newPresetLibrary: PresetLibrary = {
-    synth: presetLibrary.synth,
+    ...presetLibrary,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
     presets: [],
   };
@@ -114,10 +114,10 @@ export function generateRandomizedPresets(
   config: Config
 ): PresetLibrary {
   console.log('----------------------------------------------------------------------')
-  console.log(`Randomizing preset with modes: stable=${config.stable}, binary=${config.binary}, category=${config.category}`)
+  console.log(`Randomizing preset with modes: stable=${config.stable || false}, binary=${config.binary || false}`)
 
   const newPresetLibrary: PresetLibrary = {
-    synth: presetLibrary.synth,
+    ...presetLibrary,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
     presets: [],
   };
@@ -174,10 +174,10 @@ export function generateMergedPresets(
   config: Config,
 ): PresetLibrary {
   console.log('----------------------------------------------------------------------')
-  console.log(`Merging presets with modes: stable=${config.stable}, binary=${config.binary}, category=${config.category}`)
+  console.log(`Merging presets with modes: stable=${config.stable || false}, binary=${config.binary || false}`)
 
   const newPresetLibrary: PresetLibrary = {
-    synth: presetLibrary.synth,
+    ...presetLibrary,
     userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
     presets: [],
   };

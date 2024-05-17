@@ -19,6 +19,7 @@ export interface Config {
   category?: boolean | string;
   author?: boolean | string;
   folder?: boolean | string;
+  favorites?: boolean | string;
 }
 
 export function getDefaultConfig(): Config {
@@ -66,6 +67,9 @@ export function getConfigFromParameters() {
   }
   if (argv['folder']) {
     config.folder = argv.folder;
+  }
+  if (argv['favorites']) {
+    config.favorites = argv.favorites;
   }
   return config;
 }

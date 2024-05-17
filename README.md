@@ -70,6 +70,9 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 
 ### CLI Arguments / Configuration
 
+> If you're unsure which values are correct to use, run the tool in interactive mode.
+> Most config options here will be available with auto-complete or suggestions.
+
 * `--synth`: Choose the u-he synth. Not all synths have been tested, but the randomizer tries to be generic. The name must match the folder name convention of u-he. E.g. `Diva`, `Hive`, `ZebraHZ`.
 * `--amount`: How many presets to generate. Positive integer number.
 * `--randomness`: Amount of randomness (in percentage) to apply, when randomizing existing presets or resulting merged presets. Value needs to be between 0 and 100.
@@ -85,9 +88,10 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
   * By default, it's `**/*` which will load all presets from all sub-folders.
   * To select a subfolder, use e.g. `My Folder/**/*`
   * To select presets starting with something, use e.g. `**/PD *`
-- `--folder`: narrow down presets by folder. Use `/Presets/` or `/UserPresets/` as starting point.
+- `--folder`: narrow down presets by folder. Use `/Local/` or `/User/` as starting point.
 - `--category`: narrow down presets by preset category (metadata)
 - `--author`: narrow down presets by preset author (metadata)
+- `--favorites`: narrow down presets by selection fia `.uhe-fav` file
 - `--stable`: Uses more stable randomization approach
   * For fully random presets, it will randomize not per parameter, but per section (e.g. the entire OSC1 together)
   * Only parameters with numeric non-binary assignments will be further randomized. Otherwise they stay consistent with the chosen base preset or a random starter preset.
@@ -104,19 +108,14 @@ npm i
 npm run build
 npm run start -- --synth Diva --amount 3
 
-# or use tsx (install via npm i -g tsx):
+# or run with node.js (remember npm run build!)
+node dist/cli.js
+
+# or use tsx if you wan't to avoid running npm run build (install via npm i -g tsx):
 tsx src/cli.ts --synth Diva --amount 3
 ```
 
 I've also exposed the u-he preset parser / serializer functions in the NPM module, so they could be used programmatically by other projects. However, you might inherit more dependencies than necessary if you're just interested in the parser. See [./src/parser.ts](./src/parser.ts).
-
-## Future Features / Ideas
-
-Future features could be:
-
-* Refine method of randomization:
-  * Figure out which parameters / section are not active in the patch and ignore them?
-* Theoretically, a UI can be built on top, e.g. as an Electron application. But that would take significant amount of time, which I likely won't have.
 
 ## Help / Feedback
 

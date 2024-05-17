@@ -10,6 +10,7 @@ import inquirer from "inquirer"
 import inquirerPrompt from "inquirer-autocomplete-prompt"
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { Preset } from "./parser.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const packageJson = fs.readJSONSync(__dirname + '/../package.json')
@@ -48,6 +49,10 @@ function runWithoutInteractivity() {
     config.pattern = `${config.folder}${config.pattern || '**/*'}`;
   }
 
+  // Filter out presets by favorite file (if given)
+  if (config.favorites && config.favorites !== true) {
+    presetLibrary.presets = narrowDownByFavoritesFile(presetLibrary, config.favorites)
+  }
   // Filter out presets by author (if given)
   if (config.author && config.author !== true) {
     presetLibrary.presets = narrowDownByAuthor(presetLibrary, config.author)
@@ -138,11 +143,12 @@ async function runInteractiveMode() {
       type: 'checkbox',
       message: 'Which modifiers or selectors (multi-choice)?',
       choices: [
-        { value: "folder",   name: '[Folder]     Narrow down by folder' },
-        { value: "category", name: '[Category]   Narrow down by category' },
-        { value: "author",   name: '[Author]     Narrow down by author' },
-        { value: "stable",   name: '[Stable]     More stable randomization approach' },
-        { value: "binary",   name: '[Binary]     Include binary section (WARNING: Very unstable!)' },
+        { value: "folder",    name: '[Folder]     Narrow down by folder' },
+        { value: "category",  name: '[Category]   Narrow down by category' },
+        { value: "author",    name: '[Author]     Narrow down by author' },
+        { value: "favorites", name: '[Favorites]  Narrow down by favorites from .uhe-fav file' },
+        { value: "stable",    name: '[Stable]     More stable randomization approach' },
+        { value: "binary",    name: '[Binary]     Include binary section (WARNING: Very unstable!)' },
       ]
     }])
     if (modifiers.value.includes('folder')) {
@@ -154,6 +160,9 @@ async function runInteractiveMode() {
     if (modifiers.value.includes('author')) {
       config.author = true;
     }
+    if (modifiers.value.includes('favorites')) {
+      config.favorites = true;
+    }
     if (modifiers.value.includes('stable')) {
       config.stable = true;
     }
@@ -162,7 +171,7 @@ async function runInteractiveMode() {
     }
   }
   
-  // 3) Pattern to load presets
+  // Narrow down by folder selection
   if (config.folder === true) {
 
     // Detect correct Preset Library Location
@@ -173,19 +182,19 @@ async function runInteractiveMode() {
       onlyDirectories: true,
 
     }).map((el) => {
-      return `/UserPresets/${el}/`
+      return `/User/${el}/`
     })
     const presetFolders = fg.sync("**/*", {
       cwd: location.presets,
       onlyDirectories: true,
     }).map((el) => {
-      return `/Presets/${el}/`
+      return `/Local/${el}/`
     })
 
     const folders = [
       "/",
-      "/UserPresets/",
-      "/Presets/",
+      "/User/",
+      "/Local/",
       ...userFolders,
       ...presetFolders,
     ].sort()
@@ -211,9 +220,41 @@ async function runInteractiveMode() {
     }
   }
 
-  console.log(`> Loading and analyzing preset library with pattern "${config.pattern}" ...`)
+  console.log(`> Loading and analyzing preset library...`)
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
   const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
+
+  // Optionally: Narrow down by u-he favorites
+  if (config.favorites === true) {
+
+    const allChoices = presetLibrary.favorites.map((el) => {
+      return {
+        value: el.fileName,
+        name: `${el.fileName} (${el.presets.length})`
+      }
+    })
+
+    const favoritesPrompt = await inquirer.prompt([{
+      name: 'value',
+      type: 'autocomplete',
+      message: 'Which favorite file to use as a selection?',
+      pageSize: 12,
+      source: async (_answersSoFar, input) => {
+        if (!input) {
+          return allChoices
+        } else {
+          return allChoices.filter((el) => {
+            return el.name.toLowerCase().includes(input.toLowerCase())
+          })
+        }
+      }
+    }])
+    config.favorites = favoritesPrompt.value
+  }
+  // Filter out presets by favorite file (if given)
+  if (config.favorites && config.favorites !== true) {
+    presetLibrary.presets = narrowDownByFavoritesFile(presetLibrary, config.favorites)
+  }
 
   // Optionally: Narrow down by author
   if (config.author === true) {
@@ -330,6 +371,7 @@ async function runInteractiveMode() {
     // MODE 2: Randomize existing preset            //
     //////////////////////////////////////////////////
 
+    const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
     config.preset = await choosePreset(foundPresets)
     if (!config.preset) {
       process.exit(0)
@@ -352,6 +394,7 @@ async function runInteractiveMode() {
     //////////////////////////////////////////////////
 
     config.merge = []
+    const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
     while (true) {
       const presetChoice = await choosePreset(foundPresets, true)
       if (presetChoice) {
@@ -396,6 +439,9 @@ async function runInteractiveMode() {
   }
   if (config.folder) {
     cliCommand += ` --folder "${config.folder}"`
+  }
+  if (config.favorites) {
+    cliCommand += ` --favorites "${config.favorites}"`
   }
   if (config.category) {
     cliCommand += ` --category "${config.category}"`
@@ -511,4 +557,27 @@ function narrowDownByAuthor(presetLibrary: PresetLibrary, author: string) {
   })
   console.log(`Narrowed down by author "${author}" to ${filteredPresets.length} presets`)
   return filteredPresets;
+}
+function narrowDownByFavoritesFile(presetLibrary: PresetLibrary, favorites: string) {
+
+  //? Which favorite file to use as a selection? Favorites/Favourite 3.uhe-fav (657)
+// Narrowed down via favorite file "Favorites/Favourite 3.uhe-fav" to 681 presets
+
+  const favoriteFile = presetLibrary.favorites.find((el) => el.fileName === favorites)
+  if (favoriteFile) {
+    const filteredPresets: Preset[] = [];
+    for (const preset of presetLibrary.presets) {
+      for (const fav of favoriteFile.presets) {
+        if (preset.filePath === (fav.path + '/' + fav.name + '.h2p')) {
+          filteredPresets.push(preset)
+          break;
+        }
+      }
+    }
+    console.log(`Narrowed down via favorite file "${favorites}" to ${filteredPresets.length} presets`)
+    return filteredPresets;
+  } else {
+    console.error(`Error: Could not find favorites file: ${favorites}`)
+    return presetLibrary.presets;
+  }
 }

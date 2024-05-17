@@ -15,7 +15,9 @@
       // "args": ["src/cli.ts", "--synth", "Repro-5", "--amount", "4", "--stable"],
       // "args": ["src/cli.ts", "--synth", "Diva", "--amount", "4", "--category", "Pads"],
       // "args": ["src/cli.ts", "--synth", "Diva", "--amount", "4", "--merge", "*deep space*"],
-      "args": ["src/cli.ts", "--synth", "Hive", "--amount", "1", "--debug"],
+      // "args": ["src/cli.ts", "--synth", "Hive", "--amount", "1", "--debug"],
+      "args": ["src/cli.ts", "--synth", "Diva", "--amount", "1", "--debug", "--favorites", "Favorites/Favourite 2.uhe-fav"],
+      // "args": ["src/cli.ts", "--synth", "Diva", "--amount", "1", "--debug", "--preset", "/Local/BS Deep Space Diva"],
       // "args": ["src/cli.ts"],
       "runtimeArgs": [
         "--import",

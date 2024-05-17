@@ -6,9 +6,19 @@ import { SynthNames, detectPresetLibraryLocations } from "./utils/detector.js";
 
 export interface PresetLibrary {
   synth: string;
+  rootFolder: string;
   userPresetsFolder: string;
   presetsFolder?: string;
   presets: Preset[];
+  favorites: FavoriteFile[]
+}
+
+interface FavoriteFile {
+  fileName: string;
+  presets: Array<{
+    name: string;
+    path: string;
+  }>
 }
 
 export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', binary: boolean = false): PresetLibrary {
@@ -16,20 +26,24 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
   // Detect correct Preset Library Location
   const location = detectPresetLibraryLocations().find(el => el.synthName.toLowerCase() === synth.toLowerCase())
 
+  console.log(`> Loading preset library for ${synth} in ${location.root} with pattern "${pattern}"`);
+
   const presetLibrary: PresetLibrary = {
     synth: location.synthName,
+    rootFolder: location.root,
     userPresetsFolder: location.userPresets,
     presetsFolder: location.presets,
     presets: [],
+    favorites: [],
   };
 
   let librarySelector;
-  if (pattern.startsWith('/UserPresets/')) {
-    librarySelector = 'UserPresets'
-    pattern = pattern.replace('/UserPresets/', '')
-  } else if (pattern.startsWith('/Presets/')) {
-    librarySelector = 'Presets'
-    pattern = pattern.replace('/Presets/', '')
+  if (pattern.startsWith('/User/')) {
+    librarySelector = 'User'
+    pattern = pattern.replace('/User/', '')
+  } else if (pattern.startsWith('/Local/')) {
+    librarySelector = 'Local'
+    pattern = pattern.replace('/Local/', '')
   }
 
   if (pattern === '/**/*') {
@@ -37,14 +51,14 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
   }
 
   // Load preset library
-  const libraryPresets = fg.sync([`${pattern}.h2p`], { cwd:  presetLibrary.presetsFolder })
-  if (librarySelector !== 'UserPresets') {
+  const libraryPresets = fg.sync([`${pattern}.h2p`], { cwd:  presetLibrary.presetsFolder }).map((el) => {
+    return `/Local/${el}`
+  })
+  if (librarySelector !== 'User') {
     if (libraryPresets.length > 0) {
       for (const presetPath of libraryPresets) {
         try {
-          const presetString = fs
-          .readFileSync(path.join(presetLibrary.presetsFolder, presetPath))
-          .toString();
+          const presetString = fs.readFileSync(path.join(presetLibrary.presetsFolder, presetPath.replace('/Local/', ''))).toString();
           const parsedPreset = parseUhePreset(presetString, presetPath, binary)
           if (parsedPreset.params.length && parsedPreset.meta.length) {
             presetLibrary.presets.push(parsedPreset);
@@ -59,14 +73,14 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
   }
 
   // Load user preset library
-  const userPresets = fg.sync([`${pattern}.h2p`], { cwd: presetLibrary.userPresetsFolder })
-  if (librarySelector !== 'Presets') {
+  const userPresets = fg.sync([`${pattern}.h2p`], { cwd: presetLibrary.userPresetsFolder }).map((el) => {
+    return `/User/${el}`
+  })
+  if (librarySelector !== 'Local') {
     if (userPresets.length > 0) {
       for (const presetPath of userPresets) {
         try {
-          const presetString = fs
-          .readFileSync(path.join(presetLibrary.userPresetsFolder, presetPath))
-          .toString();
+          const presetString = fs.readFileSync(path.join(presetLibrary.userPresetsFolder, presetPath.replace('/User/', ''))).toString();
           const parsedPreset = parseUhePreset(presetString, presetPath, binary)
           if (parsedPreset.params.length && parsedPreset.meta.length) {
             presetLibrary.presets.push(parsedPreset);
@@ -85,7 +99,28 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
     process.exit(1)
   }
 
-  console.log(`> Found and loaded ${presetLibrary.presets.length} ${synth} presets in ${location.root}`);
+  const favorites = fg.sync([`**/*.uhe-fav`], { cwd: presetLibrary.rootFolder }).sort()
+  for (const favoriteFile of favorites) {
+    const path = `${presetLibrary.rootFolder}/${favoriteFile}`;
+    try {
+      const favJson = fs.readJSONSync(path)
+      for (const favCategory in favJson['tag-category-fav']) {
+        presetLibrary.favorites.push({
+          fileName: favoriteFile,
+          presets: favJson['tag-category-fav'][favCategory].map((el) => {
+            return {
+              name: el.name,
+              path: el.db_path,
+            }
+          })
+        })
+      }
+    } catch (err) {
+      console.warn(`Could not read / parse ${path}`);
+    }
+  }
+
+  console.log(`> Found and loaded ${presetLibrary.presets.length} presets and ${presetLibrary.favorites.length} favorite files`);
 
   return presetLibrary;
 }
