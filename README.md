@@ -91,7 +91,7 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 - `--folder`: narrow down presets by folder. Use `/Local/` or `/User/` as starting point.
 - `--category`: narrow down presets by preset category (metadata)
 - `--author`: narrow down presets by preset author (metadata)
-- `--favorites`: narrow down presets by selection fia `.uhe-fav` file
+- `--favorites`: narrow down presets by selection fia `.uhe-fav` file. The files must be located somewhere within your preset library.
 - `--stable`: Uses more stable randomization approach
   * For fully random presets, it will randomize not per parameter, but per section (e.g. the entire OSC1 together)
   * Only parameters with numeric non-binary assignments will be further randomized. Otherwise they stay consistent with the chosen base preset or a random starter preset.
