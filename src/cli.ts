@@ -222,7 +222,6 @@ async function runInteractiveMode() {
 
   console.log(`> Loading and analyzing preset library...`)
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
-  const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
 
   // Optionally: Narrow down by u-he favorites
   if (config.favorites === true) {
