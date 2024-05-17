@@ -1,7 +1,7 @@
 import path from "path"
 import fs from "fs-extra"
 import fg from "fast-glob"
-import { Preset, parseUhePreset, serializePresetToFile } from "./parser.js";
+import { Preset, isValidPreset, parseUhePreset, serializePresetToFile } from "./parser.js";
 import { SynthNames, detectPresetLibraryLocations } from "./utils/detector.js";
 
 export interface PresetLibrary {
@@ -60,7 +60,7 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
         try {
           const presetString = fs.readFileSync(path.join(presetLibrary.presetsFolder, presetPath.replace('/Local/', ''))).toString();
           const parsedPreset = parseUhePreset(presetString, presetPath, binary)
-          if (parsedPreset.params.length && parsedPreset.meta.length) {
+          if (isValidPreset(parsedPreset)) {
             presetLibrary.presets.push(parsedPreset);
           }
         } catch (err) {
@@ -82,7 +82,7 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
         try {
           const presetString = fs.readFileSync(path.join(presetLibrary.userPresetsFolder, presetPath.replace('/User/', ''))).toString();
           const parsedPreset = parseUhePreset(presetString, presetPath, binary)
-          if (parsedPreset.params.length && parsedPreset.meta.length) {
+          if (isValidPreset(parsedPreset)) {
             presetLibrary.presets.push(parsedPreset);
           }
         } catch (err) {

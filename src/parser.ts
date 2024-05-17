@@ -196,6 +196,20 @@ export function serializePresetToFile(preset: Preset): string {
   return file;
 }
 
+export function isValidPreset(preset: Preset) {
+  if (!preset.params.length || !preset.meta.length) {
+    // console.warn(`Warning: Preset ${preset.filePath} is missing parameters or meta attributes.`)
+    return false;
+  }
+  for (const param of preset.params) {
+    if (param.id.includes('[object Object]')) {
+      console.warn(`Warning: Preset ${preset.filePath} has invalid parameter: ${param.id}`)
+      return false;
+    }
+  }
+  return true
+}
+
 //////////////////////////////////////////
 // HELPER FUNCTIONS                     //
 //////////////////////////////////////////
