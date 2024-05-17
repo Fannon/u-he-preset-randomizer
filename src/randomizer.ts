@@ -40,6 +40,10 @@ export function generateFullyRandomPresets(
       
       for (const param of randomPreset.params) {
 
+        if (!paramModel[param.id]) {
+          console.error(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`)
+        }
+
         if (!presetPerSectionMap[param.section]) {
           presetPerSectionMap[param.section] = getRandomArrayItem(presetLibrary.presets)
         }
@@ -65,6 +69,9 @@ export function generateFullyRandomPresets(
       }
     } else {
       for (const param of randomPreset.params) {
+        if (!paramModel[param.id]) {
+          console.error(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`)
+        }
         if (paramModel[param.id].keepStable === 'always') {
           continue;
         }
@@ -239,6 +246,10 @@ export function generateMergedPresets(
     const mergeRatios = calculateRandomMergeRatios(mergePresets.length);
 
     for (const param of newPreset.params) {
+
+      if (!paramModel[param.id]) {
+        console.error(`Error: Unknown parameter ${param.id} in preset ${newPreset.filePath}, missing in analyzed parameter model`)
+      }
       
       if (config.stable) {
         if (paramModel[param.id].type === 'string' || paramModel[param.id].distinctValues.length <= 2) {
@@ -362,17 +373,21 @@ export function randomizePreset(
 
   for (const param of randomPreset.params) {
 
+    if (!paramModel[param.id]) {
+      console.error(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`)
+    }
+
     if (config.stable) {
       if (paramModel[param.id].type === 'string' || paramModel[param.id].distinctValues.length <= 2) {
         // Do not randomize string type values or values that only have 1 or 2 distinct values
         continue;
       }
-      if (paramModel[param.id].keepStable) {
+      if (paramModel[param.id]?.keepStable) {
         // Do not randomize if parameter is marked as to be kept stable
         continue;
       }
     }
-    if (paramModel[param.id].keepStable === 'always') {
+    if (paramModel[param.id]?.keepStable === 'always') {
       continue;
     }
 

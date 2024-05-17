@@ -417,6 +417,9 @@ async function runInteractiveMode() {
 
   console.log('======================================================================')
   console.log('Successfully completed.')
+  if (config.debug) {
+    console.debug(config);
+  }
   console.log('')
   console.log('To run it with the same configuration again, execute:')
 
