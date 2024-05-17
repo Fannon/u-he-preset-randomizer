@@ -40,10 +40,6 @@ const config = getConfigFromParameters();
 function runWithoutInteractivity() {
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
 
-  if (config.debug) {
-    console.debug(config)
-  }
-
   // Narrow down by folder
   if (config.folder && config.folder !== true) {
     config.pattern = `${config.folder}${config.pattern || '**/*'}`;
@@ -75,6 +71,8 @@ function runWithoutInteractivity() {
       "./tmp/paramsModel.json",
       JSON.stringify(convertParamsModelBySection(outputParamsModel), null, 2)
     );
+
+    console.debug(config)
   }
   
   if (config.merge) {
@@ -224,7 +222,7 @@ async function runInteractiveMode() {
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
 
   // Optionally: Narrow down by u-he favorites
-  if (config.favorites === true) {
+  if (config.favorites === true && presetLibrary.favorites.length) {
 
     const allChoices = presetLibrary.favorites.map((el) => {
       return {
