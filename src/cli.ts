@@ -21,7 +21,7 @@ console.log('===================================================================
 console.log('Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme')
 console.log('')
 
-const config = getConfigFromParameters();
+let config = getConfigFromParameters();
 
 (async () => {
   
@@ -37,7 +37,14 @@ const config = getConfigFromParameters();
   process.exit(1)
 });
 
-export function runWithoutInteractivity(config?: Config) {
+export function runWithoutInteractivity(overrideConfig?: Config) {
+  if (overrideConfig) {
+    config = {
+      ...overrideConfig,
+      ...config,
+    }
+  }
+
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
 
   // Narrow down by folder

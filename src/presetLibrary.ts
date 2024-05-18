@@ -73,7 +73,10 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
   }
 
   // Load user preset library
-  const userPresets = fg.sync([`${pattern}.h2p`], { cwd: presetLibrary.userPresetsFolder }).map((el) => {
+  const userPresets = fg.sync([`${pattern}.h2p`], { 
+    cwd: presetLibrary.userPresetsFolder,
+    ignore: ['RANDOM/**/*'],
+  }).map((el) => {
     return `/User/${el}`
   })
   if (librarySelector !== 'Local') {
