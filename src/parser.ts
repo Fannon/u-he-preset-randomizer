@@ -29,6 +29,14 @@ export interface PresetParam {
 // PARSER FUNCTIONS                     //
 //////////////////////////////////////////
 
+/**
+ * Parses a u-he preset file and returns a Preset object.
+ * 
+ * @param fileString - The content of the preset file as a string.
+ * @param filePath - The path to the preset file.
+ * @param binary - A boolean indicating whether to include the binary section of the preset file.
+ * @returns The parsed Preset object.
+ */
 export function parseUhePreset(fileString: string, filePath: string, binary: boolean): Preset {
   const meta = getPresetMetadata(fileString)
   let categories = []
@@ -49,7 +57,12 @@ export function parseUhePreset(fileString: string, filePath: string, binary: boo
     categories: categories
   };
 }
-
+/**
+ * Retrieves the metadata entries from the given u-he preset file string.
+ * 
+ * @param fileString - The string representation of the file.
+ * @returns An array of PresetMetaEntry objects representing the metadata entries.
+ */
 export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
   const split = fileString.split("*/");
   const metadataHeader = split[0]!
@@ -58,7 +71,7 @@ export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
 
   const cleanedRows = metadataHeader.split("\n").filter((el) => el);
 
-  const metadata = [];
+  const metadata: PresetMetaEntry[] = [];
   for (let i = 0; i < cleanedRows.length; i = i + 2) {
     if (!cleanedRows[i]) {
       continue;
@@ -102,7 +115,7 @@ export function getPresetParams(fileString: string, presetPath: string): PresetP
   for (let i = 0; i < cleanedRows.length; i++) {
     const paramSplit = cleanedRows[i]!.split("=");
     const key = paramSplit[0]!;
-    let value = paramSplit[1]!;
+    const value = paramSplit[1]!;
 
     if (key === "#cm") {
       currentSection = value;
@@ -218,15 +231,15 @@ export function isValidPreset(preset: Preset) {
 // HELPER FUNCTIONS                     //
 //////////////////////////////////////////
 
-function isInt(value: any): boolean {
+function isInt(value: unknown): boolean {
   return (
-    !isNaN(value) &&
+    !isNaN(value as number) &&
     (function (x) {
       return (x | 0) === x;
-    })(parseFloat(value))
+    })(parseFloat(value as string))
   );
 }
 
-function isNumeric(value: any): boolean {
-  return !isNaN(parseFloat(value)) && isFinite(value);
+function isNumeric(value: unknown): boolean {
+  return !isNaN(parseFloat(value as string)) && isFinite(value as number);
 }

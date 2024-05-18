@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-import { analyzeParamsTypeAndRange, convertParamsModelBySection } from "./analyzer.js";
+import { ParamsModel, analyzeParamsTypeAndRange, convertParamsModelBySection } from "./analyzer.js";
 import { PresetLibrary, loadPresetLibrary, writePresetLibrary } from "./presetLibrary.js";
 import fs from "fs-extra";
 import fg from "fast-glob";
 import { Config, getConfigFromParameters } from "./config.js";
 import { generateFullyRandomPresets, generateMergedPresets, generateRandomizedPresets } from "./randomizer.js";
-import { DetectedPresetLibrary, detectPresetLibraryLocations } from "./utils/detector.js";
+import { DetectedPresetLibrary, SynthNames, detectPresetLibraryLocations } from "./utils/detector.js";
 import inquirer from "inquirer"
 import inquirerPrompt from "inquirer-autocomplete-prompt"
 import { fileURLToPath } from 'url';
@@ -13,7 +13,12 @@ import { dirname } from 'path';
 import { Preset } from "./parser.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const packageJson = fs.readJSONSync(__dirname + '/../package.json')
+const packageJson = fs.readJSONSync(__dirname + '/../package.json') as { version: string }
+
+interface ChoiceOptions {
+    name: string;
+    value: string;
+}
 
 console.log('======================================================================')
 console.log('u-he Preset Randomizer CLI v' + packageJson.version)
@@ -69,7 +74,7 @@ export function runWithoutInteractivity(overrideConfig?: Config) {
   
   if (config.debug) {
     // Write a cleaned up parameter model to ./tmp/paramsModel.json
-    const outputParamsModel = JSON.parse(JSON.stringify(paramsModel))
+    const outputParamsModel = JSON.parse(JSON.stringify(paramsModel)) as ParamsModel
     // Remove values from debug paramsModel, as it would blow up the result too much.
     for (const paramKey in outputParamsModel) {
       delete outputParamsModel[paramKey].values;
@@ -116,7 +121,7 @@ async function runInteractiveMode() {
     console.error('Error: No u-he synths detected. Exiting.')
     process.exit(1)
   }
-  const synth = await inquirer.prompt([{
+  const synth = await inquirer.prompt<{ value: SynthNames }>([{
     name: 'value',
     type: 'autocomplete',
     message: 'Which u-he synth to generate presets for?',
@@ -134,7 +139,7 @@ async function runInteractiveMode() {
   config.synth = synth.value
 
   // 2) Choose random generation mode
-  const mode = await inquirer.prompt([{
+  const mode = await inquirer.prompt<{ value: string }>([{
     name: 'value',
     type: 'list',
     message: 'Which random mode?',
@@ -147,7 +152,7 @@ async function runInteractiveMode() {
 
   // 2.5) Choose optional modifiers for randomization
   if (!config.stable || !config.binary) {
-    const modifiers = await inquirer.prompt([{
+    const modifiers = await inquirer.prompt<{ value: string }>([{
       name: 'value',
       type: 'checkbox',
       message: 'Which modifiers or selectors (multi-choice)?',
@@ -208,7 +213,7 @@ async function runInteractiveMode() {
       ...presetFolders,
     ].sort()
 
-    const folderPrompt = await inquirer.prompt([{
+    const folderPrompt = await inquirer.prompt<{ value: string }>([{
       name: 'value',
       type: 'autocomplete',
       message: 'Which folder to narrow down to?',
@@ -242,7 +247,7 @@ async function runInteractiveMode() {
       }
     })
 
-    const favoritesPrompt = await inquirer.prompt([{
+    const favoritesPrompt = await inquirer.prompt<{ value: string }>([{
       name: 'value',
       type: 'autocomplete',
       message: 'Which favorite file to use as a selection?',
@@ -278,7 +283,7 @@ async function runInteractiveMode() {
       }
     }
 
-    let allChoices = []
+    let allChoices: ChoiceOptions[] = []
     for (const author in availableAuthors) {
       allChoices.push({
         value: author,
@@ -288,7 +293,7 @@ async function runInteractiveMode() {
     allChoices.sort((a, b) => a.value.localeCompare(b.value));
 
     if (allChoices.length) {
-      const authorPrompt = await inquirer.prompt([{
+      const authorPrompt = await inquirer.prompt<{ value: string }>([{
         name: 'value',
         type: 'autocomplete',
         message: 'Which author to narrow down to?',
@@ -329,7 +334,7 @@ async function runInteractiveMode() {
       }
     }
 
-    let allChoices = []
+    const allChoices: ChoiceOptions[] = []
     for (const category in availableCategories) {
       allChoices.push({
         value: category,
@@ -339,7 +344,7 @@ async function runInteractiveMode() {
     allChoices.sort((a, b) => a.value.localeCompare(b.value));
 
     if (allChoices.length) {
-      const categoryPrompt = await inquirer.prompt([{
+      const categoryPrompt = await inquirer.prompt<{ value: string }>([{
         name: 'value',
         type: 'autocomplete',
         message: 'Which category to narrow down to?',
@@ -407,6 +412,7 @@ async function runInteractiveMode() {
 
     config.merge = []
     const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const presetChoice = await choosePreset(foundPresets, true)
       if (presetChoice) {
@@ -479,7 +485,7 @@ async function runInteractiveMode() {
 
 /** Choose number of presets to generate */
 async function chooseAmountOfPresets(initial: number = 8): Promise<number> {
-  const amount = await inquirer.prompt([{
+  const amount = await inquirer.prompt<{ value: number }>([{
     name: 'value',
     type: 'number',
     message: 'How many presets to generate?',
@@ -489,7 +495,7 @@ async function chooseAmountOfPresets(initial: number = 8): Promise<number> {
 }
 /** Choose randomness amount */
 async function chooseRandomness(initial: number = 20): Promise<number> {
-  const amount = await inquirer.prompt([{
+  const amount = await inquirer.prompt<{ value: number }>([{
     name: 'value',
     type: 'number',
     message: 'How much randomness to apply (0-100)',
@@ -517,7 +523,7 @@ async function choosePreset(foundPresets: string[], allowSelectAll: boolean = fa
     }
   }))
   
-  const presetChoice = await inquirer.prompt([{
+  const presetChoice = await inquirer.prompt<{ value: string }>([{
     name: 'value',
     type: 'autocomplete',
     message: 'Select preset(s):',
@@ -526,7 +532,7 @@ async function choosePreset(foundPresets: string[], allowSelectAll: boolean = fa
       if (!input) {
         return allChoices
       } else {
-        const staticChoices = []
+        const staticChoices: ChoiceOptions[] = []
         if (allowSelectAll) {
           staticChoices.push({
             value: `*${input}*`,  

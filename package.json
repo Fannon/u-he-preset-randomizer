@@ -14,7 +14,8 @@
     "build-ts": "tsc",
     "clean": "rimraf dist/",
     "build": "npm run build-ts",
-    "test": "npm run build",
+    "lint": "eslint .",
+    "test": "npm run lint && npm run build",
     "prepare": "npm run build"
   },
   "repository": {
@@ -45,15 +46,18 @@
     "node": ">=20.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.3.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
     "@types/inquirer-autocomplete-prompt": "^3.0.3",
     "@types/node": "^20.12.11",
     "@types/yargs": "^17.0.32",
-    "tsx": "^4.9.4",
+    "eslint": "^8.57.0",
     "rimraf": "^5.0.6",
-    "typescript": "^5.4.5"
+    "tsx": "^4.9.4",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.9.0"
   },
   "dependencies": {
     "fast-glob": "^3.3.2",

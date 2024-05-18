@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { SynthNames } from './utils/detector.js';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const argv = yargs(hideBin(process.argv)).parse() as any;
 
 export interface Config {

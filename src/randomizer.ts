@@ -58,7 +58,7 @@ export function generateFullyRandomPresets(
           continue;
         }
 
-        let randomNewParam = presetPerSectionMap[param.section].params.find(el => el.id === param.id);
+        const randomNewParam = presetPerSectionMap[param.section].params.find(el => el.id === param.id);
 
         if (randomNewParam) {
           param.value = randomNewParam.value
@@ -162,7 +162,7 @@ export function generateRandomizedPresets(
     randomPreset.filePath = `/Randomized Preset/${randomPreset.presetName}/RND ${randomName} ${randomPreset.presetName}.h2p`;
     randomPreset.presetName = `RND ${randomName} ${randomPreset.presetName}`;
 
-    let descriptionMeta = randomPreset.meta.find(el => el.key === 'Description')
+    const descriptionMeta = randomPreset.meta.find(el => el.key === 'Description')
     if (descriptionMeta) {
       descriptionMeta.value += `. Randomized existing preset: ${randomPreset.presetName}. ${getPresetDescriptionSuffix(config)}`
     }

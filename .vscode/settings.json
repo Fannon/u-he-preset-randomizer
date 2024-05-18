@@ -1,7 +1,10 @@
 {
     "cSpell.words": [
       "Baroqualog",
+      "Favourite",
       "randomizer",
+      "recommendeds",
+      "tseslint",
       "tslog",
       "Zebralette"
     ],
@@ -10,5 +13,7 @@
       "**/bower_components": true,
       "**/*.code-search": true,
       "dist/**/*": true,
-    }
+    },
+    "eslint.enable": true,
+    "eslint.experimental.useFlatConfig": true
 }
