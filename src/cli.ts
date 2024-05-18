@@ -3,7 +3,7 @@ import { analyzeParamsTypeAndRange, convertParamsModelBySection } from "./analyz
 import { PresetLibrary, loadPresetLibrary, writePresetLibrary } from "./presetLibrary.js";
 import fs from "fs-extra";
 import fg from "fast-glob";
-import { getConfigFromParameters } from "./config.js";
+import { Config, getConfigFromParameters } from "./config.js";
 import { generateFullyRandomPresets, generateMergedPresets, generateRandomizedPresets } from "./randomizer.js";
 import { DetectedPresetLibrary, detectPresetLibraryLocations } from "./utils/detector.js";
 import inquirer from "inquirer"
@@ -26,7 +26,7 @@ const config = getConfigFromParameters();
 (async () => {
   
   if (!config.synth) {
-    // If no synth is given, we'll go into fully interactive CLI mode
+    // If no --synth argument is given, we'll go into fully interactive CLI mode
     await runInteractiveMode()
   } else {
     runWithoutInteractivity()
@@ -37,7 +37,7 @@ const config = getConfigFromParameters();
   process.exit(1)
 });
 
-function runWithoutInteractivity() {
+export function runWithoutInteractivity(config?: Config) {
   const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
 
   // Narrow down by folder
@@ -105,6 +105,10 @@ async function runInteractiveMode() {
       value: el.synthName
     }
   })
+  if (!synthChoices.length) {
+    console.error('Error: No u-he synths detected. Exiting.')
+    process.exit(1)
+  }
   const synth = await inquirer.prompt([{
     name: 'value',
     type: 'autocomplete',
@@ -276,22 +280,24 @@ async function runInteractiveMode() {
     }
     allChoices.sort((a, b) => a.value.localeCompare(b.value));
 
-    const authorPrompt = await inquirer.prompt([{
-      name: 'value',
-      type: 'autocomplete',
-      message: 'Which author to narrow down to?',
-      pageSize: 12,
-      source: async (_answersSoFar, input) => {
-        if (!input) {
-          return allChoices
-        } else {
-          return allChoices.filter((el) => {
-            return el.name.toLowerCase().includes(input.toLowerCase())
-          })
+    if (allChoices.length) {
+      const authorPrompt = await inquirer.prompt([{
+        name: 'value',
+        type: 'autocomplete',
+        message: 'Which author to narrow down to?',
+        pageSize: 12,
+        source: async (_answersSoFar, input) => {
+          if (!input) {
+            return allChoices
+          } else {
+            return allChoices.filter((el) => {
+              return el.name.toLowerCase().includes(input.toLowerCase())
+            })
+          }
         }
-      }
-    }])
-    config.author = authorPrompt.value
+      }])
+      config.author = authorPrompt.value
+    }
   }
   // Filter out presets by author (if given)
   if (config.author && config.author !== true) {
@@ -325,22 +331,24 @@ async function runInteractiveMode() {
     }
     allChoices.sort((a, b) => a.value.localeCompare(b.value));
 
-    const categoryPrompt = await inquirer.prompt([{
-      name: 'value',
-      type: 'autocomplete',
-      message: 'Which category to narrow down to?',
-      pageSize: 12,
-      source: async (_answersSoFar, input) => {
-        if (!input) {
-          return allChoices
-        } else {
-          return allChoices.filter((el) => {
-            return el.name.toLowerCase().includes(input.toLowerCase())
-          })
+    if (allChoices.length) {
+      const categoryPrompt = await inquirer.prompt([{
+        name: 'value',
+        type: 'autocomplete',
+        message: 'Which category to narrow down to?',
+        pageSize: 12,
+        source: async (_answersSoFar, input) => {
+          if (!input) {
+            return allChoices
+          } else {
+            return allChoices.filter((el) => {
+              return el.name.toLowerCase().includes(input.toLowerCase())
+            })
+          }
         }
-      }
-    }])
-    config.category = categoryPrompt.value
+      }])
+      config.category = categoryPrompt.value
+    }
   }
 
   // Filter out presets by category (if given)
