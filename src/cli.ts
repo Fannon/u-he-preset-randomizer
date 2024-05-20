@@ -218,7 +218,7 @@ async function runInteractiveMode() {
       type: 'autocomplete',
       message: 'Which folder to narrow down to?',
       pageSize: 12,
-      source: async (_answersSoFar, input) => {
+      source: async (_answersSoFar, input: string) => {
         if (!input) {
           return folders
         } else {
@@ -249,24 +249,17 @@ async function runInteractiveMode() {
 
     const favoritesPrompt = await inquirer.prompt<{ value: string }>([{
       name: 'value',
-      type: 'autocomplete',
-      message: 'Which favorite file to use as a selection?',
-      pageSize: 12,
-      source: async (_answersSoFar, input) => {
-        if (!input) {
-          return allChoices
-        } else {
-          return allChoices.filter((el) => {
-            return el.name.toLowerCase().includes(input.toLowerCase())
-          })
-        }
-      }
+      type: 'checkbox',
+      message: 'Which favorite file(s) to use as a selection?',
+      choices: allChoices,
     }])
     config.favorites = favoritesPrompt.value
   }
   // Filter out presets by favorite file (if given)
-  if (config.favorites && config.favorites !== true) {
+  if (config.favorites && config.favorites !== true && config.favorites.length > 0) {
     presetLibrary.presets = narrowDownByFavoritesFile(presetLibrary, config.favorites)
+  } else {
+    console.log('> No selection made, skipping this step.')
   }
 
   // Optionally: Narrow down by author
@@ -298,7 +291,7 @@ async function runInteractiveMode() {
         type: 'autocomplete',
         message: 'Which author to narrow down to?',
         pageSize: 12,
-        source: async (_answersSoFar, input) => {
+        source: async (_answersSoFar, input: string) => {
           if (!input) {
             return allChoices
           } else {
@@ -349,7 +342,7 @@ async function runInteractiveMode() {
         type: 'autocomplete',
         message: 'Which category to narrow down to?',
         pageSize: 12,
-        source: async (_answersSoFar, input) => {
+        source: async (_answersSoFar, input: string) => {
           if (!input) {
             return allChoices
           } else {
@@ -528,7 +521,7 @@ async function choosePreset(foundPresets: string[], allowSelectAll: boolean = fa
     type: 'autocomplete',
     message: 'Select preset(s):',
     pageSize: 12,
-    source: async (_answersSoFar, input) => {
+    source: async (_answersSoFar, input: string) => {
       if (!input) {
         return allChoices
       } else {
@@ -579,26 +572,39 @@ function narrowDownByAuthor(presetLibrary: PresetLibrary, author: string) {
   console.log(`Narrowed down by author "${author}" to ${filteredPresets.length} presets`)
   return filteredPresets;
 }
-function narrowDownByFavoritesFile(presetLibrary: PresetLibrary, favorites: string) {
+function narrowDownByFavoritesFile(presetLibrary: PresetLibrary, favorites: string | string[]) {
 
-  //? Which favorite file to use as a selection? Favorites/Favourite 3.uhe-fav (657)
-// Narrowed down via favorite file "Favorites/Favourite 3.uhe-fav" to 681 presets
+  if (!Array.isArray(favorites)) {
+    favorites = [favorites]
+  }
 
-  const favoriteFile = presetLibrary.favorites.find((el) => el.fileName === favorites)
-  if (favoriteFile) {
-    const filteredPresets: Preset[] = [];
-    for (const preset of presetLibrary.presets) {
-      for (const fav of favoriteFile.presets) {
-        if (preset.filePath === (fav.path + '/' + fav.name + '.h2p')) {
-          filteredPresets.push(preset)
-          break;
-        }
+  const favPresets: { path: string, name: string }[] = []
+  const filteredPresets: Preset[] = [];
+
+  for (const favoriteFilePath of favorites) {
+    const favoriteFile = presetLibrary.favorites.find((el) => el.fileName === favoriteFilePath)
+
+    if (favoriteFile) {
+      favPresets.push(...favoriteFile.presets)
+    } else {
+      console.error(`Error: Could not find favorites file: ${favorites}`)
+      return presetLibrary.presets;
+    }
+  }
+
+  console.log(favPresets.length)
+
+  // Now filter it out
+  for (const preset of presetLibrary.presets) {
+    for (const fav of favPresets) {
+      if (preset.filePath === (fav.path + '/' + fav.name + '.h2p')) {
+        filteredPresets.push(preset)
+        break;
       }
     }
-    console.log(`Narrowed down via favorite file "${favorites}" to ${filteredPresets.length} presets`)
-    return filteredPresets;
-  } else {
-    console.error(`Error: Could not find favorites file: ${favorites}`)
-    return presetLibrary.presets;
   }
+     
+  console.log(`Narrowed down via favorite file "${favorites}" to ${filteredPresets.length} presets`)
+  return filteredPresets;
+
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -21,7 +22,7 @@ export interface Config {
   category?: boolean | string;
   author?: boolean | string;
   folder?: boolean | string;
-  favorites?: boolean | string;
+  favorites?: boolean | string | string[];
 }
 
 export function getDefaultConfig(): Config {
@@ -32,8 +33,7 @@ export function getDefaultConfig(): Config {
 
 let config = getDefaultConfig();
 
-export function getConfigFromParameters() {
-  
+export function getConfigFromParameters(): Config {
   if (argv['synth']) {
     config.synth = argv['synth']
   }
