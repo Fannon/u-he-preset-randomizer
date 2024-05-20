@@ -41,13 +41,13 @@ export function getConfigFromParameters(): Config {
     config.debug = true;
   }
   if (argv['amount']) {
-    config.amount = parseInt(argv.amount);
+    config.amount = parseInt(argv.amount as string);
   }
   if (argv['preset']) {
     config.preset = argv.preset;
   }
   if (argv['randomness']) {
-    config.randomness = parseInt(argv.randomness);
+    config.randomness = parseInt(argv.randomness as string);
   }
   if (argv['merge']) {
     config.merge = argv.merge;

@@ -33,7 +33,7 @@ export function generateFullyRandomPresets(
   for (let i = 0; i < (config.amount || 16); i++) {
     const randomPreset: Preset = JSON.parse(
       JSON.stringify(getRandomArrayItem(presetLibrary.presets))
-    );
+    ) as Preset;
 
     if (config.stable) {
       const presetPerSectionMap: {[section: string]: Preset} = {}
@@ -240,7 +240,7 @@ export function generateMergedPresets(
   for (let i = 0; i < (config.amount || 8); i++) {
     let newPreset: Preset = JSON.parse(
       JSON.stringify(getRandomArrayItem<Preset>(mergePresets))
-    );
+    ) as Preset;
 
     // Create random ratios, that still add up to 1 total
     const mergeRatios = calculateRandomMergeRatios(mergePresets.length);
@@ -265,7 +265,7 @@ export function generateMergedPresets(
         continue;
       }
       
-      const oldParamValue = JSON.parse(JSON.stringify(param.value));
+      const oldParamValue = JSON.parse(JSON.stringify(param.value)) as string | number;
       let newParamValue = oldParamValue;
       if (param.type === "string") {
         // Randomly pick a string enum value from one of the merge patches
@@ -282,7 +282,7 @@ export function generateMergedPresets(
           if (findParam && findParam.value) {
             newParamValue += (findParam.value as number) * mergeRatios[i];
           } else {
-            newParamValue += oldParamValue * mergeRatios[i];
+            newParamValue += oldParamValue as number * mergeRatios[i];
           }
         }
 
@@ -369,7 +369,7 @@ export function randomizePreset(
   const randomRatio = Math.min(Math.max(0, randomness / 100), 100);
   const stableRatio = 1 - randomRatio;
 
-  const randomPreset: Preset = JSON.parse(JSON.stringify(basePreset));
+  const randomPreset: Preset = JSON.parse(JSON.stringify(basePreset)) as Preset;
 
   for (const param of randomPreset.params) {
 

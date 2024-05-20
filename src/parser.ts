@@ -39,7 +39,7 @@ export interface PresetParam {
  */
 export function parseUhePreset(fileString: string, filePath: string, binary: boolean): Preset {
   const meta = getPresetMetadata(fileString)
-  let categories = []
+  let categories: string[] = []
   const categoriesMeta = meta.find(el => el.key === 'Categories')
   if (categoriesMeta && categoriesMeta.value) {
     if (Array.isArray(categoriesMeta.value)) {

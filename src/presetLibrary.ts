@@ -21,6 +21,17 @@ interface FavoriteFile {
   }>
 }
 
+export interface UheFavoriteFile {
+  // Not documenting the properties that are irrelevant to this tool
+  "tag-category-fav": {
+    [favoriteCategory: string]: UheFavoriteFileEntry[]
+  }
+}
+export interface UheFavoriteFileEntry {
+  "db_path": string;
+  "name": string;
+}
+
 export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', binary: boolean = false): PresetLibrary {
 
   // Detect correct Preset Library Location
@@ -106,7 +117,8 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
   for (const favoriteFile of favorites) {
     const path = `${presetLibrary.rootFolder}/${favoriteFile}`;
     try {
-      const favJson = fs.readJSONSync(path)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const favJson = fs.readJSONSync(path) as UheFavoriteFile
       for (const favCategory in favJson['tag-category-fav']) {
         presetLibrary.favorites.push({
           fileName: favoriteFile,
