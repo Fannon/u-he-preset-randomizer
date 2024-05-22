@@ -219,6 +219,10 @@ export function isValidPreset(preset: Preset) {
       console.warn(`Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`)
       return false;
     }
+    if (typeof param.value === "string" && param.value.includes('undefined')) {
+      console.warn(`Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`)
+      return false;
+    }
     if (param.id.includes('[object Object]')) {
       console.warn(`Warning: Ignoring preset ${preset.filePath} due to invalid parameter: ${param.id}`)
       return false;
