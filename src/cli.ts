@@ -597,7 +597,7 @@ function narrowDownByFavoritesFile(presetLibrary: PresetLibrary, favorites: stri
   // Now filter it out
   for (const preset of presetLibrary.presets) {
     for (const fav of favPresets) {
-      if (preset.filePath === (fav.path + '/' + fav.name + '.h2p')) {
+      if (preset.filePath.toLowerCase() === (fav.path.toLowerCase() + '/' + fav.name.toLowerCase() + '.h2p')) {
         filteredPresets.push(preset)
         break;
       }
