@@ -99,6 +99,10 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
   * ⚠ Since the randomizer doesn't really parse and understand the binary section, this may lead to broken presets that may crash your synth plugin when loading. Use with care. For some synths this works better (Diva, Zebralette 3) and for some it frequently leads to invalid presets.
 * `--debug`: Enables some optional debug logging and file exporting
 
+## Tips & Tricks
+
+* The u-he preset browser have the most flexibility in filtering and combining presets by category, tags, etc. You can use this to either copy them to a new folder or create a .uhe-fav file export and using this as narrow down selection in the CLI
+
 ## Developer Guide
 
 To run this tool locally in developer mode, check out the repo and:
