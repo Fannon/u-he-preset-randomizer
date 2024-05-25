@@ -121,6 +121,12 @@ tsx src/cli.ts --synth Diva --amount 3
 
 I've also exposed the u-he preset parser / serializer functions in the NPM module, so they could be used programmatically by other projects. However, you might inherit more dependencies than necessary if you're just interested in the parser. See [./src/parser.ts](./src/parser.ts).
 
+## Soundsets
+
+| Cover    | Link   | Description |
+| -------- | ------- | ----------- |
+| <img src="https://github.com/Fannon/u-he-preset-randomizer/assets/470980/afcf03b9-f2c1-4f60-bfae-f341c4fdb24c" alt="Diva Generated Vol  1" width="256"/>  | [Diva Generated Vol. 1](https://github.com/Fannon/u-he-preset-randomizer/releases/download/v1.0.0/Diva.Generated.Vol.1.zip) | 50 randomly generated presets, curated, modified and tagged by Simon Heimler in 2024. |
+
 ## Help / Feedback
 
 Please use the [related KVR Thread](https://www.kvraudio.com/forum/viewtopic.php?p=8898478) or create a [GitHub issue](https://github.com/Fannon/u-he-preset-randomizer/issues).
