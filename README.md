@@ -102,12 +102,13 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 ## Tips & Tricks
 
 * The u-he preset browser have the most flexibility in filtering and combining presets by category, tags, etc. You can use this to either copy them to a new folder or create a .uhe-fav file export and using this as narrow down selection in the CLI
+* When merging presets, it's possible to select the same preset multiple times. Use this to assign "weights" between how strong a preset will influence the outcome.
 
 ## Soundsets
 
 | Cover    | Links   | Description |
 | -------- | ------- | ----------- |
-| <img src="https://github.com/Fannon/u-he-preset-randomizer/assets/470980/afcf03b9-f2c1-4f60-bfae-f341c4fdb24c" alt="Diva Generated Vol  1" width="256"/>  | [Diva Generated Vol. 1](https://github.com/Fannon/u-he-preset-randomizer/releases/download/v1.0.0/Diva.Generated.Vol.1.zip) (ZIP), [Audio Demo](https://www.youtube.com/watch?v=bGdlDt_WlJ8) | 50 randomly generated presets for [u-he Diva](https://u-he.com/products/diva/), curated, modified and tagged by [Simon Heimler](https://github.com/Fannon) in 2024. |
+| <img src="https://github.com/Fannon/u-he-preset-randomizer/assets/470980/afcf03b9-f2c1-4f60-bfae-f341c4fdb24c" alt="Diva Generated Vol  1" width="256"/>  | [Diva Generated Vol. 1](https://github.com/Fannon/u-he-preset-randomizer/releases/download/v1.0.0/Diva.Generated.Vol.1.zip) (ZIP), [Audio Demo](https://www.youtube.com/watch?v=ouicLqilF9M) | 50 randomly generated presets for [u-he Diva](https://u-he.com/products/diva/), curated, modified and tagged by [Simon Heimler](https://github.com/Fannon) in 2024. |
 
 ## Developer Guide
 
