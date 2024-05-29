@@ -80,12 +80,15 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
   return paramsModel;
 }
 
-export function getListOfNames(presetLibrary: PresetLibrary): string[] {
+/**
+ * Returns a list of names, gathered from the preset library
+ */
+export function getDictionaryOfNames(presetLibrary: PresetLibrary): string[] {
   const names: string[] = [];
   for (const preset of presetLibrary.presets) {
     const splitName = preset.presetName.split(' ')
     for (const split of splitName) {
-      if (split.length > 3 && split.toUpperCase() !== split) {
+      if (split.length > 3 && split.toUpperCase() !== split && !split.includes('-')) {
         names.push(split)
       }
     }

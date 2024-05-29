@@ -467,6 +467,9 @@ async function runInteractiveMode() {
   if (config.author) {
     cliCommand += ` --author "${config.author}"`
   }
+  if (config.dictionary) {
+    cliCommand += ` --dictionary`
+  }
   if (config.stable) {
     cliCommand += ` --stable`
   }

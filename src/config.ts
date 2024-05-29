@@ -71,6 +71,9 @@ export function getConfigFromParameters(): Config {
   if (argv['folder']) {
     config.folder = argv.folder;
   }
+  if (argv['dictionary']) {
+    config.dictionary = argv.dictionary;
+  }
   if (argv['favorites']) {
     config.favorites = argv.favorites;
   }

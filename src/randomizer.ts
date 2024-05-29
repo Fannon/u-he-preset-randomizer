@@ -1,4 +1,4 @@
-import { ParamsModel, getListOfNames } from "./analyzer.js";
+import { ParamsModel, getDictionaryOfNames } from "./analyzer.js";
 import { Preset } from "./parser.js";
 import { PresetLibrary } from "./presetLibrary.js";
 import {
@@ -86,7 +86,7 @@ export function generateFullyRandomPresets(
     });
 
     if (config.dictionary) {
-      const names = getListOfNames(presetLibrary)
+      const names = getDictionaryOfNames(presetLibrary)
       randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`
     }
 
@@ -164,7 +164,7 @@ export function generateRandomizedPresets(
       style: "capital",
     });
     if (config.dictionary) {
-      const names = getListOfNames(presetLibrary)
+      const names = getDictionaryOfNames(presetLibrary)
       randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`
     }
 
@@ -319,7 +319,7 @@ export function generateMergedPresets(
       style: "capital",
     });
     if (config.dictionary) {
-      const names = getListOfNames(presetLibrary)
+      const names = getDictionaryOfNames(presetLibrary)
       randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`
     }
 
