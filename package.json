@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "u-he-preset-randomizer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Create random u-he synth presets through randomization and merging of your existing presets.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -55,9 +55,9 @@
     "@types/yargs": "^17.0.32",
     "eslint": "^8.57.0",
     "rimraf": "^5.0.7",
-    "tsx": "^4.10.5",
+    "tsx": "^4.11.0",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^7.9.0"
+    "typescript-eslint": "^7.11.0"
   },
   "dependencies": {
     "fast-glob": "^3.3.2",

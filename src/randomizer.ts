@@ -1,4 +1,4 @@
-import { ParamsModel } from "./analyzer.js";
+import { ParamsModel, getListOfNames } from "./analyzer.js";
 import { Preset } from "./parser.js";
 import { PresetLibrary } from "./presetLibrary.js";
 import {
@@ -79,11 +79,16 @@ export function generateFullyRandomPresets(
       }
     }
 
-    const randomName = uniqueNamesGenerator({
+    let randomName = uniqueNamesGenerator({
       dictionaries: [adjectives, colors, names],
       separator: " ",
       style: "capital",
     });
+
+    if (config.dictionary) {
+      const names = getListOfNames(presetLibrary)
+      randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`
+    }
 
     randomPreset.filePath = `/Fully Random/RND ${randomName}.h2p`;
     if (config.category && config.category !== true) {
@@ -153,11 +158,15 @@ export function generateRandomizedPresets(
 
   for (let i = 0; i < (config.amount || 8); i++) {
     const randomPreset = randomizePreset(basePreset, paramModel, config)
-    const randomName = uniqueNamesGenerator({
+    let randomName = uniqueNamesGenerator({
       dictionaries: [adjectives, colors],
       separator: " ",
       style: "capital",
     });
+    if (config.dictionary) {
+      const names = getListOfNames(presetLibrary)
+      randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`
+    }
 
     randomPreset.filePath = `/Randomized Preset/${randomPreset.presetName}/RND ${randomName} ${randomPreset.presetName}.h2p`;
     randomPreset.presetName = `RND ${randomName} ${randomPreset.presetName}`;
@@ -304,11 +313,15 @@ export function generateMergedPresets(
       newPreset = randomizePreset(newPreset, paramModel, config)
     }
 
-    const randomName = uniqueNamesGenerator({
+    let randomName = uniqueNamesGenerator({
       dictionaries: [adjectives, colors, names],
       separator: " ",
       style: "capital",
     });
+    if (config.dictionary) {
+      const names = getListOfNames(presetLibrary)
+      randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`
+    }
 
     newPreset.filePath = `/Merged Preset/RND ${randomName}.h2p`;
     newPreset.presetName = `RND ${randomName}`;

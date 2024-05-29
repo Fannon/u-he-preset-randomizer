@@ -113,6 +113,7 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
     process.exit(1)
   }
 
+  // Search and load .uhe-fav files
   const favorites = fg.sync([`**/*.uhe-fav`], { cwd: presetLibrary.rootFolder }).sort()
   for (const favoriteFile of favorites) {
     const path = `${presetLibrary.rootFolder}/${favoriteFile}`;

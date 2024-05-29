@@ -80,6 +80,19 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
   return paramsModel;
 }
 
+export function getListOfNames(presetLibrary: PresetLibrary): string[] {
+  const names: string[] = [];
+  for (const preset of presetLibrary.presets) {
+    const splitName = preset.presetName.split(' ')
+    for (const split of splitName) {
+      if (split.length > 3 && split.toUpperCase() !== split) {
+        names.push(split)
+      }
+    }
+  }
+  return names
+}
+
 export function convertParamsModelBySection(paramsModel: ParamsModel): ParamsModelBySection {
   const paramsModelBySection: ParamsModelBySection = {}
   for (const id in paramsModel) {

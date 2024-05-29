@@ -157,12 +157,13 @@ async function runInteractiveMode() {
       type: 'checkbox',
       message: 'Which modifiers or selectors (multi-choice)?',
       choices: [
-        { value: "folder",    name: '[Folder]     Narrow down by folder' },
-        { value: "category",  name: '[Category]   Narrow down by category' },
-        { value: "author",    name: '[Author]     Narrow down by author' },
-        { value: "favorites", name: '[Favorites]  Narrow down by favorites from .uhe-fav file' },
-        { value: "stable",    name: '[Stable]     More stable randomization approach' },
-        { value: "binary",    name: '[Binary]     Include binary section (WARNING: Very unstable!)' },
+        { value: "folder",     name: '[Folder]     Narrow down by folder' },
+        { value: "category",   name: '[Category]   Narrow down by category' },
+        { value: "author",     name: '[Author]     Narrow down by author' },
+        { value: "favorites",  name: '[Favorites]  Narrow down by favorites from .uhe-fav file' },
+        { value: "stable",     name: '[Stable]     More stable randomization approach' },
+        { value: "binary",     name: '[Binary]     Include binary section (WARNING: Very unstable!)' },
+        { value: "dictionary", name: '[Dictionary] Use preset names as a dictionary for random preset names' },
       ]
     }])
     if (modifiers.value.includes('folder')) {
@@ -182,6 +183,9 @@ async function runInteractiveMode() {
     }
     if (modifiers.value.includes('binary')) {
       config.binary = true;
+    }
+    if (modifiers.value.includes('dictionary')) {
+      config.dictionary = true;
     }
   }
   

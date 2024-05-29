@@ -20,6 +20,7 @@ export interface Config {
   binary?: boolean;
   stable?: boolean;
   category?: boolean | string;
+  dictionary?: boolean;
   author?: boolean | string;
   folder?: boolean | string;
   favorites?: boolean | string | string[];
