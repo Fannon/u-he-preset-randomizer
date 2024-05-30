@@ -98,6 +98,8 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 - `--binary`: Keep the binary part of the u-he presets. They will not be changed, but randomly generated presets will now include the binary section of either a random preset or the base preset that is randomized.
   * ⚠ Since the randomizer doesn't really parse and understand the binary section, this may lead to broken presets that may crash your synth plugin when loading. Use with care. For some synths this works better (Diva, Zebralette 3) and for some it frequently leads to invalid presets.
 * `--dictionary`: Creates random names from a dictionary of names used in the preset library
+* `--custom-folder`: In case the installation folder is custom, it can be given here
+  * E.g. `--custom-folder "C:/Audio/Plugin Installationen/u-he/"`
 * `--debug`: Enables some optional debug logging and file exporting
 
 ## Tips & Tricks

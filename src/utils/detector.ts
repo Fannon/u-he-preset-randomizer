@@ -1,6 +1,7 @@
 import path from "path";
 import os from "os";
 import fs from "fs-extra";
+import { Config } from "src/config.js";
 
 export type DetectedPresetLibrary = {
   synthName: SynthNames;
@@ -17,7 +18,7 @@ export type SynthNames = typeof uheSynthNames[number];
 /**
  * Detects Preset Library locations
  */
-export function detectPresetLibraryLocations(): DetectedPresetLibrary[] {
+export function detectPresetLibraryLocations(config: Config): DetectedPresetLibrary[] {
 
   const detectedPresetLibraries: DetectedPresetLibrary[] = []
 
@@ -26,6 +27,12 @@ export function detectPresetLibraryLocations(): DetectedPresetLibrary[] {
     const userLocationsToTry = [
       path.join(os.homedir(),`/Library/Audio/Presets/u-he/__SynthName__/`)
     ]
+
+    if (config.customFolder) {
+      // add custom folder, and 1 / 2 levels below it in case user gave a deeper link than necessary
+      userLocationsToTry.push(config.customFolder)
+      userLocationsToTry.push(path.resolve(config.customFolder + '/..'))
+    }
 
     for (const synthName of uheSynthNames) {
       for (const location of userLocationsToTry) {
@@ -64,6 +71,13 @@ export function detectPresetLibraryLocations(): DetectedPresetLibrary[] {
     path.join(os.homedir(),`/.u-he/__SynthName__.data/`),
     `C:/users/VstPlugins/__SynthName__.data/`, // Wine
   ]
+
+  if (config.customFolder) {
+    // add custom folder, and 1 / 2 levels below it in case user gave a deeper link than necessary
+    locationsToTry.push(config.customFolder)
+    locationsToTry.push(path.resolve(config.customFolder + '/..'))
+    locationsToTry.push(path.resolve(config.customFolder + '/../..'))
+  }
 
   for (const synthName of uheSynthNames) {
     for (const location of locationsToTry) {

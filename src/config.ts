@@ -24,6 +24,7 @@ export interface Config {
   author?: boolean | string;
   folder?: boolean | string;
   favorites?: boolean | string | string[];
+  customFolder?: string;
 }
 
 export function getDefaultConfig(): Config {
@@ -76,6 +77,9 @@ export function getConfigFromParameters(): Config {
   }
   if (argv['favorites']) {
     config.favorites = argv.favorites;
+  }
+  if (argv['custom-folder']) {
+    config.customFolder = argv['custom-folder'];
   }
   return config;
 }

@@ -50,7 +50,7 @@ export function runWithoutInteractivity(overrideConfig?: Config) {
     }
   }
 
-  const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
+  const presetLibrary = loadPresetLibrary(config.synth, config)
 
   // Narrow down by folder
   if (config.folder && config.folder !== true) {
@@ -108,7 +108,7 @@ export function runWithoutInteractivity(overrideConfig?: Config) {
 async function runInteractiveMode() {
 
   // Detect correct Preset Library Location
-  const locations = detectPresetLibraryLocations()
+  const locations = detectPresetLibraryLocations(config)
 
   // 1) Detect available u-he synths and offer user choice
   inquirer.registerPrompt('autocomplete', inquirerPrompt);
@@ -193,7 +193,7 @@ async function runInteractiveMode() {
   if (config.folder === true) {
 
     // Detect correct Preset Library Location
-    const location = detectPresetLibraryLocations().find(el => el.synthName.toLowerCase() === config.synth.toLowerCase())
+    const location = detectPresetLibraryLocations(config).find(el => el.synthName.toLowerCase() === config.synth.toLowerCase())
 
     const userFolders = fg.sync("**/*", {
       cwd: location.userPresets,
@@ -239,7 +239,7 @@ async function runInteractiveMode() {
   }
 
   console.log(`> Loading and analyzing preset library...`)
-  const presetLibrary = loadPresetLibrary(config.synth, config.pattern, config.binary)
+  const presetLibrary = loadPresetLibrary(config.synth, config)
 
   // Optionally: Narrow down by u-he favorites
   if (config.favorites === true && presetLibrary.favorites.length) {

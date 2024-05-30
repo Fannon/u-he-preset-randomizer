@@ -3,6 +3,7 @@ import fs from "fs-extra"
 import fg from "fast-glob"
 import { Preset, isValidPreset, parseUhePreset, serializePresetToFile } from "./parser.js";
 import { SynthNames, detectPresetLibraryLocations } from "./utils/detector.js";
+import { Config } from "./config.js";
 
 export interface PresetLibrary {
   synth: string;
@@ -32,12 +33,13 @@ export interface UheFavoriteFileEntry {
   "name": string;
 }
 
-export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', binary: boolean = false): PresetLibrary {
+export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibrary {
+  let pattern = config.pattern || '**/*';
 
   // Detect correct Preset Library Location
-  const location = detectPresetLibraryLocations().find(el => el.synthName.toLowerCase() === synth.toLowerCase())
+  const location = detectPresetLibraryLocations(config).find(el => el.synthName.toLowerCase() === synth.toLowerCase())
 
-  console.log(`> Loading preset library for ${synth} in ${location.root} with pattern "${pattern}"`);
+  console.log(`> Loading preset library for ${synth} in ${location.root} with pattern "${config.pattern}"`);
 
   const presetLibrary: PresetLibrary = {
     synth: location.synthName,
@@ -70,7 +72,7 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
       for (const presetPath of libraryPresets) {
         try {
           const presetString = fs.readFileSync(path.join(presetLibrary.presetsFolder, presetPath.replace('/Local/', ''))).toString();
-          const parsedPreset = parseUhePreset(presetString, presetPath, binary)
+          const parsedPreset = parseUhePreset(presetString, presetPath, config.binary)
           if (isValidPreset(parsedPreset)) {
             presetLibrary.presets.push(parsedPreset);
           }
@@ -95,7 +97,7 @@ export function loadPresetLibrary(synth: SynthNames, pattern: string = '**/*', b
       for (const presetPath of userPresets) {
         try {
           const presetString = fs.readFileSync(path.join(presetLibrary.userPresetsFolder, presetPath.replace('/User/', ''))).toString();
-          const parsedPreset = parseUhePreset(presetString, presetPath, binary)
+          const parsedPreset = parseUhePreset(presetString, presetPath, config.binary)
           if (isValidPreset(parsedPreset)) {
             presetLibrary.presets.push(parsedPreset);
           }
