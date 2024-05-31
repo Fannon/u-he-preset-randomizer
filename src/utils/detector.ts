@@ -30,8 +30,8 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
 
     if (config.customFolder) {
       // add custom folder, and 1 / 2 levels below it in case user gave a deeper link than necessary
-      userLocationsToTry.push(config.customFolder)
-      userLocationsToTry.push(path.resolve(config.customFolder + '/..'))
+      userLocationsToTry.push(config.customFolder + '/__SynthName__/')
+      userLocationsToTry.push(path.resolve(config.customFolder + '/../__SynthName__/'))
     }
 
     for (const synthName of uheSynthNames) {
@@ -75,8 +75,9 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
   if (config.customFolder) {
     // add custom folder, and 1 / 2 levels below it in case user gave a deeper link than necessary
     locationsToTry.push(config.customFolder)
+    locationsToTry.push(config.customFolder + '/__SynthName__.data/')
     locationsToTry.push(path.resolve(config.customFolder + '/..'))
-    locationsToTry.push(path.resolve(config.customFolder + '/../..'))
+    locationsToTry.push(path.resolve(config.customFolder + '/../__SynthName__.data/'))
   }
 
   for (const synthName of uheSynthNames) {

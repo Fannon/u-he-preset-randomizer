@@ -39,7 +39,7 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
   // Detect correct Preset Library Location
   const location = detectPresetLibraryLocations(config).find(el => el.synthName.toLowerCase() === synth.toLowerCase())
 
-  console.log(`> Loading preset library for ${synth} in ${location.root} with pattern "${config.pattern}"`);
+  console.log(`> Loading preset library for ${synth} in ${location.root} with pattern "${pattern}"`);
 
   const presetLibrary: PresetLibrary = {
     synth: location.synthName,
@@ -62,6 +62,8 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
   if (pattern === '/**/*') {
     pattern = '**/*'
   }
+
+  pattern = pattern.split('//').join('/')
 
   // Load preset library
   const libraryPresets = fg.sync([`${pattern}.h2p`], { cwd:  presetLibrary.presetsFolder }).map((el) => {
