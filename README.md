@@ -7,12 +7,17 @@ This tool can generate random presets in three different modes:
 * **Randomize existing presets**, with a customizable amount of randomness
 * **Merge multiple presets** together, with randomness introduced by different ratios between them.
 
-The randomization / merging approach is very generic and should work for all u-he synths.
-Some may work better due to their simpler architecture (u-he Diva, Hive). 
-More modular synths like Bazille, Zebra also work, but you may get more "varied" results.
- 
-> I could only test it on Windows so far. It might work on MacOS, but someone might need to confirm it.
+The randomization / merging approach is very generic and should work for all u-he synths on all platforms.
+Some synths may work better with this due to their simpler architecture (e.g. u-he Diva). 
+More modular synths like Bazille, Zebra also work, but you'll get more "varied" results.
 
+In addition, there are optional flags / modes that that affect the randomization:
+* Narrow down the analyzed presets that are the basis for random generation.
+  * E.g. by only using a sub-folder, a certain tag category, author or a favorite file export.
+  * This will also limit the range of values in the generated presets
+* Use `stable` mode for more reliable, but slightly less random results
+* Use `binary` mode, see `--binary` [CLI arguments documentation](#cli-arguments--configuration).
+ 
 ## How to use
 
 This is a CLI application that you need to run in your terminal / command line.
@@ -68,6 +73,11 @@ The following example will take three Diva presets (each indicated with `--merge
 npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn" --merge "HS Strumpet" --merge "HS Baroqualog"
 ```
 
+## Tips & Tricks
+
+* The u-he preset browser have the most flexibility in filtering and combining presets by category, tags, etc. You can use this to either copy them to a new folder or create a .uhe-fav file export and using this as narrow down selection in the CLI
+* When merging presets, it's possible to select the same preset multiple times. Use this to assign "weights" between how strong a preset will influence the outcome.
+
 ### CLI Arguments / Configuration
 
 > If you're unsure which values are correct to use, run the tool in interactive mode.
@@ -96,16 +106,12 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
   * For fully random presets, it will randomize not per parameter, but per section (e.g. the entire OSC1 together)
   * Only parameters with numeric non-binary assignments will be further randomized. Otherwise they stay consistent with the chosen base preset or a random starter preset.
 - `--binary`: Keep the binary part of the u-he presets. They will not be changed, but randomly generated presets will now include the binary section of either a random preset or the base preset that is randomized.
-  * ⚠ Since the randomizer doesn't really parse and understand the binary section, this may lead to broken presets that may crash your synth plugin when loading. Use with care. For some synths this works better (Diva, Zebralette 3) and for some it frequently leads to invalid presets.
+  * This contains advanced settings like MSEG curves, but this tool cannot really parse or modify it. Not every binary section seems to be compatible with other parameter adjustment, leading to invalid presets.
+  * ⚠ Using binary mode may lead to broken presets that may crash your synth plugin when loading. Use with care. For some synths this works better (Diva, Zebralette 3) and for some it frequently leads to invalid presets.
 * `--dictionary`: Creates random names from a dictionary of names used in the preset library
 * `--custom-folder`: In case the installation folder is custom, it can be given here
   * E.g. `--custom-folder "C:/Audio/Plugin Installationen/u-he/"`
 * `--debug`: Enables some optional debug logging and file exporting
-
-## Tips & Tricks
-
-* The u-he preset browser have the most flexibility in filtering and combining presets by category, tags, etc. You can use this to either copy them to a new folder or create a .uhe-fav file export and using this as narrow down selection in the CLI
-* When merging presets, it's possible to select the same preset multiple times. Use this to assign "weights" between how strong a preset will influence the outcome.
 
 ## Soundsets
 

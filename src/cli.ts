@@ -155,15 +155,15 @@ async function runInteractiveMode() {
     const modifiers = await inquirer.prompt<{ value: string }>([{
       name: 'value',
       type: 'checkbox',
-      message: 'Which modifiers or selectors (multi-choice)?',
+      message: 'Set optional flags / modifiers (multi-choice):',
       choices: [
-        { value: "folder",     name: '[Folder]     Narrow down by folder' },
-        { value: "category",   name: '[Category]   Narrow down by category' },
-        { value: "author",     name: '[Author]     Narrow down by author' },
-        { value: "favorites",  name: '[Favorites]  Narrow down by favorites from .uhe-fav file' },
-        { value: "stable",     name: '[Stable]     More stable randomization approach' },
+        { value: "folder",     name: '[Folder]     Narrow down presets by folder' },
+        { value: "category",   name: '[Category]   Narrow down presets by category' },
+        { value: "author",     name: '[Author]     Narrow down presets by author' },
+        { value: "favorites",  name: '[Favorites]  Narrow down presets by favorites from .uhe-fav file' },
+        { value: "stable",     name: '[Stable]     More stable randomization approach', checked: true },
         { value: "binary",     name: '[Binary]     Include binary section (WARNING: Very unstable!)' },
-        { value: "dictionary", name: '[Dictionary] Use preset names as a dictionary for random preset names' },
+        { value: "dictionary", name: '[Dictionary] Use real preset names to generate random preset names' },
       ]
     }])
     if (modifiers.value.includes('folder')) {
