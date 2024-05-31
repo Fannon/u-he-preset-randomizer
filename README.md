@@ -7,17 +7,19 @@ This tool can generate random presets in three different modes:
 * **Randomize existing presets**, with a customizable amount of randomness
 * **Merge multiple presets** together, with randomness introduced by different ratios between them.
 
-The randomization / merging approach is very generic and should work for all u-he synths on all platforms.
-Some synths may work better with this due to their simpler architecture (e.g. u-he Diva). 
-More modular synths like Bazille, Zebra also work, but you'll get more "varied" results.
+The randomization / merging approach is very generic as it analyzes your actual preset library and bases the random values on the resulting statistical distributions.
 
-In addition, there are optional flags / modes that that affect the randomization:
+In addition, there are **optional flags / modes** that that affect the randomization:
 * Narrow down the analyzed presets that are the basis for random generation.
   * E.g. by only using a sub-folder, a certain tag category, author or a favorite file export.
-  * This will also limit the range of values in the generated presets
+  * This will influence / limit the range of values in the generated presets.
 * Use `stable` mode for more reliable, but slightly less random results
 * Use `binary` mode, see `--binary` [CLI arguments documentation](#cli-arguments--configuration).
  
+It should work for all u-he synths on all platforms.
+Some synths may work better, due to their simpler architecture (e.g. u-he Diva). 
+More modular synths like Bazille or Zebra also work, but you'll get more "varied" results.
+
 ## How to use
 
 This is a CLI application that you need to run in your terminal / command line.
