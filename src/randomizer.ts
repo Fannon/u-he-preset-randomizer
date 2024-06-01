@@ -8,6 +8,7 @@ import {
   names,
 } from "unique-names-generator";
 import { Config } from "./config.js";
+import chalk from "chalk";
 
 /**
  * Fully randomized presets, with real values from library
@@ -21,7 +22,7 @@ export function generateFullyRandomPresets(
   console.log(`Fully random presets with modes: stable=${config.stable || false}, binary=${config.binary || false}`)
 
   if (presetLibrary.presets.length === 0) {
-    console.error('Error: No presets available for randomization.')
+    console.error(chalk.red('Error: No presets available for randomization.'))
     process.exit(1)
   }
 
@@ -41,7 +42,7 @@ export function generateFullyRandomPresets(
       for (const param of randomPreset.params) {
 
         if (!paramModel[param.id]) {
-          console.error(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`)
+          console.error(chalk.red(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`))
         }
 
         if (!presetPerSectionMap[param.section]) {
@@ -70,7 +71,7 @@ export function generateFullyRandomPresets(
     } else {
       for (const param of randomPreset.params) {
         if (!paramModel[param.id]) {
-          console.error(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`)
+          console.error(chalk.red(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`))
         }
         if (paramModel[param.id].keepStable === 'always') {
           continue;
@@ -149,7 +150,7 @@ export function generateRandomizedPresets(
       return el.filePath.includes(config.preset);
     });
     if (!basePreset) {
-      console.error(`Error: No preset with name ${config.preset} found!`);
+      console.error(chalk.red(`Error: No preset with name ${config.preset} found!`))
       process.exit(1);
     }
   }
@@ -230,7 +231,7 @@ export function generateMergedPresets(
         return el.filePath.includes(presetTitle);
       });
       if (!mergePreset) {
-        console.error(`Error: No preset with name "${presetTitle}" found!`);
+        console.error(chalk.red(`Error: No preset with name "${presetTitle}" found!`));
         process.exit(1);
       }
       mergePresets.push(mergePreset);
@@ -242,7 +243,7 @@ export function generateMergedPresets(
   );
 
   if (mergePresets.length < 2) {
-    console.error("Error: Merge presets only works when at least two presets have been chosen");
+    console.error(chalk.red("Error: Merge presets only works when at least two presets have been chosen"));
     process.exit(1);
   }
 
@@ -257,7 +258,7 @@ export function generateMergedPresets(
     for (const param of newPreset.params) {
 
       if (!paramModel[param.id]) {
-        console.error(`Error: Unknown parameter ${param.id} in preset ${newPreset.filePath}, missing in analyzed parameter model`)
+        console.error(chalk.red(`Error: Unknown parameter ${param.id} in preset ${newPreset.filePath}, missing in analyzed parameter model`))
       }
       
       if (config.stable) {
@@ -303,7 +304,7 @@ export function generateMergedPresets(
       }
 
       if (typeof newParamValue === 'object') {
-        console.error('Error: New param value is object, but should not be.', newPreset.filePath, newParamValue)
+        console.error(chalk.red('Error: New param value is object, but should not be.'), newPreset.filePath, newParamValue)
       }
 
       param.value = newParamValue;
@@ -387,7 +388,7 @@ export function randomizePreset(
   for (const param of randomPreset.params) {
 
     if (!paramModel[param.id]) {
-      console.error(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`)
+      console.error(chalk.red(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`))
     }
 
     if (config.stable) {

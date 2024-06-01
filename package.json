@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "u-he-preset-randomizer",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Create random u-he synth presets through randomization and merging of your existing presets.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -46,12 +46,12 @@
     "node": ">=20.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.3.0",
+    "@eslint/js": "^9.4.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
     "@types/inquirer-autocomplete-prompt": "^3.0.3",
-    "@types/node": "^20.12.12",
+    "@types/node": "^20.13.0",
     "@types/yargs": "^17.0.32",
     "eslint": "^8.57.0",
     "rimraf": "^5.0.7",
@@ -60,9 +60,10 @@
     "typescript-eslint": "^7.11.0"
   },
   "dependencies": {
+    "chalk": "^5.3.0",
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
-    "inquirer": "^9.2.22",
+    "inquirer": "^9.2.23",
     "inquirer-autocomplete-prompt": "^3.0.1",
     "unique-names-generator": "^4.7.1",
     "yargs": "^17.7.2"

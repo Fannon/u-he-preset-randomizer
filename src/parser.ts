@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import * as path from "path";
 
 export interface Preset {
@@ -140,7 +141,7 @@ export function getPresetParams(fileString: string, presetPath: string): PresetP
       repeatCounter++;
 
       if (!param.id.includes('#mv') && !param.id.includes('#ms')) {
-        console.warn(`Unexpected duplicated header + key for: ${param.id} in preset "${presetPath}"`)
+        console.warn(chalk.yellow(`Unexpected duplicated header + key for: ${param.id} in preset "${presetPath}"`))
       } 
 
     } else {
@@ -211,20 +212,19 @@ export function serializePresetToFile(preset: Preset): string {
 
 export function isValidPreset(preset: Preset) {
   if (!preset.params.length || !preset.meta.length) {
-    // console.warn(`Warning: Preset ${preset.filePath} is missing parameters or meta attributes.`)
     return false;
   }
   for (const param of preset.params) {
     if (typeof param.value === "string" && param.value.includes('[object Object]')) {
-      console.warn(`Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`)
+      console.warn(chalk.yellow(`Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`))
       return false;
     }
     if (typeof param.value === "string" && param.value.includes('undefined')) {
-      console.warn(`Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`)
+      console.warn(chalk.yellow(`Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`))
       return false;
     }
     if (param.id.includes('[object Object]')) {
-      console.warn(`Warning: Ignoring preset ${preset.filePath} due to invalid parameter: ${param.id}`)
+      console.warn(chalk.yellow(`Warning: Ignoring preset ${preset.filePath} due to invalid parameter: ${param.id}`))
       return false;
     }
   }

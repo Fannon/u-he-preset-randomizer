@@ -2,6 +2,7 @@ import path from "path";
 import os from "os";
 import fs from "fs-extra";
 import { Config } from "src/config.js";
+import chalk from "chalk"
 
 export type DetectedPresetLibrary = {
   synthName: SynthNames;
@@ -22,16 +23,14 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
 
   const detectedPresetLibraries: DetectedPresetLibrary[] = []
 
-  // TODO: MacOS support is not tested and might not work.
   if (process.platform === 'darwin') {
-    const userLocationsToTry = [
-      path.join(os.homedir(),`/Library/Audio/Presets/u-he/__SynthName__/`)
-    ]
-
+    const userLocationsToTry: string[] = []
     if (config.customFolder) {
-      // add custom folder, and 1 / 2 levels below it in case user gave a deeper link than necessary
       userLocationsToTry.push(config.customFolder + '/__SynthName__/')
-      userLocationsToTry.push(path.resolve(config.customFolder + '/../__SynthName__/'))
+      userLocationsToTry.push(config.customFolder + '/../__SynthName__/')
+    }
+    userLocationsToTry.push(path.join(os.homedir(),`/Library/Audio/Presets/u-he/__SynthName__/`))
+    if (config.customFolder) {
       userLocationsToTry.push(config.customFolder)
     }
 
@@ -52,7 +51,16 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
               presets: `/Library/Audio/Presets/u-he/Repro-5/`,
             userPresets: path.join(pathToCheck, `/UserPresets/Repro-5`),
             })
+            if (config.debug) {
+              console.debug(chalk.gray(`> Found synth Repro-5 in ${pathToCheck}`))
+            }
           }
+          if (config.debug) {
+            console.debug(chalk.gray(`> Found synth ${synthName} in ${pathToCheck}`))
+          }
+          if (config.customFolder && config.customFolder === pathToCheck) {
+            console.warn(chalk.yellow(`Warning: --custom-folder fall back to expect ${synthName} in ${pathToCheck}. This might not work if the path is wrong.`))
+          } 
           break;
         }
       }
@@ -61,22 +69,26 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
   } 
   
   // Otherwise try Windows or Linux file system conventions
-  const locationsToTry = [
-    // Windows locations
-    path.join(os.homedir(),`/Documents/u-he/__SynthName__.data/`),
-    `C:/Program Files/Common Files/VST3/__SynthName__.data/`,
-    `C:/Program Files/VSTPlugins/__SynthName__.data/`,
-    `C:/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`,
-    `C:/VstPlugins/u-he/__SynthName__.data/`,
-    // Linux locations ?
-    path.join(os.homedir(),`/.u-he/__SynthName__.data/`),
-    `C:/users/VstPlugins/__SynthName__.data/`, // Wine
-  ]
+  const locationsToTry: string[] = []
 
   if (config.customFolder) {
-    // add custom folder, and 1 / 2 levels below it in case user gave a deeper link than necessary
     locationsToTry.push(config.customFolder + '/__SynthName__.data/')
     locationsToTry.push(path.resolve(config.customFolder + '/../__SynthName__.data/'))
+  }
+
+  // Windows locations
+  locationsToTry.push(path.join(os.homedir(),`/Documents/u-he/__SynthName__.data/`))
+  locationsToTry.push(`C:/Program Files/Common Files/VST3/__SynthName__.data/`)
+  locationsToTry.push(`C:/Program Files/VSTPlugins/__SynthName__.data/`)
+  locationsToTry.push(`C:/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`)
+  locationsToTry.push( `C:/VstPlugins/u-he/__SynthName__.data/`)
+
+  // Linux locations ?
+  locationsToTry.push(path.join(os.homedir(),`/.u-he/__SynthName__.data/`))
+  locationsToTry.push(`C:/users/VstPlugins/__SynthName__.data/`) // Wine
+
+  if (config.customFolder) {
+    // Last ditch effort, to just take the custom folder directly
     locationsToTry.push(config.customFolder)
   }
 
@@ -84,6 +96,12 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
     for (const location of locationsToTry) {
       const pathToCheck = location.replace('__SynthName__', synthName)
       if (fs.existsSync(pathToCheck)) {
+        if (config.debug) {
+          console.debug(chalk.gray(`> Found synth ${synthName} in ${pathToCheck}`))
+        }
+        if (config.customFolder && config.customFolder === pathToCheck) {
+          console.warn(chalk.yellow(`Warning: --custom-folder fall back to expect ${synthName} in ${pathToCheck}. This might not work if the path is wrong.`))
+        } 
         detectedPresetLibraries.push({
           synthName: synthName,
           root: pathToCheck,
@@ -97,6 +115,9 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
             presets: path.join(pathToCheck, `/Presets/Repro-5`),
             userPresets: path.join(pathToCheck, `/UserPresets/Repro-5`),
           })
+          if (config.debug) {
+            console.debug(chalk.gray(`> Found synth Repro-5 in ${pathToCheck}`))
+          }
         }
         break;
       }

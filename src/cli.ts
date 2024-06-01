@@ -9,6 +9,7 @@ import { DetectedPresetLibrary, SynthNames, detectPresetLibraryLocations } from 
 import inquirer from "inquirer"
 import inquirerPrompt from "inquirer-autocomplete-prompt"
 import { fileURLToPath } from 'url';
+import chalk from "chalk"
 import { dirname } from 'path';
 import { Preset } from "./parser.js";
 const __filename = fileURLToPath(import.meta.url);
@@ -84,7 +85,7 @@ export function runWithoutInteractivity(overrideConfig?: Config) {
       JSON.stringify(convertParamsModelBySection(outputParamsModel), null, 2)
     );
 
-    console.debug(config)
+    console.debug(chalk.gray(JSON.stringify(config, null, 2)))
   }
   
   if (config.merge) {
@@ -118,7 +119,7 @@ async function runInteractiveMode() {
     }
   })
   if (!synthChoices.length) {
-    console.error('Error: No u-he synths detected. Exiting.')
+    console.error(chalk.red('Error: No u-he synths detected. Exiting.'))
     process.exit(1)
   }
   const synth = await inquirer.prompt<{ value: SynthNames }>([{
@@ -434,10 +435,7 @@ async function runInteractiveMode() {
   }
 
   console.log('======================================================================')
-  console.log('Successfully completed.')
-  if (config.debug) {
-    console.debug(config);
-  }
+  console.log(chalk.green('Successfully completed.'))
   console.log('')
   console.log('To run it with the same configuration again, execute:')
 
@@ -476,7 +474,7 @@ async function runInteractiveMode() {
   if (config.debug) {
     cliCommand += ` --debug`
   }
-  console.log(cliCommand)
+  console.log(chalk.bgGray(chalk.black(cliCommand)))
 }
 
 //////////////////////////////////////////
@@ -594,7 +592,7 @@ function narrowDownByFavoritesFile(presetLibrary: PresetLibrary, favorites: stri
     if (favoriteFile) {
       favPresets.push(...favoriteFile.presets)
     } else {
-      console.error(`Error: Could not find favorites file: ${favorites}`)
+      console.error(chalk.red(`Error: Could not find favorites file: ${favorites}`))
       return presetLibrary.presets;
     }
   }

@@ -4,6 +4,7 @@ import fg from "fast-glob"
 import { Preset, isValidPreset, parseUhePreset, serializePresetToFile } from "./parser.js";
 import { SynthNames, detectPresetLibraryLocations } from "./utils/detector.js";
 import { Config } from "./config.js";
+import chalk from "chalk";
 
 export interface PresetLibrary {
   synth: string;
@@ -79,11 +80,11 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
             presetLibrary.presets.push(parsedPreset);
           }
         } catch (err) {
-          console.warn(`Could not load and parse preset: ${presetPath}`, err)
+          console.warn(chalk.yellow(`Could not load and parse preset: ${presetPath}`, err))
         }
       }
     } else {
-      console.warn(`Could not find presets with glob pattern: ${pattern} in library: ${presetLibrary.presetsFolder}`)
+      console.warn(chalk.yellow(`Could not find presets with glob pattern: ${pattern}.h2p in library: ${presetLibrary.presetsFolder}`))
     }
   }
 
@@ -104,16 +105,16 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
             presetLibrary.presets.push(parsedPreset);
           }
         } catch (err) {
-          console.warn(`Could not load and parse preset: ${presetPath}`, err)
+          console.warn(chalk.yellow(`Could not load and parse preset: ${presetPath}`), err)
         }
       }
     } else {
-      console.warn(`Could not find presets with glob pattern: ${pattern} in user library: ${presetLibrary.userPresetsFolder}`)
+      console.warn(chalk.yellow(`Could not find presets with glob pattern: ${pattern}.h2p in user library: ${presetLibrary.userPresetsFolder}`))
     }
   }
 
   if (presetLibrary.presets.length === 0) {
-    console.error(`Error: No presets found with glob pattern: ${pattern} in` + presetLibrary.presetsFolder)
+    console.error(chalk.red(`Error: No presets found with glob pattern: ${pattern}.h2p in ` + presetLibrary.presetsFolder))
     process.exit(1)
   }
 
@@ -136,7 +137,7 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
         })
       }
     } catch (err) {
-      console.warn(`Could not read / parse ${path}`);
+      console.warn(chalk.yellow(`Could not read / parse: ${path}`));
     }
   }
 
