@@ -30,9 +30,6 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
       userLocationsToTry.push(config.customFolder + '/../__SynthName__/')
     }
     userLocationsToTry.push(path.join(os.homedir(),`/Library/Audio/Presets/u-he/__SynthName__/`))
-    if (config.customFolder) {
-      userLocationsToTry.push(config.customFolder)
-    }
 
     for (const synthName of uheSynthNames) {
       for (const location of userLocationsToTry) {
@@ -58,9 +55,6 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
           if (config.debug) {
             console.debug(chalk.gray(`> Found synth ${synthName} in ${pathToCheck}`))
           }
-          if (config.customFolder && config.customFolder === pathToCheck) {
-            console.warn(chalk.yellow(`Warning: --custom-folder fall back to expect ${synthName} in ${pathToCheck}. This might not work if the path is wrong.`))
-          } 
           break;
         }
       }
@@ -87,11 +81,6 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
   locationsToTry.push(path.join(os.homedir(),`/.u-he/__SynthName__.data/`))
   locationsToTry.push(`C:/users/VstPlugins/__SynthName__.data/`) // Wine
 
-  if (config.customFolder) {
-    // Last ditch effort, to just take the custom folder directly
-    locationsToTry.push(config.customFolder)
-  }
-
   for (const synthName of uheSynthNames) {
     for (const location of locationsToTry) {
       const pathToCheck = location.replace('__SynthName__', synthName)
@@ -99,9 +88,6 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
         if (config.debug) {
           console.debug(chalk.gray(`> Found synth ${synthName} in ${pathToCheck}`))
         }
-        if (config.customFolder && config.customFolder === pathToCheck) {
-          console.warn(chalk.yellow(`Warning: --custom-folder fall back to expect ${synthName} in ${pathToCheck}. This might not work if the path is wrong.`))
-        } 
         detectedPresetLibraries.push({
           synthName: synthName,
           root: pathToCheck,
