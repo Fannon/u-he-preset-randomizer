@@ -85,15 +85,24 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
  */
 export function getDictionaryOfNames(presetLibrary: PresetLibrary): string[] {
   const names: string[] = [];
+  const excludedWords = new Set(["bass", "guitar", "piano", "lead", "unison", "sub", "strings", "keys", "flute", "organ", "brass", "bells", "pluck", "plucked", "epiano", "chorus", "stab", "chord", "chords", "drum", "synth", "kick", "snare", "clap", "hihat", "edit"]);
   for (const preset of presetLibrary.presets) {
-    const splitName = preset.presetName.split(' ')
+    const cleanedUpName = preset.presetName.split('_').join(' ')
+    const splitName = cleanedUpName.split(' ');
     for (const split of splitName) {
-      if (split.length > 3 && split.toUpperCase() !== split && !split.includes('-')) {
-        names.push(split)
+      if (
+        split.length > 3 &&
+        split.toUpperCase() !== split &&
+        !split.includes('-') &&
+        !split.includes('(') &&
+        !split.includes(')') &&
+        !excludedWords.has(split.toLowerCase())
+      ) {
+        names.push(split);
       }
     }
   }
-  return names
+  return names;
 }
 
 export function convertParamsModelBySection(paramsModel: ParamsModel): ParamsModelBySection {
