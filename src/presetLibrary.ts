@@ -123,7 +123,6 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
   for (const favoriteFile of favorites) {
     const path = `${presetLibrary.rootFolder}/${favoriteFile}`;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const favJson = fs.readJSONSync(path) as UheFavoriteFile
       for (const favCategory in favJson['tag-category-fav']) {
         presetLibrary.favorites.push({
@@ -137,7 +136,7 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
         })
       }
     } catch (err) {
-      console.warn(chalk.yellow(`Could not read / parse: ${path}`));
+      console.warn(chalk.yellow(`Could not read / parse: ${path}`), err);
     }
   }
 
