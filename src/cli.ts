@@ -410,6 +410,7 @@ async function runInteractiveMode() {
 
     config.merge = []
     const foundPresets = presetLibrary.presets.map((el) =>  el.filePath)
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const presetChoice = await choosePreset(foundPresets, true)
       if (presetChoice) {
