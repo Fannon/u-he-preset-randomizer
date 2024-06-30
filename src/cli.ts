@@ -153,6 +153,7 @@ async function runInteractiveMode() {
 
   // 2.5) Choose optional modifiers for randomization
   if (!config.stable || !config.binary) {
+    const binaryEnabled = ['Repro-1','Repro-5'].includes(config.synth)
     const modifiers = await inquirer.prompt<{ value: string }>([{
       name: 'value',
       type: 'checkbox',
@@ -163,7 +164,7 @@ async function runInteractiveMode() {
         { value: "author",     name: '[Author]     Narrow down presets by author' },
         { value: "favorites",  name: '[Favorites]  Narrow down presets by favorites from .uhe-fav file' },
         { value: "stable",     name: '[Stable]     More stable randomization approach', checked: true },
-        { value: "binary",     name: '[Binary]     Include binary section (WARNING: Very unstable!)' },
+        { value: "binary",     name: '[Binary]     Include binary section (WARNING: unstable with some synths!)', checked: binaryEnabled},
         { value: "dictionary", name: '[Dictionary] Use real preset names to generate random preset names' },
       ]
     }])
