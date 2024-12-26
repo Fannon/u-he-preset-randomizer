@@ -1,6 +1,6 @@
 # u-he-preset-randomizer
 
-Generate [u-he](https://u-he.com/) synth presets through randomization and merging of your existing presets.
+Generate [u-he](https://u-he.com/) synth presets through randomization and merging of your existing presets (genetics like).
 
 This tool can generate random presets in three different modes:
 * Generate **fully random presets** based on real values and value distributions in your preset library
@@ -9,7 +9,7 @@ This tool can generate random presets in three different modes:
 
 The randomization / merging approach is very generic as it analyzes your actual preset library and bases the random values on the resulting statistical distributions.
 
-In addition, there are **optional flags / modes** that that affect the randomization:
+There are **optional flags / modes** that that affect the randomization:
 * Narrow down the analyzed presets that are the basis for random generation.
   * E.g. by only using a sub-folder, a certain tag category, author or a favorite file export.
   * This will influence / limit the range of values in the generated presets.
@@ -17,8 +17,8 @@ In addition, there are **optional flags / modes** that that affect the randomiza
 * Use `binary` mode, see `--binary` [CLI arguments documentation](#cli-arguments--configuration).
  
 It should work for all u-he synths on all platforms.
-Some synths may work better, due to their simpler architecture (e.g. u-he Diva). 
-More modular synths like Bazille or Zebra also work, but you'll get more "varied" results.
+Some synths may work better, due to their simpler architecture (e.g. u-he Diva, Repro). 
+More modular synths like Bazille or Zebra also work, but you'll get more "varied" results or broken presets.
 
 ## How to use
 
