@@ -8,6 +8,7 @@ export default {
     '^.+\\.(t|j)sx?$': '@swc/jest',
   },
   testMatch: ['**/__tests__/**/*.test.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/cli.ts',

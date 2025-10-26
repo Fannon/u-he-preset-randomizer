@@ -24,7 +24,9 @@
     "test": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest",
     "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --watch",
     "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --coverage",
-    "test:ci": "npm run lint && npm run typecheck && npm test",
+    "test:e2e": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --testPathPatterns=e2e --testPathIgnorePatterns=/node_modules/",
+    "test:unit": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --testPathIgnorePatterns=e2e",
+    "test:ci": "npm run lint && npm run typecheck && npm run test:unit",
     "postinstall": "simple-git-hooks",
     "prepublishOnly": "npm run clean && npm run build:dist"
   },
