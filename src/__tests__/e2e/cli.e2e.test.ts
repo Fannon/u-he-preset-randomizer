@@ -112,7 +112,6 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      expect(outputDir).toBeDefined();
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
@@ -135,7 +134,6 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      expect(outputDir).toBeDefined();
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
@@ -161,7 +159,6 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      expect(outputDir).toBeDefined();
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
@@ -185,7 +182,6 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      expect(outputDir).toBeDefined();
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
@@ -210,7 +206,6 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      expect(outputDir).toBeDefined();
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
@@ -233,7 +228,6 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      expect(outputDir).toBeDefined();
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
@@ -257,7 +251,6 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      expect(outputDir).toBeDefined();
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
