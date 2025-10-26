@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { PresetLibrary } from '../presetLibrary.js';
 import {
   narrowDownByAuthor,
