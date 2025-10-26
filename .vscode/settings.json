@@ -1,25 +1,41 @@
 {
-    "cSpell.words": [
-      "Baroqualog",
-      "Bazille",
-      "Favourite",
-      "Heimler",
-      "MSEG",
-      "Podolski",
-      "randomizer",
-      "recommendeds",
-      "reparsed",
-      "tseslint",
-      "tslog",
-      "Tyrell",
-      "Zebralette"
-    ],
-    "search.exclude": {
-      "**/node_modules": true,
-      "**/bower_components": true,
-      "**/*.code-search": true,
-      "dist/**/*": true,
-    },
-    "eslint.enable": true,
-    "eslint.experimental.useFlatConfig": true
+  "cSpell.words": [
+    "Baroqualog",
+    "Bazille",
+    "Favourite",
+    "Heimler",
+    "MSEG",
+    "Podolski",
+    "randomizer",
+    "recommendeds",
+    "reparsed",
+    "tseslint",
+    "tslog",
+    "Tyrell",
+    "Zebralette"
+  ],
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "dist/**/*": true,
+  },
+  "eslint.enable": true,
+  "eslint.useFlatConfig": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "jest.nodeEnv": {
+    "NODE_OPTIONS": "--experimental-vm-modules",
+    "NODE_NO_WARNINGS": "1"
+  }
 }
