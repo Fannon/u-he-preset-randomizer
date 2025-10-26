@@ -134,6 +134,10 @@ npm run start -- --synth Diva --amount 3
 
 # or use tsx if you wan't to avoid running npm run build (install via npm i -g tsx):
 npx tsx src/cli.ts --synth Diva --amount 3
+
+# Maintenance scripts
+npm run clean      # remove dist output and incremental build cache
+npm run build:dist # emit declarations + source maps for npm publish (runs automatically via prepublishOnly)
 ```
 
 The [AGENTS.md](./AGENTS.md) provides more context how the project works from development perspective.
