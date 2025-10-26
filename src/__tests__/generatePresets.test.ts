@@ -79,7 +79,9 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
 
       // Clean up generated presets
       for (const presetPath of generatedPresets) {
-        fs.removeSync(presetPath);
+        if (presetPath) {
+          fs.removeSync(presetPath);
+        }
       }
     });
 
@@ -95,10 +97,12 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
-      expect(validatePreset(generatedPresets[0])).toBe(true);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
 
       // Clean up
-      fs.removeSync(generatedPresets[0]);
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
+      }
     });
 
     it('should generate presets with dictionary names', () => {
@@ -113,10 +117,12 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
-      expect(validatePreset(generatedPresets[0])).toBe(true);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
 
       // Clean up
-      fs.removeSync(generatedPresets[0]);
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
+      }
     });
   });
 
@@ -134,10 +140,12 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
-      expect(validatePreset(generatedPresets[0])).toBe(true);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
 
       // Clean up
-      fs.removeSync(generatedPresets[0]);
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
+      }
     });
 
     it('should randomize a specific preset with high randomness', () => {
@@ -153,10 +161,12 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
-      expect(validatePreset(generatedPresets[0])).toBe(true);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
 
       // Clean up
-      fs.removeSync(generatedPresets[0]);
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
+      }
     });
 
     it('should handle extreme randomness values', () => {
@@ -172,10 +182,12 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
-      expect(validatePreset(generatedPresets[0])).toBe(true);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
 
       // Clean up
-      fs.removeSync(generatedPresets[0]);
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
+      }
     });
   });
 
@@ -192,10 +204,12 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
-      expect(validatePreset(generatedPresets[0])).toBe(true);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
 
       // Clean up
-      fs.removeSync(generatedPresets[0]);
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
+      }
     });
 
     it('should merge three random presets', () => {
@@ -210,10 +224,12 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
-      expect(validatePreset(generatedPresets[0])).toBe(true);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
 
       // Clean up
-      fs.removeSync(generatedPresets[0]);
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
+      }
     });
 
     it('should merge presets in stable mode', () => {
@@ -229,10 +245,12 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
-      expect(validatePreset(generatedPresets[0])).toBe(true);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
 
       // Clean up
-      fs.removeSync(generatedPresets[0]);
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
+      }
     });
   });
 
@@ -260,7 +278,7 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
       // Clean up
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       if (generatedPresets.length > 0) {
-        fs.removeSync(generatedPresets[0]);
+        fs.removeSync(generatedPresets[0]!);
       }
     });
   });

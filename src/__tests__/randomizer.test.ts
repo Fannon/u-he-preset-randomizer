@@ -101,7 +101,7 @@ describe('randomizer', () => {
           ...numericPreset,
           params: [
             {
-              ...numericPreset.params[0],
+              ...numericPreset.params[0]!,
               type: 'float',
               value: 0.1,
             },
