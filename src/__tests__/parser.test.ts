@@ -97,7 +97,7 @@ Cutoff=1000
 
       const result = getPresetParams(fileString, 'test.h2p');
 
-      const mvParams = result.filter(p => p.key === '#mv');
+      const mvParams = result.filter((p) => p.key === '#mv');
       expect(mvParams).toHaveLength(3);
       expect(mvParams[0].id).toBe('VCC/#mv/0');
       expect(mvParams[1].id).toBe('VCC/#mv/1');
@@ -111,20 +111,59 @@ Cutoff=1000
         // No params or meta
         { filePath: '/test.h2p', presetName: 'Test', categories: [], meta: [], params: [] },
         // [object Object] in value
-        { filePath: '/test.h2p', presetName: 'Test', categories: [],
+        {
+          filePath: '/test.h2p',
+          presetName: 'Test',
+          categories: [],
           meta: [{ key: 'Author', value: 'Test' }],
-          params: [{ id: 'HEAD/P1', key: 'P1', section: 'HEAD', value: '[object Object]', index: 0, type: 'string' }] },
+          params: [
+            {
+              id: 'HEAD/P1',
+              key: 'P1',
+              section: 'HEAD',
+              value: '[object Object]',
+              index: 0,
+              type: 'string',
+            },
+          ],
+        },
         // undefined in value
-        { filePath: '/test.h2p', presetName: 'Test', categories: [],
+        {
+          filePath: '/test.h2p',
+          presetName: 'Test',
+          categories: [],
           meta: [{ key: 'Author', value: 'Test' }],
-          params: [{ id: 'HEAD/P1', key: 'P1', section: 'HEAD', value: 'undefined', index: 0, type: 'string' }] },
+          params: [
+            {
+              id: 'HEAD/P1',
+              key: 'P1',
+              section: 'HEAD',
+              value: 'undefined',
+              index: 0,
+              type: 'string',
+            },
+          ],
+        },
         // [object Object] in id
-        { filePath: '/test.h2p', presetName: 'Test', categories: [],
+        {
+          filePath: '/test.h2p',
+          presetName: 'Test',
+          categories: [],
           meta: [{ key: 'Author', value: 'Test' }],
-          params: [{ id: 'HEAD/[object Object]', key: 'P1', section: 'HEAD', value: 42, index: 0, type: 'integer' }] },
+          params: [
+            {
+              id: 'HEAD/[object Object]',
+              key: 'P1',
+              section: 'HEAD',
+              value: 42,
+              index: 0,
+              type: 'integer',
+            },
+          ],
+        },
       ];
 
-      invalidPresets.forEach(preset => {
+      invalidPresets.forEach((preset) => {
         expect(isValidPreset(preset as Preset)).toBe(false);
       });
     });
@@ -136,7 +175,14 @@ Cutoff=1000
         categories: [],
         meta: [{ key: 'Author', value: 'Test' }],
         params: [
-          { id: 'HEAD/Param1', key: 'Param1', section: 'HEAD', value: 42, index: 0, type: 'integer' },
+          {
+            id: 'HEAD/Param1',
+            key: 'Param1',
+            section: 'HEAD',
+            value: 42,
+            index: 0,
+            type: 'integer',
+          },
         ],
       };
 

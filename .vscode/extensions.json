@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "biomejs.biome",
+    "editorconfig.editorconfig",
+    "TypeScriptTeam.native-preview",
+    "usernamehw.errorlens",
+    "orta.vscode-jest",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

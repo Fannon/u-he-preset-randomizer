@@ -1,25 +1,60 @@
 {
-    "cSpell.words": [
-      "Baroqualog",
-      "Bazille",
-      "Favourite",
-      "Heimler",
-      "MSEG",
-      "Podolski",
-      "randomizer",
-      "recommendeds",
-      "reparsed",
-      "tseslint",
-      "tslog",
-      "Tyrell",
-      "Zebralette"
-    ],
-    "search.exclude": {
-      "**/node_modules": true,
-      "**/bower_components": true,
-      "**/*.code-search": true,
-      "dist/**/*": true,
-    },
-    "eslint.enable": true,
-    "eslint.experimental.useFlatConfig": true
+  "cSpell.words": [
+    "Baroqualog",
+    "Bazille",
+    "Favourite",
+    "Heimler",
+    "MSEG",
+    "Musik",
+    "Podolski",
+    "randomizer",
+    "recommendeds",
+    "reparsed",
+    "tseslint",
+    "tsgo",
+    "tslog",
+    "Tyrell",
+    "Zebralette"
+  ],
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "dist/**/*": true,
+    "coverage/**/*": true,
+    "**/.swc": true
+  },
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": "biomejs.biome",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "files.associations": {
+    "*.h2p": "plaintext"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[html]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit"
+  },
+  "jest.nodeEnv": {
+    "NODE_OPTIONS": "--experimental-vm-modules",
+    "NODE_NO_WARNINGS": "1"
+  },
+  "typescript.experimental.useTsgo": true
 }

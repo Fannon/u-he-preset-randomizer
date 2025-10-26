@@ -1,0 +1,36 @@
+{
+  "systemPrompt": "You are working on u-he-preset-randomizer, a TypeScript CLI tool for generating random synthesizer presets. Key points:\n\n- This is an ESM project (\"type\": \"module\" in package.json)\n- Use tsx for development, tsc for building\n- Jest tests require NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\"\n- Never modify binary sections of presets without deep understanding\n- Test changes across multiple synth types (Diva, Repro, Hive, Zebra)\n- Follow existing code patterns and conventions\n- Keep code focused on cross-platform compatibility (Windows, macOS, Linux, WSL2)\n\nWhen making changes, consider reading AGENTS.md first using the /context command.",
+  "preferredTools": {
+    "fileSearch": "Glob",
+    "codeSearch": "Grep",
+    "fileRead": "Read",
+    "fileEdit": "Edit",
+    "fileWrite": "Write"
+  },
+  "testing": {
+    "framework": "jest",
+    "command": "npm test",
+    "watchCommand": "npm run test:watch",
+    "beforeCommit": "npm run test:ci"
+  },
+  "build": {
+    "command": "npm run build",
+    "outputDir": "dist"
+  },
+  "lint": {
+    "command": "npm run lint",
+    "fixCommand": "npm run lint:fix"
+  },
+  "format": {
+    "command": "npm run format",
+    "checkCommand": "npm run format:check"
+  },
+  "rules": [
+    "Always run tests after making changes to core logic",
+    "Consider cross-platform compatibility (Windows/macOS/Linux/WSL2)",
+    "Never modify preset binary sections without explicit user request",
+    "Run 'npm run test:ci' before suggesting completion of significant changes",
+    "Use Prettier for formatting, ESLint for code quality",
+    "Pre-commit hooks will automatically format and lint staged files"
+  ]
+}

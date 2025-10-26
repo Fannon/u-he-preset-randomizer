@@ -1,0 +1,41 @@
+# Auto detect text files and perform LF normalization
+* text=auto eol=lf
+
+# Windows-specific files should use CRLF line endings
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{bat,[bB][aA][tT]} text eol=crlf
+
+# Documents
+*.md text diff=markdown
+*.txt text
+
+# Serialization
+*.json text
+*.yaml text
+*.yml text
+*.xml text
+
+# Scripts
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Archives (treat as binary)
+*.zip binary
+*.tar binary
+*.gz binary
+*.tgz binary
+
+# Images (treat as binary)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+
+# Fonts (treat as binary)
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.ttf binary
+*.otf binary

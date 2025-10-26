@@ -1,8 +1,4 @@
-import {
-  analyzeParamsTypeAndRange,
-  getDictionaryOfNames,
-  type ParamsModel,
-} from '../analyzer.js';
+import { analyzeParamsTypeAndRange, getDictionaryOfNames, type ParamsModel } from '../analyzer.js';
 import type { PresetLibrary } from '../presetLibrary.js';
 
 describe('analyzer', () => {
@@ -71,9 +67,30 @@ describe('analyzer', () => {
             categories: [],
             meta: [],
             params: [
-              { id: 'VCO/Freq', key: 'Freq', section: 'VCO', value: 100, index: 0, type: 'integer' },
-              { id: 'VCF/Cutoff', key: 'Cutoff', section: 'VCF', value: 0.5, index: 1, type: 'float' },
-              { id: 'VCO/Wave', key: 'Wave', section: 'VCO', value: 'Saw', index: 2, type: 'string' },
+              {
+                id: 'VCO/Freq',
+                key: 'Freq',
+                section: 'VCO',
+                value: 100,
+                index: 0,
+                type: 'integer',
+              },
+              {
+                id: 'VCF/Cutoff',
+                key: 'Cutoff',
+                section: 'VCF',
+                value: 0.5,
+                index: 1,
+                type: 'float',
+              },
+              {
+                id: 'VCO/Wave',
+                key: 'Wave',
+                section: 'VCO',
+                value: 'Saw',
+                index: 2,
+                type: 'string',
+              },
             ],
           },
           {
@@ -82,9 +99,30 @@ describe('analyzer', () => {
             categories: [],
             meta: [],
             params: [
-              { id: 'VCO/Freq', key: 'Freq', section: 'VCO', value: 200, index: 0, type: 'integer' },
-              { id: 'VCF/Cutoff', key: 'Cutoff', section: 'VCF', value: 0.8, index: 1, type: 'float' },
-              { id: 'VCO/Wave', key: 'Wave', section: 'VCO', value: 'Square', index: 2, type: 'string' },
+              {
+                id: 'VCO/Freq',
+                key: 'Freq',
+                section: 'VCO',
+                value: 200,
+                index: 0,
+                type: 'integer',
+              },
+              {
+                id: 'VCF/Cutoff',
+                key: 'Cutoff',
+                section: 'VCF',
+                value: 0.8,
+                index: 1,
+                type: 'float',
+              },
+              {
+                id: 'VCO/Wave',
+                key: 'Wave',
+                section: 'VCO',
+                value: 'Square',
+                index: 2,
+                type: 'string',
+              },
             ],
           },
         ],
@@ -124,7 +162,14 @@ describe('analyzer', () => {
             categories: [],
             meta: [],
             params: [
-              { id: 'VCO/Value', key: 'Value', section: 'VCO', value: 100, index: 0, type: 'integer' },
+              {
+                id: 'VCO/Value',
+                key: 'Value',
+                section: 'VCO',
+                value: 100,
+                index: 0,
+                type: 'integer',
+              },
             ],
           },
           {
@@ -133,7 +178,14 @@ describe('analyzer', () => {
             categories: [],
             meta: [],
             params: [
-              { id: 'VCO/Value', key: 'Value', section: 'VCO', value: 0.5, index: 0, type: 'float' },
+              {
+                id: 'VCO/Value',
+                key: 'Value',
+                section: 'VCO',
+                value: 0.5,
+                index: 0,
+                type: 'float',
+              },
             ],
           },
           {
@@ -142,7 +194,14 @@ describe('analyzer', () => {
             categories: [],
             meta: [],
             params: [
-              { id: 'VCO/Value', key: 'Value', section: 'VCO', value: 'Text', index: 0, type: 'string' },
+              {
+                id: 'VCO/Value',
+                key: 'Value',
+                section: 'VCO',
+                value: 'Text',
+                index: 0,
+                type: 'string',
+              },
             ],
           },
         ],
@@ -167,7 +226,14 @@ describe('analyzer', () => {
             categories: [],
             meta: [],
             params: [
-              { id: 'VCO/Fixed', key: 'Fixed', section: 'VCO', value: 440, index: 0, type: 'integer' },
+              {
+                id: 'VCO/Fixed',
+                key: 'Fixed',
+                section: 'VCO',
+                value: 440,
+                index: 0,
+                type: 'integer',
+              },
             ],
           },
           {
@@ -176,7 +242,14 @@ describe('analyzer', () => {
             categories: [],
             meta: [],
             params: [
-              { id: 'VCO/Fixed', key: 'Fixed', section: 'VCO', value: 440, index: 0, type: 'integer' },
+              {
+                id: 'VCO/Fixed',
+                key: 'Fixed',
+                section: 'VCO',
+                value: 440,
+                index: 0,
+                type: 'integer',
+              },
             ],
           },
         ],
