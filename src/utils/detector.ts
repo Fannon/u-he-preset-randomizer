@@ -25,6 +25,7 @@ const uheSynthNames = [
   'TyrellN6',
   'Podolski',
   'TripleCheese',
+  'TestSynth',
 ] as const;
 
 export type SynthNames = (typeof uheSynthNames)[number];

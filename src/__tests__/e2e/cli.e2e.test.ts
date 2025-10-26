@@ -16,8 +16,11 @@ import fs from 'fs-extra';
 import path from 'node:path';
 import { runWithoutInteractivity } from '../../cli.js';
 import type { Config } from '../../config.js';
-import { isValidPreset, parseUhePreset } from '../../parser.js';
 import { detectPresetLibraryLocations } from '../../utils/detector.js';
+import {
+  getNewestPresetFiles,
+  validatePreset,
+} from '../../utils/presetValidator.js';
 
 describe('CLI E2E Tests', () => {
   let createdPresetFiles: string[];
@@ -76,35 +79,9 @@ describe('CLI E2E Tests', () => {
   ): string[] {
     expect(fs.existsSync(outputDir)).toBe(true);
 
-    // Recursively find all .h2p files in the directory and subdirectories
-    const findPresetFiles = (dir: string): string[] => {
-      const files: string[] = [];
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
-
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          files.push(...findPresetFiles(fullPath));
-        } else if (entry.isFile() && entry.name.endsWith('.h2p')) {
-          files.push(fullPath);
-        }
-      }
-      return files;
-    };
-
-    // Get all .h2p files sorted by modification time (newest first)
-    const allFiles = findPresetFiles(outputDir)
-      .map((filePath) => ({
-        path: filePath,
-        mtime: fs.statSync(filePath).mtime.getTime(),
-      }))
-      .sort((a, b) => b.mtime - a.mtime);
-
-    // Take only the newest files that were just created
-    const newestFiles = allFiles.slice(0, expectedCount);
-    expect(newestFiles.length).toBe(expectedCount);
-
-    const filePaths = newestFiles.map((f) => f.path);
+    // Get newest preset files using utility function
+    const filePaths = getNewestPresetFiles(outputDir, expectedCount);
+    expect(filePaths.length).toBe(expectedCount);
 
     // Add to cleanup list
     createdPresetFiles.push(...filePaths);
@@ -116,21 +93,7 @@ describe('CLI E2E Tests', () => {
    * Helper function to verify preset file validity
    */
   function verifyPresetValidity(filePath: string): void {
-    expect(fs.existsSync(filePath)).toBe(true);
-
-    const content = fs.readFileSync(filePath, 'utf-8');
-    expect(content).toBeTruthy();
-    expect(content.length).toBeGreaterThan(0);
-
-    // Parse the preset to verify it's valid
-    const preset = parseUhePreset(
-      content,
-      path.basename(filePath, '.h2p'),
-      false,
-    );
-    expect(isValidPreset(preset)).toBe(true);
-    expect(preset.meta).toBeDefined();
-    expect(preset.params).toBeDefined();
+    expect(validatePreset(filePath)).toBe(true);
   }
 
   describe('Fully Random Preset Generation', () => {

@@ -56,5 +56,6 @@
     "NODE_OPTIONS": "--experimental-vm-modules",
     "NODE_NO_WARNINGS": "1"
   },
-  "typescript.experimental.useTsgo": true
+  "typescript.experimental.useTsgo": true,
+  "jest.runMode": "on-demand"
 }
