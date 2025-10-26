@@ -28,9 +28,6 @@ export function narrowDownByAuthor(
   author: string,
 ) {
   const filteredPresets = presetLibrary.presets.filter((el) => {
-    if (!el.categories.length) {
-      return false;
-    }
     const authorMeta = el.meta.find((meta) => meta.key === 'Author');
     return authorMeta?.value === author;
   });

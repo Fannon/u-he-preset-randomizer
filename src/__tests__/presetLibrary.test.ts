@@ -119,6 +119,22 @@ describe('presetLibrary', () => {
     expect(fileContent).toContain('Random Generator');
   });
 
+  it('handles corrupted preset files gracefully', () => {
+    // Create a corrupted preset file
+    const corruptedPresetPath = path.join(presetsDir, 'Corrupted.h2p');
+    fs.writeFileSync(corruptedPresetPath, 'invalid preset content');
+
+    writePresetFixture(presetsDir, 'Valid.h2p');
+
+    const library = loadPresetLibrary('TestSynth', config);
+
+    // Should still load valid presets and warn about corrupted ones
+    expect(library.presets.length).toBe(1);
+    expect(library.presets[0]?.presetName).toBe('Valid');
+  });
+
+
+
   function writePresetFixture(targetDir: string, fileName: string, overrides: Partial<Preset> = {}) {
     const presetName = path.parse(fileName).name;
     const basePreset: Preset = {
