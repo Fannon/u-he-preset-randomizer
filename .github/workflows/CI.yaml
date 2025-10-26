@@ -2,16 +2,22 @@ name: CI
 
 on: [push]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '24.x'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
       - run: npm ci # Implies npm run build already
-
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test

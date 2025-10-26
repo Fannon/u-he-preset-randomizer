@@ -1,7 +1,7 @@
 import path from "path";
 import os from "os";
 import fs from "fs-extra";
-import { Config } from "src/config.js";
+import { Config } from "../config.js";
 import chalk from "chalk"
 
 export type DetectedPresetLibrary = {

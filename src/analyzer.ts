@@ -119,7 +119,7 @@ export function convertParamsModelBySection(paramsModel: ParamsModel): ParamsMod
   return paramsModelBySection;
 }
 
-function average(arr: number[]) {
+export function average(arr: number[]) {
   return arr.reduce((p, c) => p + c, 0) / arr.length;
 }
 
