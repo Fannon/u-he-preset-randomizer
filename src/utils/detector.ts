@@ -19,20 +19,20 @@ export type SynthNames = typeof uheSynthNames[number];
 /**
  * Detects Preset Library locations
  */
-export function detectPresetLibraryLocations(config: Config): DetectedPresetLibrary[] {
+export function detectPresetLibraryLocations(config: Config, locationsTried: string[] = []): DetectedPresetLibrary[] {
 
   const detectedPresetLibraries: DetectedPresetLibrary[] = []
 
   if (process.platform === 'darwin') {
-    const userLocationsToTry: string[] = []
+    const userlocationsTried: string[] = []
     if (config.customFolder) {
-      userLocationsToTry.push(config.customFolder + '/__SynthName__/')
-      userLocationsToTry.push(config.customFolder + '/../__SynthName__/')
+      userlocationsTried.push(config.customFolder + '/__SynthName__/')
+      userlocationsTried.push(config.customFolder + '/../__SynthName__/')
     }
-    userLocationsToTry.push(path.join(os.homedir(),`/Library/Audio/Presets/u-he/__SynthName__/`))
+    userlocationsTried.push(path.join(os.homedir(),`/Library/Audio/Presets/u-he/__SynthName__/`))
 
     for (const synthName of uheSynthNames) {
-      for (const location of userLocationsToTry) {
+      for (const location of userlocationsTried) {
         const pathToCheck = location.replace('__SynthName__', synthName)
         if (fs.existsSync(pathToCheck)) {
           detectedPresetLibraries.push({
@@ -63,26 +63,35 @@ export function detectPresetLibraryLocations(config: Config): DetectedPresetLibr
   } 
   
   // Otherwise try Windows or Linux file system conventions
-  const locationsToTry: string[] = []
 
   if (config.customFolder) {
-    locationsToTry.push(config.customFolder + '/__SynthName__.data/')
-    locationsToTry.push(path.resolve(config.customFolder + '/../__SynthName__.data/'))
+    locationsTried.push(config.customFolder + '/__SynthName__.data/')
+    locationsTried.push(path.resolve(config.customFolder + '/../__SynthName__.data/'))
   }
 
   // Windows locations
-  locationsToTry.push(path.join(os.homedir(),`/Documents/u-he/__SynthName__.data/`))
-  locationsToTry.push(`C:/Program Files/Common Files/VST3/__SynthName__.data/`)
-  locationsToTry.push(`C:/Program Files/VSTPlugins/__SynthName__.data/`)
-  locationsToTry.push(`C:/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`)
-  locationsToTry.push( `C:/VstPlugins/u-he/__SynthName__.data/`)
+  locationsTried.push(path.join(os.homedir(),`/Documents/u-he/__SynthName__.data/`))
+  locationsTried.push(`C:/Program Files/Common Files/VST3/__SynthName__.data/`)
+  locationsTried.push(`C:/Program Files/VSTPlugins/__SynthName__.data/`)
+  locationsTried.push(`C:/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`)
+  locationsTried.push( `C:/VstPlugins/u-he/__SynthName__.data/`)
 
   // Linux locations ?
-  locationsToTry.push(path.join(os.homedir(),`/.u-he/__SynthName__.data/`))
-  locationsToTry.push(`C:/users/VstPlugins/__SynthName__.data/`) // Wine
+  locationsTried.push(path.join(os.homedir(),`/.u-he/__SynthName__.data/`))
+  locationsTried.push(`C:/users/VstPlugins/__SynthName__.data/`) // Wine
+
+  // WSL2 locations (Windows filesystem mounted in Linux)
+  if (process.platform === 'linux' && fs.existsSync('/mnt/c/')) {
+    locationsTried.push(`/mnt/c/Program Files/Common Files/VST3/__SynthName__.data/`)
+    locationsTried.push(`/mnt/c/Program Files/VSTPlugins/__SynthName__.data/`)
+    locationsTried.push(`/mnt/c/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`)
+    locationsTried.push(`/mnt/c/VstPlugins/u-he/__SynthName__.data/`)
+    // Hack: My own Google Drive location that isn't detected otherwise (no symlink following in WSL)
+    locationsTried.push(`/mnt/g/My Drive/Musik/u-he/__SynthName__.data/`)
+  }
 
   for (const synthName of uheSynthNames) {
-    for (const location of locationsToTry) {
+    for (const location of locationsTried) {
       const pathToCheck = location.replace('__SynthName__', synthName)
       if (fs.existsSync(pathToCheck)) {
         if (config.debug) {

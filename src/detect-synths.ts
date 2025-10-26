@@ -7,22 +7,18 @@ import chalk from 'chalk';
  * Simple script to detect installed u-he synthesizers
  */
 function detectSynths() {
-  console.log(chalk.cyan.bold('\n🔍 Detecting installed u-he synthesizers...\n'));
+  console.log(chalk.cyan.bold(`\n🔍 Detecting installed u-he synthesizers in ${process.platform}...\n`));
 
   const config = getDefaultConfig();
-  const detected = detectPresetLibraryLocations(config);
+  const locationsTried : string[] = [];
+  const detected = detectPresetLibraryLocations(config, locationsTried);
 
   if (detected.length === 0) {
     console.log(chalk.yellow('❌ No u-he synthesizers found on this system.\n'));
-    console.log(chalk.gray('Searched locations:'));
-    if (process.platform === 'darwin') {
-      console.log(chalk.gray('  - ~/Library/Audio/Presets/u-he/'));
-    } else {
-      console.log(chalk.gray('  - ~/Documents/u-he/'));
-      console.log(chalk.gray('  - ~/.u-he/'));
-      console.log(chalk.gray('  - C:/Program Files/Common Files/VST3/'));
-      console.log(chalk.gray('  - C:/Program Files/VSTPlugins/'));
-    }
+    console.log(chalk.gray('Locations tried:'));
+    locationsTried.forEach(location => {
+      console.log(chalk.gray(`  - ${location.replace('__SynthName__', '*')}`));
+    });
     console.log();
     return;
   }
