@@ -11,7 +11,7 @@ import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import fs from 'fs-extra';
 import os from 'node:os';
 import path from 'node:path';
-import { runWithoutInteractivity } from '../cli.js';
+import { generatePresets } from '../generatePresets.js';
 import type { Config } from '../config.js';
 import {
   findPresetFiles,
@@ -19,7 +19,7 @@ import {
   validatePreset,
 } from '../utils/presetValidator.js';
 
-describe('CLI Integration Tests (TestSynth)', () => {
+describe('generatePresets Integration Tests (TestSynth)', () => {
   const testSynthRoot = path.join(os.homedir(), '.u-he/TestSynth.data');
   const testSynthPresets = path.join(testSynthRoot, 'Presets/TestSynth');
   const testSynthUserPresets = path.join(testSynthRoot, 'UserPresets/TestSynth');
@@ -66,7 +66,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
         amount: 2,
       };
 
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       // Verify presets were generated
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 2);
@@ -91,7 +91,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
         stable: true,
       };
 
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
@@ -109,7 +109,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
         dictionary: true,
       };
 
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
@@ -130,7 +130,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
         randomness: 20,
       };
 
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
@@ -149,7 +149,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
         randomness: 80,
       };
 
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
@@ -168,7 +168,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
         randomness: 100,
       };
 
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
@@ -188,7 +188,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
         merge: ['?', '?'],
       };
 
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
@@ -206,7 +206,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
         merge: ['?', '?', '?'],
       };
 
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
@@ -225,7 +225,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
         stable: true,
       };
 
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
       expect(generatedPresets.length).toBe(1);
@@ -255,7 +255,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
       };
 
       // Should not throw
-      expect(() => runWithoutInteractivity(config)).not.toThrow();
+      expect(() => generatePresets(config)).not.toThrow();
 
       // Clean up
       const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
@@ -276,7 +276,7 @@ describe('CLI Integration Tests (TestSynth)', () => {
           amount,
         };
 
-        runWithoutInteractivity(config);
+        generatePresets(config);
 
         const generatedPresets = getNewestPresetFiles(testSynthRandomDir, amount);
         expect(generatedPresets.length).toBe(amount);

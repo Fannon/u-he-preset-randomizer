@@ -14,7 +14,7 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import fs from 'fs-extra';
 import path from 'node:path';
-import { runWithoutInteractivity } from '../../cli.js';
+import { generatePresets } from '../../index.js';
 import type { Config } from '../../config.js';
 import { detectPresetLibraryLocations } from '../../utils/detector.js';
 import {
@@ -112,7 +112,7 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
       verifyPresetValidity(presetFiles[0]);
@@ -134,7 +134,7 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
       verifyPresetValidity(presetFiles[0]);
@@ -159,7 +159,7 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
       verifyPresetValidity(presetFiles[0]);
@@ -182,7 +182,7 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
       verifyPresetValidity(presetFiles[0]);
@@ -206,7 +206,7 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
       verifyPresetValidity(presetFiles[0]);
@@ -228,7 +228,7 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
       verifyPresetValidity(presetFiles[0]);
@@ -251,7 +251,7 @@ describe('CLI E2E Tests', () => {
       };
 
       const outputDir = getExpectedOutputDir(synth);
-      runWithoutInteractivity(config);
+      generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
       verifyPresetValidity(presetFiles[0]);

@@ -12,7 +12,7 @@
   "scripts": {
     "start": "tsx src/cli.ts",
     "detect": "tsx src/detect-synths.ts",
-    "benchmark": "hyperfine --warmup 2 --runs 7 --export-markdown tmp/hyperfine.md --export-json tmp/hyperfine.json --ignore-failure 'npm run clean' 'npm run build' 'npm run lint' 'npm run format' 'npm run test'",
+    "benchmark": "hyperfine --warmup 2 --runs 5 --export-markdown tmp/hyperfine.md --export-json tmp/hyperfine.json --ignore-failure 'npm run clean' 'npm run build' 'npm run typecheck' 'npm run lint' 'npm run format' 'npm run test'",
     "build": "tsgo --project tsconfig.json",
     "build:dist": "tsgo --project tsconfig.build.json",
     "clean": "node scripts/clean.mjs",
@@ -20,7 +20,7 @@
     "lint:fix": "biome check --write .",
     "format": "biome format . --write",
     "format:check": "biome format .",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsgo --project tsconfig.test.json --noEmit",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest",
     "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --watch",
     "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --coverage",

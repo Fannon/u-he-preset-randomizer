@@ -6,23 +6,14 @@ import chalk from 'chalk';
 import fg from 'fast-glob';
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
-import {
-  analyzeParamsTypeAndRange,
-  convertParamsModelBySection,
-  type ParamsModel,
-} from './analyzer.js';
 import { type Config, getConfigFromParameters } from './config.js';
-import type { Preset } from './parser.js';
+import { generatePresets } from './generatePresets.js';
 import {
-  loadPresetLibrary,
-  type PresetLibrary,
-  writePresetLibrary,
-} from './presetLibrary.js';
-import {
-  generateFullyRandomPresets,
-  generateMergedPresets,
-  generateRandomizedPresets,
-} from './randomizer.js';
+  narrowDownByAuthor,
+  narrowDownByCategory,
+  narrowDownByFavoritesFile,
+} from './libraryFilters.js';
+import { loadPresetLibrary } from './presetLibrary.js';
 import {
   type DetectedPresetLibrary,
   detectPresetLibraryLocations,
@@ -40,7 +31,7 @@ interface ChoiceOptions {
   value: string;
 }
 
-let config = getConfigFromParameters();
+const config = getConfigFromParameters();
 
 function logCliBanner() {
   console.log(
@@ -62,7 +53,7 @@ export async function startCli() {
     await runInteractiveMode();
     return;
   }
-  runWithoutInteractivity();
+  generatePresets(config);
 }
 
 const executionArg = process.argv[1];
@@ -75,98 +66,6 @@ if (wasInvokedDirectly) {
     console.error(err);
     process.exit(1);
   });
-}
-
-export function runWithoutInteractivity(overrideConfig?: Config) {
-  if (overrideConfig) {
-    config = {
-      ...overrideConfig,
-      ...config,
-    };
-  }
-
-  if (!config.synth) {
-    throw new Error('Synth not specified in config');
-  }
-
-  const presetLibrary = loadPresetLibrary(config.synth, config);
-
-  // Narrow down by folder
-  if (config.folder && config.folder !== true) {
-    config.pattern = `${config.folder}${config.pattern ?? '**/*'}`;
-  }
-
-  // Filter out presets by favorite file (if given)
-  if (config.favorites && config.favorites !== true) {
-    presetLibrary.presets = narrowDownByFavoritesFile(
-      presetLibrary,
-      config.favorites,
-    );
-  }
-  // Filter out presets by author (if given)
-  if (config.author && config.author !== true) {
-    presetLibrary.presets = narrowDownByAuthor(presetLibrary, config.author);
-  }
-  // Filter out presets by category (if given)
-  if (config.category && config.category !== true) {
-    presetLibrary.presets = narrowDownByCategory(
-      presetLibrary,
-      config.category,
-    );
-  }
-
-  const paramsModel = analyzeParamsTypeAndRange(presetLibrary);
-
-  if (config.debug) {
-    // Write a cleaned up parameter model to ./tmp/paramsModel.json
-    const outputParamsModel = JSON.parse(
-      JSON.stringify(paramsModel),
-    ) as ParamsModel;
-    // Remove values from debug paramsModel, as it would blow up the result too much.
-    for (const paramKey in outputParamsModel) {
-      const param = outputParamsModel[paramKey];
-      if (param && 'values' in param) {
-        param.values = [];
-      }
-    }
-    fs.outputFileSync(
-      './tmp/paramsModel.json',
-      JSON.stringify(convertParamsModelBySection(outputParamsModel), null, 2),
-    );
-
-    console.debug(chalk.gray(JSON.stringify(config, null, 2)));
-  }
-
-  if (config.merge) {
-    // Merge multiple presets together, with additional randomness
-    const generatedPresets = generateMergedPresets(
-      presetLibrary,
-      paramsModel,
-      config,
-    );
-    writePresetLibrary(generatedPresets);
-  } else if (config.preset) {
-    // Randomize a particular preset
-    const generatedPresets = generateRandomizedPresets(
-      presetLibrary,
-      paramsModel,
-      config,
-    );
-    writePresetLibrary(generatedPresets);
-  } else {
-    // Generate fully randomized presets
-    const generatedPresets = generateFullyRandomPresets(
-      presetLibrary,
-      paramsModel,
-      config,
-    );
-    writePresetLibrary(generatedPresets);
-  }
-
-  console.log(
-    '======================================================================',
-  );
-  console.log('Successfully completed.');
 }
 
 async function runInteractiveMode() {
@@ -484,20 +383,12 @@ async function runInteractiveMode() {
     );
   }
 
-  const paramsModel = analyzeParamsTypeAndRange(presetLibrary);
-
   if (mode.value === 'Fully randomized presets') {
     //////////////////////////////////////////////////
     // MODE 1: Generate fully randomized presets    //
     //////////////////////////////////////////////////
 
     config.amount ??= await chooseAmountOfPresets(32);
-    const generatedPresets = generateFullyRandomPresets(
-      presetLibrary,
-      paramsModel,
-      config,
-    );
-    writePresetLibrary(generatedPresets);
   } else if (mode.value === 'Randomize existing preset') {
     //////////////////////////////////////////////////
     // MODE 2: Randomize existing preset            //
@@ -511,13 +402,6 @@ async function runInteractiveMode() {
 
     config.randomness ??= await chooseRandomness(20);
     config.amount ??= await chooseAmountOfPresets(16);
-
-    const generatedPresets = generateRandomizedPresets(
-      presetLibrary,
-      paramsModel,
-      config,
-    );
-    writePresetLibrary(generatedPresets);
   } else if (mode.value === 'Merge existing presets') {
     //////////////////////////////////////////////////
     // MODE 3: Merge Random Presets                 //
@@ -540,65 +424,10 @@ async function runInteractiveMode() {
     // Choose amount of randomness
     config.randomness ??= await chooseRandomness(0);
     config.amount ??= await chooseAmountOfPresets(16);
-    const generatedPresets = generateMergedPresets(
-      presetLibrary,
-      paramsModel,
-      config,
-    );
-    writePresetLibrary(generatedPresets);
   }
 
-  console.log(
-    '======================================================================',
-  );
-  console.log(chalk.green('Successfully completed.'));
-  console.log('');
-  console.log('To run it with the same configuration again, execute:');
-
-  let cliCommand = `npx u-he-preset-randomizer@latest --synth ${config.synth ?? ''} --amount ${config.amount ?? 8}`;
-  if (config.preset && typeof config.preset === 'string') {
-    cliCommand += ` --preset "${config.preset}"`;
-  } else if (config.merge) {
-    const merges = Array.isArray(config.merge) ? config.merge : [config.merge];
-    for (const merge of merges) {
-      if (typeof merge === 'string') {
-        cliCommand += ` --merge "${merge}"`;
-      }
-    }
-  }
-  if (config.randomness) {
-    cliCommand += ` --randomness ${config.randomness}`;
-  }
-  if (config.pattern && config.pattern !== '**/*') {
-    cliCommand += ` --pattern "${config.pattern}"`;
-  }
-  if (config.folder && typeof config.folder === 'string') {
-    cliCommand += ` --folder "${config.folder}"`;
-  }
-  if (config.favorites) {
-    const favs = Array.isArray(config.favorites)
-      ? config.favorites.join(',')
-      : String(config.favorites);
-    if (favs !== 'true') {
-      cliCommand += ` --favorites "${favs}"`;
-    }
-  }
-  if (config.category && typeof config.category === 'string') {
-    cliCommand += ` --category "${config.category}"`;
-  }
-  if (config.author && typeof config.author === 'string') {
-    cliCommand += ` --author "${config.author}"`;
-  }
-  if (config.dictionary) {
-    cliCommand += ` --dictionary`;
-  }
-  if (config.stable) {
-    cliCommand += ` --stable`;
-  }
-  if (config.debug) {
-    cliCommand += ` --debug`;
-  }
-  console.log(chalk.bgGray(chalk.black(cliCommand)));
+  generatePresets(config);
+  logRepeatCommand(config);
 }
 
 //////////////////////////////////////////
@@ -684,83 +513,52 @@ async function choosePreset(
   return presetChoice;
 }
 
-function narrowDownByCategory(presetLibrary: PresetLibrary, category: string) {
-  const filteredPresets = presetLibrary.presets.filter((el) => {
-    if (!el.categories.length) {
-      return false;
-    }
-    for (const ownCategory of el.categories) {
-      if (ownCategory.startsWith(category)) {
-        return true;
-      }
-    }
-    return false;
-  });
-  console.log(
-    `Narrowed down by category "${category}" to ${filteredPresets.length} presets`,
-  );
-  return filteredPresets;
-}
+function logRepeatCommand(config: Config) {
+  console.log('');
+  console.log('To run it with the same configuration again, execute:');
 
-function narrowDownByAuthor(presetLibrary: PresetLibrary, author: string) {
-  const filteredPresets = presetLibrary.presets.filter((el) => {
-    if (!el.categories.length) {
-      return false;
-    }
-    const authorMeta = el.meta.find((el) => el.key === 'Author');
-    return authorMeta?.value === author;
-  });
-  console.log(
-    `Narrowed down by author "${author}" to ${filteredPresets.length} presets`,
-  );
-  return filteredPresets;
-}
-function narrowDownByFavoritesFile(
-  presetLibrary: PresetLibrary,
-  favorites: string | string[],
-) {
-  if (!Array.isArray(favorites)) {
-    favorites = [favorites];
-  }
-
-  const favPresets: { path: string; name: string }[] = [];
-  const filteredPresets: Preset[] = [];
-
-  for (const favoriteFilePath of favorites) {
-    const favoriteFile = presetLibrary.favorites.find(
-      (el) => el.fileName === favoriteFilePath,
-    );
-
-    if (favoriteFile) {
-      favPresets.push(...favoriteFile.presets);
-    } else {
-      console.error(
-        chalk.red(`Error: Could not find favorites file: ${favoriteFilePath}`),
-      );
-      return presetLibrary.presets;
-    }
-  }
-
-  console.log(favPresets.length);
-
-  // Now filter it out
-  for (const preset of presetLibrary.presets) {
-    for (const fav of favPresets) {
-      if (
-        preset.filePath.toLowerCase() ===
-        `${fav.path.toLowerCase()}/${fav.name.toLowerCase()}.h2p`
-      ) {
-        filteredPresets.push(preset);
-        break;
+  let cliCommand = `npx u-he-preset-randomizer@latest --synth ${config.synth ?? ''} --amount ${config.amount ?? 8}`;
+  if (config.preset && typeof config.preset === 'string') {
+    cliCommand += ` --preset "${config.preset}"`;
+  } else if (config.merge) {
+    const merges = Array.isArray(config.merge) ? config.merge : [config.merge];
+    for (const merge of merges) {
+      if (typeof merge === 'string') {
+        cliCommand += ` --merge "${merge}"`;
       }
     }
   }
-
-  const favoritesLabel = Array.isArray(favorites)
-    ? favorites.join(', ')
-    : favorites;
-  console.log(
-    `Narrowed down via favorite file "${favoritesLabel}" to ${filteredPresets.length} presets`,
-  );
-  return filteredPresets;
+  if (config.randomness) {
+    cliCommand += ` --randomness ${config.randomness}`;
+  }
+  if (config.pattern && config.pattern !== '**/*') {
+    cliCommand += ` --pattern "${config.pattern}"`;
+  }
+  if (config.folder && typeof config.folder === 'string') {
+    cliCommand += ` --folder "${config.folder}"`;
+  }
+  if (config.favorites) {
+    const favs = Array.isArray(config.favorites)
+      ? config.favorites.join(',')
+      : String(config.favorites);
+    if (favs !== 'true') {
+      cliCommand += ` --favorites "${favs}"`;
+    }
+  }
+  if (config.category && typeof config.category === 'string') {
+    cliCommand += ` --category "${config.category}"`;
+  }
+  if (config.author && typeof config.author === 'string') {
+    cliCommand += ` --author "${config.author}"`;
+  }
+  if (config.dictionary) {
+    cliCommand += ` --dictionary`;
+  }
+  if (config.stable) {
+    cliCommand += ` --stable`;
+  }
+  if (config.debug) {
+    cliCommand += ` --debug`;
+  }
+  console.log(chalk.bgGray(chalk.black(cliCommand)));
 }
