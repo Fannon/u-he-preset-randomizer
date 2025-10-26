@@ -18,4 +18,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
       - run: npm ci # Implies npm run build already
-      - run: npm run test:ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test
