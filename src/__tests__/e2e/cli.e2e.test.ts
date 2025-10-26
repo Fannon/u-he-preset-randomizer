@@ -14,7 +14,7 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import fs from 'fs-extra';
 import path from 'node:path';
-import { runWithoutInteractivity } from '../../cli.js';
+import { runWithoutInteractivity } from '../../index.js';
 import type { Config } from '../../config.js';
 import { detectPresetLibraryLocations } from '../../utils/detector.js';
 import {

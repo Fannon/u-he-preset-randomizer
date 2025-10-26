@@ -1,2 +1,2 @@
-export { runWithoutInteractivity } from './cli.js';
+export { generatePresets as runWithoutInteractivity } from './generatePresets.js';
 export * from './parser.js';
