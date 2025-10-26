@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import searchPrompt from '@inquirer/search';
 import chalk from 'chalk';
 import fg from 'fast-glob';
@@ -40,31 +40,42 @@ interface ChoiceOptions {
   value: string;
 }
 
-console.log(
-  '======================================================================',
-);
-console.log(`u-he Preset Randomizer CLI v${packageJson.version}`);
-console.log(
-  '======================================================================',
-);
-console.log(
-  'Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme',
-);
-console.log('');
-
 let config = getConfigFromParameters();
 
-(async () => {
+function logCliBanner() {
+  console.log(
+    '======================================================================',
+  );
+  console.log(`u-he Preset Randomizer CLI v${packageJson.version}`);
+  console.log(
+    '======================================================================',
+  );
+  console.log(
+    'Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme',
+  );
+  console.log('');
+}
+
+export async function startCli() {
+  logCliBanner();
   if (!config.synth) {
-    // If no --synth argument is given, we'll go into fully interactive CLI mode
     await runInteractiveMode();
-  } else {
-    runWithoutInteractivity();
+    return;
   }
-})().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+  runWithoutInteractivity();
+}
+
+const executionArg = process.argv[1];
+const wasInvokedDirectly =
+  executionArg !== undefined &&
+  import.meta.url === pathToFileURL(executionArg).href;
+
+if (wasInvokedDirectly) {
+  startCli().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
 
 export function runWithoutInteractivity(overrideConfig?: Config) {
   if (overrideConfig) {
