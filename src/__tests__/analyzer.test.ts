@@ -136,22 +136,22 @@ describe('analyzer', () => {
       const result = analyzeParamsTypeAndRange(presetLibrary);
 
       // Integer analysis
-      expect(result['VCO/Freq'].type).toBe('integer');
-      expect(result['VCO/Freq'].minValue).toBe(100);
-      expect(result['VCO/Freq'].maxValue).toBe(200);
-      expect(result['VCO/Freq'].avgValue).toBe(150);
-      expect(result['VCO/Freq'].distinctValues).toEqual([100, 200]);
+      expect(result['VCO/Freq']?.type).toBe('integer');
+      expect(result['VCO/Freq']?.minValue).toBe(100);
+      expect(result['VCO/Freq']?.maxValue).toBe(200);
+      expect(result['VCO/Freq']?.avgValue).toBe(150);
+      expect(result['VCO/Freq']?.distinctValues).toEqual([100, 200]);
 
       // Float analysis
-      expect(result['VCF/Cutoff'].type).toBe('float');
-      expect(result['VCF/Cutoff'].minValue).toBeCloseTo(0.5);
-      expect(result['VCF/Cutoff'].maxValue).toBeCloseTo(0.8);
-      expect(result['VCF/Cutoff'].avgValue).toBeCloseTo(0.65);
+      expect(result['VCF/Cutoff']?.type).toBe('float');
+      expect(result['VCF/Cutoff']?.minValue).toBeCloseTo(0.5);
+      expect(result['VCF/Cutoff']?.maxValue).toBeCloseTo(0.8);
+      expect(result['VCF/Cutoff']?.avgValue).toBeCloseTo(0.65);
 
       // String analysis (no min/max/avg)
-      expect(result['VCO/Wave'].type).toBe('string');
-      expect(result['VCO/Wave'].minValue).toBeUndefined();
-      expect(result['VCO/Wave'].distinctValues).toEqual(['Saw', 'Square']);
+      expect(result['VCO/Wave']?.type).toBe('string');
+      expect(result['VCO/Wave']?.minValue).toBeUndefined();
+      expect(result['VCO/Wave']?.distinctValues).toEqual(['Saw', 'Square']);
     });
 
     it('should handle type promotion correctly', () => {
@@ -215,7 +215,7 @@ describe('analyzer', () => {
       const result = analyzeParamsTypeAndRange(presetLibrary);
 
       // Should promote to most general type (integer -> float -> string)
-      expect(result['VCO/Value'].type).toBe('string');
+      expect(result['VCO/Value']?.type).toBe('string');
     });
 
     it('should compact identical values to save memory', () => {
@@ -263,8 +263,8 @@ describe('analyzer', () => {
       const result = analyzeParamsTypeAndRange(presetLibrary);
 
       // Values array should be compacted when all identical
-      expect(result['VCO/Fixed'].values).toEqual([440]);
-      expect(result['VCO/Fixed'].distinctValues).toEqual([440]);
+      expect(result['VCO/Fixed']?.values).toEqual([440]);
+      expect(result['VCO/Fixed']?.distinctValues).toEqual([440]);
     });
 
     it('skips parameters that contain serialized object markers', () => {
@@ -330,7 +330,7 @@ describe('analyzer', () => {
 
       const result = convertParamsModelBySection(paramsModel);
       expect(result.HEAD).toBeDefined();
-      expect(result.HEAD['HEAD/Valid']).toBe(paramsModel['HEAD/Valid']);
+      expect(result.HEAD?.['HEAD/Valid']).toBe(paramsModel['HEAD/Valid']);
       expect(result['']).toBeUndefined();
     });
   });

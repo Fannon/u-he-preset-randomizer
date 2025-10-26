@@ -210,7 +210,7 @@ describe('libraryFilters', () => {
     });
 
     it('returns empty array when favorites file not found', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = narrowDownByFavoritesFile(mockPresetLibrary, 'nonexistent.uhe-fav');
 

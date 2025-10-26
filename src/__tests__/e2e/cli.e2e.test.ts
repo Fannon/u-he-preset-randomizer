@@ -103,7 +103,7 @@ describe('CLI E2E Tests', () => {
         return;
       }
 
-      const synth = availableSynths[0];
+      const synth = availableSynths[0]!;
       const config: Config = {
         debug: false,
         synth: synth as any,
@@ -115,7 +115,7 @@ describe('CLI E2E Tests', () => {
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
-      verifyPresetValidity(presetFiles[0]);
+      verifyPresetValidity(presetFiles[0]!);
     });
 
     it('should generate random presets with dictionary names', () => {
@@ -124,7 +124,7 @@ describe('CLI E2E Tests', () => {
         return;
       }
 
-      const synth = availableSynths[0];
+      const synth = availableSynths[0]!;
       const config: Config = {
         debug: false,
         synth: synth as any,
@@ -137,7 +137,7 @@ describe('CLI E2E Tests', () => {
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
-      verifyPresetValidity(presetFiles[0]);
+      verifyPresetValidity(presetFiles[0]!);
     });
   });
 
@@ -148,7 +148,7 @@ describe('CLI E2E Tests', () => {
         return;
       }
 
-      const synth = availableSynths[0];
+      const synth = availableSynths[0]!;
       const config: Config = {
         debug: false,
         synth: synth as any,
@@ -162,7 +162,7 @@ describe('CLI E2E Tests', () => {
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
-      verifyPresetValidity(presetFiles[0]);
+      verifyPresetValidity(presetFiles[0]!);
     });
 
     it('should randomize a specific preset with high randomness', () => {
@@ -171,7 +171,7 @@ describe('CLI E2E Tests', () => {
         return;
       }
 
-      const synth = availableSynths[0];
+      const synth = availableSynths[0]!;
       const config: Config = {
         debug: false,
         synth: synth as any,
@@ -185,7 +185,7 @@ describe('CLI E2E Tests', () => {
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
-      verifyPresetValidity(presetFiles[0]);
+      verifyPresetValidity(presetFiles[0]!);
     });
   });
 
@@ -196,7 +196,7 @@ describe('CLI E2E Tests', () => {
         return;
       }
 
-      const synth = availableSynths[0];
+      const synth = availableSynths[0]!;
       const config: Config = {
         debug: false,
         synth: synth as any,
@@ -209,7 +209,7 @@ describe('CLI E2E Tests', () => {
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
-      verifyPresetValidity(presetFiles[0]);
+      verifyPresetValidity(presetFiles[0]!);
     });
 
     it('should merge three random presets', () => {
@@ -218,7 +218,7 @@ describe('CLI E2E Tests', () => {
         return;
       }
 
-      const synth = availableSynths[0];
+      const synth = availableSynths[0]!;
       const config: Config = {
         debug: false,
         synth: synth as any,
@@ -231,7 +231,7 @@ describe('CLI E2E Tests', () => {
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
-      verifyPresetValidity(presetFiles[0]);
+      verifyPresetValidity(presetFiles[0]!);
     });
   });
 
@@ -242,7 +242,7 @@ describe('CLI E2E Tests', () => {
         return;
       }
 
-      const synth = availableSynths[0];
+      const synth = availableSynths[0]!;
       const config: Config = {
         debug: false,
         synth: synth as any,
@@ -254,7 +254,7 @@ describe('CLI E2E Tests', () => {
       generatePresets(config);
 
       const presetFiles = verifyPresetsGenerated(outputDir, 1);
-      verifyPresetValidity(presetFiles[0]);
+      verifyPresetValidity(presetFiles[0]!);
     });
   });
 });

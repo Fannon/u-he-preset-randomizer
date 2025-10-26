@@ -99,9 +99,9 @@ Cutoff=1000
 
       const mvParams = result.filter((p) => p.key === '#mv');
       expect(mvParams).toHaveLength(3);
-      expect(mvParams[0].id).toBe('VCC/#mv/0');
-      expect(mvParams[1].id).toBe('VCC/#mv/1');
-      expect(mvParams[2].id).toBe('VCC/#mv/2');
+      expect(mvParams[0]!.id).toBe('VCC/#mv/0');
+      expect(mvParams[1]!.id).toBe('VCC/#mv/1');
+      expect(mvParams[2]!.id).toBe('VCC/#mv/2');
     });
   });
 
@@ -228,9 +228,9 @@ Resonance=50
 
       // Verify critical fields are preserved
       reparsed.params.forEach((param, i) => {
-        expect(param.key).toBe(parsed.params[i].key);
-        expect(param.value).toBe(parsed.params[i].value);
-        expect(param.type).toBe(parsed.params[i].type);
+        expect(param.key).toBe(parsed.params[i]!.key);
+        expect(param.value).toBe(parsed.params[i]!.value);
+        expect(param.type).toBe(parsed.params[i]!.type);
       });
     });
   });
