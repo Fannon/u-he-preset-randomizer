@@ -215,12 +215,37 @@ export function loadPresetLibrary(
   return presetLibrary;
 }
 
+/**
+ * Validates that a file path is safe and stays within the target directory.
+ * Prevents path traversal attacks using ../ or absolute paths.
+ */
+function validateSafePath(targetDir: string, filePath: string): string {
+  // Remove leading slash if present (these are treated as relative paths in this codebase)
+  const normalizedFilePath = filePath.startsWith('/')
+    ? filePath.slice(1)
+    : filePath;
+
+  // Resolve both paths to absolute paths to handle relative paths and symlinks
+  const resolvedTargetDir = path.resolve(targetDir);
+  const resolvedFilePath = path.resolve(targetDir, normalizedFilePath);
+
+  // Ensure the resolved file path starts with the target directory
+  if (!resolvedFilePath.startsWith(resolvedTargetDir + path.sep)) {
+    throw new Error(
+      `Path traversal detected: "${filePath}" attempts to write outside "${targetDir}"`,
+    );
+  }
+
+  return resolvedFilePath;
+}
+
 export function writePresetLibrary(presetLibrary: PresetLibrary) {
   console.log(
     '----------------------------------------------------------------------',
   );
   for (const preset of presetLibrary.presets) {
-    const filePath = path.join(
+    // Validate the file path to prevent path traversal attacks
+    const filePath = validateSafePath(
       presetLibrary.userPresetsFolder,
       preset.filePath,
     );
