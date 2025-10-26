@@ -5,6 +5,7 @@
     "editorconfig.editorconfig",
     "ms-vscode.vscode-typescript-next",
     "usernamehw.errorlens",
-    "orta.vscode-jest"
+    "orta.vscode-jest",
+    "streetsidesoftware.code-spell-checker"
   ]
 }
