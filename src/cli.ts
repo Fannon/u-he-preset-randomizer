@@ -7,7 +7,7 @@ import { Config, getConfigFromParameters } from "./config.js";
 import { generateFullyRandomPresets, generateMergedPresets, generateRandomizedPresets } from "./randomizer.js";
 import { DetectedPresetLibrary, SynthNames, detectPresetLibraryLocations } from "./utils/detector.js";
 import inquirer from "inquirer"
-import inquirerPrompt from "inquirer-autocomplete-prompt"
+import searchPrompt from "@inquirer/search"
 import { fileURLToPath } from 'url';
 import chalk from "chalk"
 import { dirname } from 'path';
@@ -112,40 +112,39 @@ async function runInteractiveMode() {
   const locations = detectPresetLibraryLocations(config)
 
   // 1) Detect available u-he synths and offer user choice
-  inquirer.registerPrompt('autocomplete', inquirerPrompt);
   const synthChoices = locations.map((el: DetectedPresetLibrary) => {
     return {
-      value: el.synthName
+      value: el.synthName,
+      name: el.synthName,
     }
   })
   if (!synthChoices.length) {
     console.error(chalk.red('Error: No u-he synths detected. Exiting.'))
     process.exit(1)
   }
-  const synth = await inquirer.prompt<{ value: SynthNames }>([{
-    name: 'value',
-    type: 'autocomplete',
+  const synth = await searchPrompt<SynthNames>({
     message: 'Which u-he synth to generate presets for?',
     pageSize: synthChoices.length,
-    source: async (_answersSoFar, input: string) => {
+    source: async (input) => {
       if (!input) {
         return synthChoices
-      } else {
-        return synthChoices.filter((el) => {
-          return el.value.toLowerCase().startsWith(input.toLowerCase())
-        })
       }
+      const normalized = input.toLowerCase()
+      return synthChoices.filter((el) => {
+        return el.value.toLowerCase().startsWith(normalized)
+      })
     }
-  }])
-  config.synth = synth.value
+  })
+  config.synth = synth
 
   // 2) Choose random generation mode
   const mode = await inquirer.prompt<{ value: string }>([{
     name: 'value',
     type: 'list',
     message: 'Which random mode?',
+    default: "Fully randomized presets",
     choices: [
-      { value: "Fully randomized presets", checked: true },
+      { value: "Fully randomized presets" },
       { value: "Randomize existing preset" },
       { value: "Merge existing presets" },
     ]
@@ -219,23 +218,21 @@ async function runInteractiveMode() {
       ...presetFolders,
     ].sort()
 
-    const folderPrompt = await inquirer.prompt<{ value: string }>([{
-      name: 'value',
-      type: 'autocomplete',
+    const folderChoice = await searchPrompt<string>({
       message: 'Which folder to narrow down to?',
       pageSize: 12,
-      source: async (_answersSoFar, input: string) => {
+      source: async (input) => {
         if (!input) {
           return folders
-        } else {
-          return folders.filter((el) => {
-            return el.toLowerCase().includes(input.toLowerCase())
-          })
         }
+        const normalized = input.toLowerCase()
+        return folders.filter((el) => {
+          return el.toLowerCase().includes(normalized)
+        })
       }
-    }])
-    if (folderPrompt.value && folderPrompt.value !== "/") {
-      config.folder = folderPrompt.value;
+    })
+    if (folderChoice && folderChoice !== "/") {
+      config.folder = folderChoice;
       config.pattern = `${config.folder}${config.pattern || '**/*'}`;
     }
   }
@@ -292,22 +289,20 @@ async function runInteractiveMode() {
     allChoices.sort((a, b) => a.value.localeCompare(b.value));
 
     if (allChoices.length) {
-      const authorPrompt = await inquirer.prompt<{ value: string }>([{
-        name: 'value',
-        type: 'autocomplete',
+      const author = await searchPrompt<string>({
         message: 'Which author to narrow down to?',
         pageSize: 12,
-        source: async (_answersSoFar, input: string) => {
+        source: async (input) => {
           if (!input) {
             return allChoices
-          } else {
-            return allChoices.filter((el) => {
-              return el.name.toLowerCase().includes(input.toLowerCase())
-            })
           }
+          const normalized = input.toLowerCase()
+          return allChoices.filter((el) => {
+            return el.name.toLowerCase().includes(normalized)
+          })
         }
-      }])
-      config.author = authorPrompt.value
+      })
+      config.author = author
     }
   }
   // Filter out presets by author (if given)
@@ -343,22 +338,20 @@ async function runInteractiveMode() {
     allChoices.sort((a, b) => a.value.localeCompare(b.value));
 
     if (allChoices.length) {
-      const categoryPrompt = await inquirer.prompt<{ value: string }>([{
-        name: 'value',
-        type: 'autocomplete',
+      const category = await searchPrompt<string>({
         message: 'Which category to narrow down to?',
         pageSize: 12,
-        source: async (_answersSoFar, input: string) => {
+        source: async (input) => {
           if (!input) {
             return allChoices
-          } else {
-            return allChoices.filter((el) => {
-              return el.name.toLowerCase().includes(input.toLowerCase())
-            })
           }
+          const normalized = input.toLowerCase()
+          return allChoices.filter((el) => {
+            return el.name.toLowerCase().includes(normalized)
+          })
         }
-      }])
-      config.category = categoryPrompt.value
+      })
+      config.category = category
     }
   }
 
@@ -522,33 +515,31 @@ async function choosePreset(foundPresets: string[], allowSelectAll: boolean = fa
     }
   }))
   
-  const presetChoice = await inquirer.prompt<{ value: string }>([{
-    name: 'value',
-    type: 'autocomplete',
+  const presetChoice = await searchPrompt<string>({
     message: 'Select preset(s):',
     pageSize: 12,
-    source: async (_answersSoFar, input: string) => {
+    source: async (input) => {
       if (!input) {
         return allChoices
-      } else {
-        const staticChoices: ChoiceOptions[] = []
-        if (allowSelectAll) {
-          staticChoices.push({
-            value: `*${input}*`,  
-            name: `*${input}* (all presets including search string)`
-          })
-        }
-        staticChoices.push({
-          value: `?${input}?`,  
-          name: `?${input}? (random pick of presets including search string)`
-        })
-        return staticChoices.concat(allChoices.filter((el) => {
-          return el.name.toLowerCase().includes(input.toLowerCase())
-        }))
       }
+      const normalized = input.toLowerCase()
+      const staticChoices: ChoiceOptions[] = []
+      if (allowSelectAll) {
+        staticChoices.push({
+          value: `*${input}*`,
+          name: `*${input}* (all presets including search string)`
+        })
+      }
+      staticChoices.push({
+        value: `?${input}?`,
+        name: `?${input}? (random pick of presets including search string)`
+      })
+      return staticChoices.concat(allChoices.filter((el) => {
+        return el.name.toLowerCase().includes(normalized)
+      }))
     }
-  }])
-  return presetChoice.value
+  })
+  return presetChoice
 }
 
 function narrowDownByCategory(presetLibrary: PresetLibrary, category: string) {
