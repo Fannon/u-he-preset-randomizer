@@ -1,20 +1,11 @@
 export default {
-  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        useESM: true,
-        tsconfig: {
-          module: 'ESNext',
-        },
-      },
-    ],
+    '^.+\\.(t|j)sx?$': '@swc/jest',
   },
   testMatch: [
     '**/tests/**/*.test.ts',
@@ -22,8 +13,9 @@ export default {
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
-    '!src/cli.ts', // Exclude CLI entry point from coverage
-    '!src/index.ts', // Exclude index exports from coverage
+    '!src/cli.ts',
+    '!src/index.ts',
+    '!src/detect-synths.ts',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
