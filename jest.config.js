@@ -14,6 +14,7 @@ export default {
     '!src/cli.ts',
     '!src/index.ts',
     '!src/detect-synths.ts',
+    '!src/**/e2e/**',
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],

@@ -2,8 +2,6 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import type { SynthNames } from './utils/detector.js';
 
-const argv = yargs(hideBin(process.argv)).parse() as Record<string, unknown>;
-
 export interface Config {
   debug: boolean;
   synth?: SynthNames;
@@ -32,7 +30,15 @@ export function getDefaultConfig(): Config {
 
 let config = getDefaultConfig();
 
-export function getConfigFromParameters(): Config {
+function parseCliArgs(): Record<string, unknown> {
+  return yargs(hideBin(process.argv)).parse() as Record<string, unknown>;
+}
+
+export function getConfigFromParameters(
+  overrides?: Record<string, unknown>,
+): Config {
+  const argv = overrides ?? parseCliArgs();
+
   if (argv.synth) {
     config.synth = argv.synth as SynthNames;
   }
@@ -90,4 +96,8 @@ export function setConfig(newConfig: Partial<Config>) {
     ...config,
     ...newConfig,
   };
+}
+
+export function resetConfig() {
+  config = getDefaultConfig();
 }
