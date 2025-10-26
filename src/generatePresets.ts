@@ -49,22 +49,23 @@ export function generatePresets(inputConfig: Config) {
     console.debug(chalk.gray(JSON.stringify(config, null, 2)));
   }
 
+  let generatedPresets: PresetLibrary;
   if (config.merge) {
-    const generatedPresets = generateMergedPresets(
+    generatedPresets = generateMergedPresets(
       filteredLibrary,
       paramsModel,
       config,
     );
     writePresetLibrary(generatedPresets);
   } else if (config.preset) {
-    const generatedPresets = generateRandomizedPresets(
+    generatedPresets = generateRandomizedPresets(
       filteredLibrary,
       paramsModel,
       config,
     );
     writePresetLibrary(generatedPresets);
   } else {
-    const generatedPresets = generateFullyRandomPresets(
+    generatedPresets = generateFullyRandomPresets(
       filteredLibrary,
       paramsModel,
       config,
@@ -72,10 +73,19 @@ export function generatePresets(inputConfig: Config) {
     writePresetLibrary(generatedPresets);
   }
 
+  console.log('');
+  console.log(chalk.green('Successfully generated presets!'));
+  console.log('');
+  console.log(chalk.bold('Where to find them:'));
+  console.log(`   ${generatedPresets.userPresetsFolder}`);
+  console.log('');
+  console.log(chalk.bold('Next steps:'));
+  console.log('   1. Open your DAW and load the synth');
+  console.log('   2. Look in the "RANDOM" folder in your user presets');
+  console.log('   3. Browse and audition the generated sounds');
   console.log(
     '======================================================================',
   );
-  console.log('Successfully completed.');
 }
 
 function applyPresetFilters(

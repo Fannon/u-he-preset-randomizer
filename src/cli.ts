@@ -41,8 +41,20 @@ function logCliBanner() {
   console.log(
     '======================================================================',
   );
+  console.log('');
   console.log(
-    'Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme',
+    chalk.bold(
+      'Welcome! This tool helps you create new synth presets through:',
+    ),
+  );
+  console.log('  1. Fully random generation (great for discovery)');
+  console.log('  2. Variations of existing presets (similar but different)');
+  console.log('  3. Merging multiple presets (combine your favorites)');
+  console.log('');
+  console.log(
+    chalk.dim(
+      'Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme',
+    ),
   );
   console.log('');
 }
@@ -80,7 +92,19 @@ async function runInteractiveMode() {
     };
   });
   if (!synthChoices.length) {
-    console.error(chalk.red('Error: No u-he synths detected. Exiting.'));
+    console.log('');
+    console.error(chalk.red('No u-he synths found on your system.'));
+    console.log('');
+    console.log('Please make sure:');
+    console.log('  - You have at least one u-he synth installed');
+    console.log('  - The synth is installed in the standard location');
+    console.log('  - You have created or loaded some presets');
+    console.log('');
+    console.log(chalk.dim('If your u-he folder is in a custom location, use:'));
+    console.log(
+      chalk.dim('  npx u-he-preset-randomizer --custom-folder "path/to/u-he"'),
+    );
+    console.log('');
     process.exit(1);
   }
   const synth = await searchPrompt<SynthNames>({
@@ -105,12 +129,21 @@ async function runInteractiveMode() {
     {
       name: 'value',
       type: 'list',
-      message: 'Which random mode?',
+      message: 'What would you like to do?',
       default: 'Fully randomized presets',
       choices: [
-        { value: 'Fully randomized presets' },
-        { value: 'Randomize existing preset' },
-        { value: 'Merge existing presets' },
+        {
+          value: 'Fully randomized presets',
+          name: 'Create fully random presets (best for discovering new sounds)',
+        },
+        {
+          value: 'Randomize existing preset',
+          name: 'Create variations of a specific preset (keep the character, add variation)',
+        },
+        {
+          value: 'Merge existing presets',
+          name: 'Blend multiple presets together (combine your favorites)',
+        },
       ],
     },
   ]);
@@ -118,65 +151,95 @@ async function runInteractiveMode() {
   // 2.5) Choose optional modifiers for randomization
   if (!config.stable || !config.binary) {
     const binaryEnabled = ['Repro-1', 'Repro-5'].includes(config.synth);
-    const modifiers = await inquirer.prompt<{ value: string }>([
+
+    // First: Basic filtering options
+    const basicOptions = await inquirer.prompt<{ value: string[] }>([
       {
         name: 'value',
         type: 'checkbox',
-        message: 'Set optional flags / modifiers (multi-choice):',
+        message: 'Narrow down which presets to use as inspiration (optional):',
         choices: [
           {
             value: 'folder',
-            name: '[Folder]     Narrow down presets by folder',
+            name: 'Select a specific folder',
           },
           {
             value: 'category',
-            name: '[Category]   Narrow down presets by category',
+            name: 'Filter by category (e.g., Bass, Lead, Pad)',
           },
           {
             value: 'author',
-            name: '[Author]     Narrow down presets by author',
+            name: 'Filter by preset creator',
           },
           {
             value: 'favorites',
-            name: '[Favorites]  Narrow down presets by favorites from .uhe-fav file',
-          },
-          {
-            value: 'stable',
-            name: '[Stable]     More stable randomization approach',
-            checked: true,
-          },
-          {
-            value: 'binary',
-            name: '[Binary]     Include binary section (WARNING: unstable with some synths!)',
-            checked: binaryEnabled,
-          },
-          {
-            value: 'dictionary',
-            name: '[Dictionary] Use real preset names to generate random preset names',
+            name: 'Use only your favorited presets',
           },
         ],
       },
     ]);
-    if (modifiers.value.includes('folder')) {
+
+    // Apply basic options
+    if (basicOptions.value.includes('folder')) {
       config.folder = true;
     }
-    if (modifiers.value.includes('category')) {
+    if (basicOptions.value.includes('category')) {
       config.category = true;
     }
-    if (modifiers.value.includes('author')) {
+    if (basicOptions.value.includes('author')) {
       config.author = true;
     }
-    if (modifiers.value.includes('favorites')) {
+    if (basicOptions.value.includes('favorites')) {
       config.favorites = true;
     }
-    if (modifiers.value.includes('stable')) {
+
+    // Then: Ask if they want advanced options
+    const wantsAdvanced = await inquirer.prompt<{ value: boolean }>([
+      {
+        name: 'value',
+        type: 'confirm',
+        message: 'Show advanced options?',
+        default: false,
+      },
+    ]);
+
+    if (wantsAdvanced.value) {
+      const advancedOptions = await inquirer.prompt<{ value: string[] }>([
+        {
+          name: 'value',
+          type: 'checkbox',
+          message: 'Advanced settings:',
+          choices: [
+            {
+              value: 'stable',
+              name: '[Stable] Use safer randomization (recommended for most synths)',
+              checked: true,
+            },
+            {
+              value: 'binary',
+              name: '[Binary] Include advanced modulation data (may cause crashes)',
+              checked: binaryEnabled,
+            },
+            {
+              value: 'dictionary',
+              name: '[Dictionary] Generate realistic preset names',
+            },
+          ],
+        },
+      ]);
+
+      if (advancedOptions.value.includes('stable')) {
+        config.stable = true;
+      }
+      if (advancedOptions.value.includes('binary')) {
+        config.binary = true;
+      }
+      if (advancedOptions.value.includes('dictionary')) {
+        config.dictionary = true;
+      }
+    } else {
+      // Default: stable mode enabled
       config.stable = true;
-    }
-    if (modifiers.value.includes('binary')) {
-      config.binary = true;
-    }
-    if (modifiers.value.includes('dictionary')) {
-      config.dictionary = true;
     }
   }
 
@@ -243,8 +306,11 @@ async function runInteractiveMode() {
     throw new Error('Synth not specified in config');
   }
 
-  console.log(`> Loading and analyzing preset library...`);
+  console.log('');
+  console.log(chalk.cyan('Loading your preset library...'));
   const presetLibrary = loadPresetLibrary(config.synth, config);
+  console.log(chalk.green(`Loaded ${presetLibrary.presets.length} presets`));
+  console.log('');
 
   // Optionally: Narrow down by u-he favorites
   if (config.favorites === true && presetLibrary.favorites.length) {
@@ -276,7 +342,7 @@ async function runInteractiveMode() {
       config.favorites,
     );
   } else {
-    console.log('> No selection made, skipping this step.');
+    console.log(chalk.dim('No selection made, skipping this step.'));
   }
 
   // Optionally: Narrow down by author
@@ -426,6 +492,49 @@ async function runInteractiveMode() {
     config.amount ??= await chooseAmountOfPresets(16);
   }
 
+  // Show summary before generating
+  console.log('');
+  console.log(chalk.bold.cyan('Summary:'));
+  console.log(chalk.dim('─────────────────────────────────────'));
+  console.log(`  Synth:      ${config.synth}`);
+  console.log(`  Mode:       ${mode.value}`);
+  console.log(`  Amount:     ${config.amount} presets`);
+  if (config.randomness) {
+    console.log(`  Randomness: ${config.randomness}%`);
+  }
+  if (config.preset && typeof config.preset === 'string') {
+    console.log(`  Base:       ${config.preset}`);
+  }
+  if (config.category && typeof config.category === 'string') {
+    console.log(`  Category:   ${config.category}`);
+  }
+  if (config.author && typeof config.author === 'string') {
+    console.log(`  Author:     ${config.author}`);
+  }
+  if (config.folder && typeof config.folder === 'string') {
+    console.log(`  Folder:     ${config.folder}`);
+  }
+  console.log(chalk.dim('─────────────────────────────────────'));
+  console.log('');
+
+  const proceed = await inquirer.prompt<{ value: boolean }>([
+    {
+      name: 'value',
+      type: 'confirm',
+      message: 'Generate presets with these settings?',
+      default: true,
+    },
+  ]);
+
+  if (!proceed.value) {
+    console.log(
+      chalk.yellow('Cancelled. Run the command again to start over.'),
+    );
+    process.exit(0);
+  }
+
+  console.log('');
+  console.log(chalk.cyan('Generating your presets...'));
   generatePresets(config);
   logRepeatCommand(config);
 }
@@ -436,11 +545,17 @@ async function runInteractiveMode() {
 
 /** Choose number of presets to generate */
 async function chooseAmountOfPresets(initial = 8): Promise<number> {
+  console.log('');
+  console.log(
+    chalk.dim(
+      'Tip: Start with 8-16 presets to review. You can always generate more!',
+    ),
+  );
   const amount = await inquirer.prompt<{ value: number }>([
     {
       name: 'value',
       type: 'number',
-      message: 'How many presets to generate?',
+      message: 'How many presets would you like to generate?',
       default: initial,
     },
   ]);
@@ -448,14 +563,21 @@ async function chooseAmountOfPresets(initial = 8): Promise<number> {
 }
 /** Choose randomness amount */
 async function chooseRandomness(initial = 20): Promise<number> {
+  console.log('');
+  console.log(chalk.dim('Randomness guide:'));
+  console.log(chalk.dim('   0-20%   = Subtle variations'));
+  console.log(chalk.dim('   20-50%  = Noticeable differences'));
+  console.log(chalk.dim('   50-100% = Dramatically different'));
   const amount = await inquirer.prompt<{ value: number }>({
     name: 'value',
     type: 'number',
-    message: 'How much randomness to apply (0-100)',
+    message: 'How much variation? (0-100)',
     default: initial,
     validate: (input: number | undefined) => {
-      if (typeof input !== 'number') return false;
-      return input >= 0 && input <= 100;
+      if (typeof input !== 'number') return 'Please enter a number';
+      if (input < 0 || input > 100)
+        return 'Please enter a value between 0 and 100';
+      return true;
     },
   });
   return amount.value;
