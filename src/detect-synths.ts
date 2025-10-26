@@ -7,16 +7,18 @@ import chalk from 'chalk';
  * Simple script to detect installed u-he synthesizers
  */
 function detectSynths() {
-  console.log(chalk.cyan.bold(`\n🔍 Detecting installed u-he synthesizers in ${process.platform}...\n`));
+  console.log(
+    chalk.cyan.bold(`\n🔍 Detecting installed u-he synthesizers in ${process.platform}...\n`)
+  );
 
   const config = getDefaultConfig();
-  const locationsTried : string[] = [];
+  const locationsTried: string[] = [];
   const detected = detectPresetLibraryLocations(config, locationsTried);
 
   if (detected.length === 0) {
     console.log(chalk.yellow('❌ No u-he synthesizers found on this system.\n'));
     console.log(chalk.gray('Locations tried:'));
-    locationsTried.forEach(location => {
+    locationsTried.forEach((location) => {
       console.log(chalk.gray(`  - ${location.replace('__SynthName__', '*')}`));
     });
     console.log();
@@ -26,8 +28,8 @@ function detectSynths() {
   console.log(chalk.green(`✅ Found ${detected.length} u-he synthesizer(s):\n`));
 
   // Group by synth name to avoid duplicates
-  const uniqueSynths = new Map<string, typeof detected[0]>();
-  detected.forEach(synth => {
+  const uniqueSynths = new Map<string, (typeof detected)[0]>();
+  detected.forEach((synth) => {
     if (!uniqueSynths.has(synth.synthName)) {
       uniqueSynths.set(synth.synthName, synth);
     }

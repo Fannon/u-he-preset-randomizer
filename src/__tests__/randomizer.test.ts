@@ -1,6 +1,4 @@
-import {
-  calculateRandomMergeRatios,
-} from '../randomizer.js';
+import { calculateRandomMergeRatios } from '../randomizer.js';
 
 describe('randomizer', () => {
   describe('calculateRandomMergeRatios', () => {
@@ -16,7 +14,7 @@ describe('randomizer', () => {
           expect(sum).toBeCloseTo(1.0, 10);
 
           // All ratios should be positive and <= 1
-          ratios.forEach(ratio => {
+          ratios.forEach((ratio) => {
             expect(ratio).toBeGreaterThan(0);
             expect(ratio).toBeLessThanOrEqual(1);
           });
@@ -27,7 +25,7 @@ describe('randomizer', () => {
     it('should never produce zero or negative ratios', () => {
       for (let i = 0; i < 20; i++) {
         const ratios = calculateRandomMergeRatios(5);
-        ratios.forEach(ratio => {
+        ratios.forEach((ratio) => {
           expect(ratio).toBeGreaterThan(0);
         });
       }

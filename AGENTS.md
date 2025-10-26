@@ -24,19 +24,16 @@ This is a CLI tool that generates random u-he synthesizer presets through random
 ### Core Modules
 
 1. **parser.ts** - Parses and serializes u-he preset files (.h2p format)
-
    - Handles text and binary sections of preset files
    - Exports `parsePreset()` and `serializePreset()` functions
    - Can be used independently by other projects
 
 2. **analyzer.ts** - Analyzes preset libraries to extract parameter statistics
-
    - Calculates value distributions across preset collections
    - Identifies parameter types (numeric, binary, etc.)
    - Builds statistical models for randomization
 
 3. **randomizer.ts** - Core randomization logic
-
    - Generates fully random presets
    - Randomizes existing presets with configurable ratios
    - Merges multiple presets with random weighting
@@ -44,19 +41,16 @@ This is a CLI tool that generates random u-he synthesizer presets through random
    - Handles binary sections (with `--binary` flag)
 
 4. **presetLibrary.ts** - Manages preset discovery and loading
-
    - Scans directories for u-he preset files
    - Filters presets by pattern, folder, category, author, favorites
    - Handles platform-specific preset locations
 
 5. **config.ts** - Configuration management and CLI argument parsing
-
    - Uses `yargs` for argument parsing
    - Uses `inquirer` for interactive mode
    - Validates and normalizes configuration
 
 6. **cli.ts** - Main CLI entry point
-
    - Orchestrates the workflow
    - Handles interactive and non-interactive modes
    - Manages output and user feedback
@@ -172,6 +166,7 @@ npm run lint            # Run ESLint
 - Tests must handle ESM modules
 - Mock file system operations where appropriate
 - Test files are excluded from npm package (`!dist/**/__tests__`)
+- Avoid overly mocking, import and use dependencies directly if they are side-effect free
 
 ## Build and Distribution
 

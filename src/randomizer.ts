@@ -1,14 +1,9 @@
-import { ParamsModel, getDictionaryOfNames } from "./analyzer.js";
-import { Preset } from "./parser.js";
-import { PresetLibrary } from "./presetLibrary.js";
-import {
-  uniqueNamesGenerator,
-  adjectives,
-  colors,
-  names,
-} from "unique-names-generator";
-import { Config } from "./config.js";
-import chalk from "chalk";
+import { ParamsModel, getDictionaryOfNames } from './analyzer.js';
+import { Preset } from './parser.js';
+import { PresetLibrary } from './presetLibrary.js';
+import { uniqueNamesGenerator, adjectives, colors, names } from 'unique-names-generator';
+import { Config } from './config.js';
+import chalk from 'chalk';
 
 /**
  * Fully randomized presets, with real values from library
@@ -18,77 +13,105 @@ export function generateFullyRandomPresets(
   paramModel: ParamsModel,
   config: Config
 ): PresetLibrary {
-  console.log('----------------------------------------------------------------------')
-  console.log(`Fully random presets with modes: stable=${config.stable || false}, binary=${config.binary || false}`)
+  console.log('----------------------------------------------------------------------');
+  console.log(
+    `Fully random presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`
+  );
 
   if (presetLibrary.presets.length === 0) {
-    console.error(chalk.red('Error: No presets available for randomization.'))
-    process.exit(1)
+    console.error(chalk.red('Error: No presets available for randomization.'));
+    process.exit(1);
   }
 
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
-    userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
+    userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
     presets: [],
   };
-  for (let i = 0; i < (config.amount || 16); i++) {
-    const randomPreset: Preset = JSON.parse(
-      JSON.stringify(getRandomArrayItem(presetLibrary.presets))
-    ) as Preset;
+  for (let i = 0; i < (config.amount ?? 16); i++) {
+    const basePreset = getRandomArrayItem(presetLibrary.presets);
+    if (!basePreset) {
+      console.error(chalk.red('Error: Could not get random preset from library'));
+      continue;
+    }
+    const randomPreset: Preset = JSON.parse(JSON.stringify(basePreset)) as Preset;
 
     if (config.stable) {
-      const presetPerSectionMap: {[section: string]: Preset} = {}
-      
-      for (const param of randomPreset.params) {
+      const presetPerSectionMap: Record<string, Preset> = {};
 
-        if (!paramModel[param.id]) {
-          console.error(chalk.red(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`))
+      for (const param of randomPreset.params) {
+        const paramModelEntry = paramModel[param.id];
+        if (!paramModelEntry) {
+          console.error(
+            chalk.red(
+              `Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`
+            )
+          );
+          continue;
         }
 
         if (!presetPerSectionMap[param.section]) {
-          presetPerSectionMap[param.section] = getRandomArrayItem(presetLibrary.presets)
+          const randomSectionPreset = getRandomArrayItem(presetLibrary.presets);
+          if (randomSectionPreset) {
+            presetPerSectionMap[param.section] = randomSectionPreset;
+          } else {
+            continue;
+          }
         }
 
-        if (paramModel[param.id].type === 'string' || paramModel[param.id].distinctValues.length <= 2) {
+        if (paramModelEntry.type === 'string' || paramModelEntry.distinctValues.length <= 2) {
           // Do not randomize string type values or values that only have 1 or 2 distinct values
           continue;
         }
 
-        if (paramModel[param.id].keepStable) {
+        if (paramModelEntry.keepStable) {
           // Do not randomize if parameter is marked as to be kept stable
           continue;
         }
 
-        const randomNewParam = presetPerSectionMap[param.section].params.find(el => el.id === param.id);
+        const sectionPreset = presetPerSectionMap[param.section];
+        const randomNewParam = sectionPreset?.params.find((el) => el.id === param.id);
 
         if (randomNewParam) {
-          param.value = randomNewParam.value
+          param.value = randomNewParam.value;
         } else {
           // If the preset doesn't have the particular param, fall back to a fully random value
-          param.value = getRandomArrayItem(paramModel[param.id]!.values);
+          const randomValue = getRandomArrayItem(paramModelEntry.values);
+          if (randomValue !== undefined) {
+            param.value = randomValue;
+          }
         }
       }
     } else {
       for (const param of randomPreset.params) {
-        if (!paramModel[param.id]) {
-          console.error(chalk.red(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`))
-        }
-        if (paramModel[param.id].keepStable === 'always') {
+        const paramModelEntry = paramModel[param.id];
+        if (!paramModelEntry) {
+          console.error(
+            chalk.red(
+              `Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`
+            )
+          );
           continue;
         }
-        param.value = getRandomArrayItem(paramModel[param.id]!.values);
+        if (paramModelEntry.keepStable === 'always') {
+          continue;
+        }
+        const randomValue = getRandomArrayItem(paramModelEntry.values);
+        if (randomValue !== undefined) {
+          param.value = randomValue;
+        }
       }
     }
 
     let randomName = uniqueNamesGenerator({
       dictionaries: [adjectives, colors, names],
-      separator: " ",
-      style: "capital",
+      separator: ' ',
+      style: 'capital',
     });
 
     if (config.dictionary) {
-      const names = getDictionaryOfNames(presetLibrary)
-      randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`
+      const names = getDictionaryOfNames(presetLibrary);
+      randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`;
     }
 
     randomPreset.filePath = `/Fully Random/RND ${randomName}.h2p`;
@@ -96,22 +119,21 @@ export function generateFullyRandomPresets(
       randomPreset.filePath = `/Fully Random/${config.category.split(':').join(' ')}/RND ${randomName}.h2p`;
     }
     randomPreset.presetName = `RND ${randomName}`;
-    (randomPreset.meta = [
+    randomPreset.meta = [
       {
-        key: "Author",
-        value: "Random Generator",
+        key: 'Author',
+        value: 'Random Generator',
       },
       {
-        key: "Description",
-        value:
-          `Fully random preset. ${getPresetDescriptionSuffix(config)}`,
+        key: 'Description',
+        value: `Fully random preset. ${getPresetDescriptionSuffix(config)}`,
       },
-    ])
+    ];
     if (config.category) {
       randomPreset.meta.push({
-        key: "Categories",
-        value: [config.category as string]
-      })
+        key: 'Categories',
+        value: [config.category as string],
+      });
     }
     newPresetLibrary.presets.push(randomPreset);
   }
@@ -126,55 +148,60 @@ export function generateRandomizedPresets(
   paramModel: ParamsModel,
   config: Config
 ): PresetLibrary {
-  console.log('----------------------------------------------------------------------')
-  console.log(`Randomizing preset with modes: stable=${config.stable || false}, binary=${config.binary || false}`)
+  console.log('----------------------------------------------------------------------');
+  console.log(
+    `Randomizing preset with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`
+  );
 
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
-    userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
+    userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
     presets: [],
   };
 
-  let basePreset: Preset;
+  let basePreset: Preset | undefined;
 
   // If no preset given or "?" is passed, choose a random preset
-  if (config.preset === "?" || !config.preset) {
+  if (config.preset === '?' || !config.preset) {
     basePreset = getRandomArrayItem(presetLibrary.presets);
-  } else if (config.preset.startsWith("?")) {
-    basePreset = getRandomArrayItem(presetLibrary.presets.filter((el) => {
-      const searchString = config.preset.split('?').join('').toLowerCase();
-      return el && el.filePath && el.filePath.toLowerCase().includes(searchString);
-    }));
+  } else if (config.preset.startsWith('?')) {
+    basePreset = getRandomArrayItem(
+      presetLibrary.presets.filter((el) => {
+        const searchString = (config.preset ?? '').split('?').join('').toLowerCase();
+        return el?.filePath?.toLowerCase().includes(searchString);
+      })
+    );
   } else {
     basePreset = presetLibrary.presets.find((el) => {
-      return el.filePath.includes(config.preset);
+      return el.filePath.includes(config.preset ?? '');
     });
-    if (!basePreset) {
-      console.error(chalk.red(`Error: No preset with name ${config.preset} found!`))
-      process.exit(1);
-    }
+  }
+
+  if (!basePreset) {
+    console.error(chalk.red(`Error: No preset with name ${config.preset ?? ''} found!`));
+    process.exit(1);
   }
 
   console.log('Randomizing base preset: ' + basePreset.filePath);
 
-  for (let i = 0; i < (config.amount || 8); i++) {
-    const randomPreset = randomizePreset(basePreset, paramModel, config)
+  for (let i = 0; i < (config.amount ?? 8); i++) {
+    const randomPreset = randomizePreset(basePreset, paramModel, config);
     let randomName = uniqueNamesGenerator({
       dictionaries: [adjectives, colors],
-      separator: " ",
-      style: "capital",
+      separator: ' ',
+      style: 'capital',
     });
     if (config.dictionary) {
-      const names = getDictionaryOfNames(presetLibrary)
-      randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`
+      const names = getDictionaryOfNames(presetLibrary);
+      randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`;
     }
 
     randomPreset.filePath = `/Randomized Preset/${randomPreset.presetName}/RND ${randomName} ${randomPreset.presetName}.h2p`;
     randomPreset.presetName = `RND ${randomName} ${randomPreset.presetName}`;
 
-    const descriptionMeta = randomPreset.meta.find(el => el.key === 'Description')
-    if (descriptionMeta) {
-      descriptionMeta.value += `. Randomized existing preset: ${randomPreset.presetName}. ${getPresetDescriptionSuffix(config)}`
+    const descriptionMeta = randomPreset.meta.find((el) => el.key === 'Description');
+    if (descriptionMeta && typeof descriptionMeta.value === 'string') {
+      descriptionMeta.value += `. Randomized existing preset: ${randomPreset.presetName}. ${getPresetDescriptionSuffix(config)}`;
     }
 
     newPresetLibrary.presets.push(randomPreset);
@@ -188,46 +215,55 @@ export function generateRandomizedPresets(
 export function generateMergedPresets(
   presetLibrary: PresetLibrary,
   paramModel: ParamsModel,
-  config: Config,
+  config: Config
 ): PresetLibrary {
-  console.log('----------------------------------------------------------------------')
-  console.log(`Merging presets with modes: stable=${config.stable || false}, binary=${config.binary || false}`)
+  console.log('----------------------------------------------------------------------');
+  console.log(
+    `Merging presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`
+  );
 
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
-    userPresetsFolder: presetLibrary.userPresetsFolder + "/RANDOM",
+    userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
     presets: [],
   };
 
   let mergePresets: Preset[] = [];
 
-  if (!Array.isArray(config.merge)) {
-    config.merge = [config.merge];
-  }
+  const mergeConfig = config.merge ?? [];
+  const mergeArray = Array.isArray(mergeConfig) ? mergeConfig : [mergeConfig];
 
-  for (const presetTitle of config.merge) {
-    let mergePreset: Preset;
-
+  for (const presetTitle of mergeArray) {
     // If no preset given or "?" is passed, choose a random preset
-    if (presetTitle === "?") {
-      mergePresets.push(getRandomArrayItem(presetLibrary.presets));
-    } else if (presetTitle === "*") {
+    if (presetTitle === '?') {
+      const randomPreset = getRandomArrayItem(presetLibrary.presets);
+      if (randomPreset) {
+        mergePresets.push(randomPreset);
+      }
+    } else if (presetTitle === '*') {
       mergePresets = presetLibrary.presets.filter((el) => {
-        return el && el.presetName;
+        return el?.presetName;
       });
       break;
-    } else if (presetTitle.startsWith("*")) {
-      mergePresets.push(...presetLibrary.presets.filter((el) => {
-        const searchString = presetTitle.split('*').join('').toLowerCase();
-        return el && el.filePath && el.filePath.toLowerCase().includes(searchString);
-      }));
-    } else if (presetTitle.startsWith("?")) {
-      mergePresets.push(getRandomArrayItem(presetLibrary.presets.filter((el) => {
-        const searchString = presetTitle.split('?').join('').toLowerCase();
-        return el && el.filePath && el.filePath.toLowerCase().includes(searchString);
-      })));
+    } else if (presetTitle.startsWith('*')) {
+      mergePresets.push(
+        ...presetLibrary.presets.filter((el) => {
+          const searchString = presetTitle.split('*').join('').toLowerCase();
+          return el?.filePath?.toLowerCase().includes(searchString);
+        })
+      );
+    } else if (presetTitle.startsWith('?')) {
+      const randomPreset = getRandomArrayItem(
+        presetLibrary.presets.filter((el) => {
+          const searchString = presetTitle.split('?').join('').toLowerCase();
+          return el?.filePath?.toLowerCase().includes(searchString);
+        })
+      );
+      if (randomPreset) {
+        mergePresets.push(randomPreset);
+      }
     } else {
-      mergePreset = presetLibrary.presets.find((el) => {
+      const mergePreset = presetLibrary.presets.find((el) => {
         return el.filePath.includes(presetTitle);
       });
       if (!mergePreset) {
@@ -239,49 +275,59 @@ export function generateMergedPresets(
   }
 
   console.log(
-    `Merging ${mergePresets.length} presets:\n * ${mergePresets.map((el) => el.presetName).join("\n * ")}\n`
+    `Merging ${mergePresets.length} presets:\n * ${mergePresets.map((el) => el.presetName).join('\n * ')}\n`
   );
 
   if (mergePresets.length < 2) {
-    console.error(chalk.red("Error: Merge presets only works when at least two presets have been chosen"));
+    console.error(
+      chalk.red('Error: Merge presets only works when at least two presets have been chosen')
+    );
     process.exit(1);
   }
 
-  for (let i = 0; i < (config.amount || 8); i++) {
-    let newPreset: Preset = JSON.parse(
-      JSON.stringify(getRandomArrayItem<Preset>(mergePresets))
-    ) as Preset;
+  for (let i = 0; i < (config.amount ?? 8); i++) {
+    const basePreset = getRandomArrayItem<Preset>(mergePresets);
+    if (!basePreset) {
+      console.error(chalk.red('Error: Could not get random preset from merge list'));
+      continue;
+    }
+    let newPreset: Preset = JSON.parse(JSON.stringify(basePreset)) as Preset;
 
     // Create random ratios, that still add up to 1 total
     const mergeRatios = calculateRandomMergeRatios(mergePresets.length);
 
     for (const param of newPreset.params) {
-
-      if (!paramModel[param.id]) {
-        console.error(chalk.red(`Error: Unknown parameter ${param.id} in preset ${newPreset.filePath}, missing in analyzed parameter model`))
+      const paramModelEntry = paramModel[param.id];
+      if (!paramModelEntry) {
+        console.error(
+          chalk.red(
+            `Error: Unknown parameter ${param.id} in preset ${newPreset.filePath}, missing in analyzed parameter model`
+          )
+        );
+        continue;
       }
-      
+
       if (config.stable) {
-        if (paramModel[param.id].type === 'string' || paramModel[param.id].distinctValues.length <= 2) {
+        if (paramModelEntry.type === 'string' || paramModelEntry.distinctValues.length <= 2) {
           // Do not randomize string type values or values that only have 1 or 2 distinct values
           continue;
         }
-        if (paramModel[param.id].keepStable) {
+        if (paramModelEntry.keepStable) {
           // Do not randomize if parameter is marked as to be kept stable
           continue;
         }
       }
-      if (paramModel[param.id].keepStable === 'always') {
+      if (paramModelEntry.keepStable === 'always') {
         continue;
       }
-      
+
       const oldParamValue = JSON.parse(JSON.stringify(param.value)) as string | number;
       let newParamValue = oldParamValue;
-      if (param.type === "string") {
+      if (param.type === 'string') {
         // Randomly pick a string enum value from one of the merge patches
         const pick = getRandomArrayItem<Preset>(mergePresets);
-        const findParam = pick.params.find((el) => el.id === param.id);
-        if (findParam && findParam.value) {
+        const findParam = pick?.params.find((el) => el.id === param.id);
+        if (findParam?.value) {
           newParamValue = findParam.value;
         }
       } else {
@@ -289,62 +335,65 @@ export function generateMergedPresets(
 
         for (const [i, preset] of mergePresets.entries()) {
           const findParam = preset.params.find((el) => el.id === param.id);
-          if (findParam && findParam.value) {
-            newParamValue += (findParam.value as number) * mergeRatios[i];
+          const ratio = mergeRatios[i] ?? 0;
+          if (findParam?.value) {
+            newParamValue += (findParam.value as number) * ratio;
           } else {
-            newParamValue += oldParamValue as number * mergeRatios[i];
+            newParamValue += (oldParamValue as number) * ratio;
           }
         }
 
-        if (param.type === "integer") {
+        if (param.type === 'integer') {
           newParamValue = Math.round(newParamValue);
-        } else if (param.type === "float") {
+        } else if (param.type === 'float') {
           newParamValue = Math.trunc(newParamValue * 100) / 100;
         }
       }
 
       if (typeof newParamValue === 'object') {
-        console.error(chalk.red('Error: New param value is object, but should not be.'), newPreset.filePath, newParamValue)
+        console.error(
+          chalk.red('Error: New param value is object, but should not be.'),
+          newPreset.filePath,
+          newParamValue
+        );
       }
 
       param.value = newParamValue;
     }
 
     if (config.randomness) {
-      newPreset = randomizePreset(newPreset, paramModel, config)
+      newPreset = randomizePreset(newPreset, paramModel, config);
     }
 
     let randomName = uniqueNamesGenerator({
       dictionaries: [adjectives, colors, names],
-      separator: " ",
-      style: "capital",
+      separator: ' ',
+      style: 'capital',
     });
     if (config.dictionary) {
-      const names = getDictionaryOfNames(presetLibrary)
-      randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`
+      const names = getDictionaryOfNames(presetLibrary);
+      randomName = `${getRandomArrayItem(names)} ${getRandomArrayItem(names)} ${getRandomArrayItem(names)}`;
     }
 
     newPreset.filePath = `/Merged Preset/RND ${randomName}.h2p`;
     newPreset.presetName = `RND ${randomName}`;
     newPreset.meta = [
       {
-        key: "Author",
-        value: "Random Generator",
+        key: 'Author',
+        value: 'Random Generator',
       },
       {
-        key: "Description",
+        key: 'Description',
         value: `Merged preset, based on ${mergePresets
           .map((el) => el.presetName)
-          .join(
-            ", "
-          )}. ${getPresetDescriptionSuffix(config)}`,
+          .join(', ')}. ${getPresetDescriptionSuffix(config)}`,
       },
-    ]
+    ];
     if (config.category) {
       newPreset.meta.push({
-        key: "Categories",
-        value: [config.category as string]
-      })
+        key: 'Categories',
+        value: [config.category as string],
+      });
     }
     newPresetLibrary.presets.push(newPreset);
   }
@@ -355,7 +404,8 @@ export function generateMergedPresets(
 // HELPER FUNCTIONS                     //
 //////////////////////////////////////////
 
-export function getRandomArrayItem<T>(list: T[]) {
+export function getRandomArrayItem<T>(list: T[]): T | undefined {
+  if (list.length === 0) return undefined;
   return list[Math.floor(Math.random() * list.length)];
 }
 
@@ -379,59 +429,69 @@ export function randomizePreset(
   paramModel: ParamsModel,
   config: Config
 ): Preset {
-  const randomness = config.randomness || 20;
+  const randomness = config.randomness ?? 20;
   const randomRatio = Math.min(Math.max(0, randomness / 100), 100);
   const stableRatio = 1 - randomRatio;
 
   const randomPreset: Preset = JSON.parse(JSON.stringify(basePreset)) as Preset;
 
   for (const param of randomPreset.params) {
-
-    if (!paramModel[param.id]) {
-      console.error(chalk.red(`Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`))
+    const paramModelEntry = paramModel[param.id];
+    if (!paramModelEntry) {
+      console.error(
+        chalk.red(
+          `Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`
+        )
+      );
+      continue;
     }
 
     if (config.stable) {
-      if (paramModel[param.id].type === 'string' || paramModel[param.id].distinctValues.length <= 2) {
+      if (paramModelEntry.type === 'string' || paramModelEntry.distinctValues.length <= 2) {
         // Do not randomize string type values or values that only have 1 or 2 distinct values
         continue;
       }
-      if (paramModel[param.id]?.keepStable) {
+      if (paramModelEntry.keepStable) {
         // Do not randomize if parameter is marked as to be kept stable
         continue;
       }
     }
-    if (paramModel[param.id]?.keepStable === 'always') {
+    if (paramModelEntry.keepStable === 'always') {
       continue;
     }
 
-    let randomParamValue = getRandomArrayItem(paramModel[param.id]!.values);
+    const randomParamValue = getRandomArrayItem(paramModelEntry.values);
+    if (randomParamValue === undefined) {
+      continue;
+    }
     const oldParamValue = param.value;
 
     if (randomParamValue !== oldParamValue) {
-      if (param.type !== "string") {
-        randomParamValue = (oldParamValue as number) * stableRatio + (randomParamValue as number) * randomRatio;
+      let newValue: string | number = randomParamValue;
+      if (param.type !== 'string') {
+        newValue =
+          (oldParamValue as number) * stableRatio + (randomParamValue as number) * randomRatio;
 
-        if (param.type === "integer") {
-          randomParamValue = Math.round(randomParamValue as number);
-        } else if (param.type === "float") {
-          randomParamValue = Math.trunc(randomParamValue as number * 100) / 100;
+        if (param.type === 'integer') {
+          newValue = Math.round(newValue);
+        } else if (param.type === 'float') {
+          newValue = Math.trunc(newValue * 100) / 100;
         }
       } else {
         // Randomly decide between the two values by randomness ratio
         if (Math.random() > randomRatio) {
-          randomParamValue = oldParamValue; // Revert to old value if random threshold is not met
+          newValue = oldParamValue; // Revert to old value if random threshold is not met
         }
       }
-      param.value = randomParamValue;
+      param.value = newValue;
     }
   }
   return randomPreset;
 }
 
 export function getPresetDescriptionSuffix(config: Config): string {
-  const niceDate = new Date().toISOString().split('T')[0]
-  let suffix = `Generated by https://github.com/Fannon/u-he-preset-randomizer on ${niceDate} .`
+  const niceDate = new Date().toISOString().split('T')[0];
+  let suffix = `Generated by https://github.com/Fannon/u-he-preset-randomizer on ${niceDate} .`;
   if (config.category) {
     suffix += ` Based on presets of category: ${config.category}.`;
   }

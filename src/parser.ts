@@ -1,5 +1,5 @@
-import chalk from "chalk";
-import * as path from "path";
+import chalk from 'chalk';
+import * as path from 'path';
 
 export interface Preset {
   /** Relative filePath to preset folder */
@@ -23,7 +23,7 @@ export interface PresetParam {
   section: string;
   value: string | number;
   index: number;
-  type: "string" | "float" | "integer";
+  type: 'string' | 'float' | 'integer';
 }
 
 //////////////////////////////////////////
@@ -32,21 +32,21 @@ export interface PresetParam {
 
 /**
  * Parses a u-he preset file and returns a Preset object.
- * 
+ *
  * @param fileString - The content of the preset file as a string.
  * @param filePath - The path to the preset file.
  * @param binary - A boolean indicating whether to include the binary section of the preset file.
  * @returns The parsed Preset object.
  */
 export function parseUhePreset(fileString: string, filePath: string, binary: boolean): Preset {
-  const meta = getPresetMetadata(fileString)
-  let categories: string[] = []
-  const categoriesMeta = meta.find(el => el.key === 'Categories')
-  if (categoriesMeta && categoriesMeta.value) {
+  const meta = getPresetMetadata(fileString);
+  let categories: string[] = [];
+  const categoriesMeta = meta.find((el) => el.key === 'Categories');
+  if (categoriesMeta?.value) {
     if (Array.isArray(categoriesMeta.value)) {
-      categories = categoriesMeta.value
+      categories = categoriesMeta.value;
     } else {
-      categories.push(categoriesMeta.value)
+      categories.push(categoriesMeta.value);
     }
   }
   return {
@@ -55,36 +55,36 @@ export function parseUhePreset(fileString: string, filePath: string, binary: boo
     meta: meta,
     params: getPresetParams(fileString, filePath),
     binary: binary ? getPresetBinarySection(fileString) : undefined,
-    categories: categories
+    categories: categories,
   };
 }
 /**
  * Retrieves the metadata entries from the given u-he preset file string.
- * 
+ *
  * @param fileString - The string representation of the file.
  * @returns An array of PresetMetaEntry objects representing the metadata entries.
  */
 export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
-  const split = fileString.split("*/");
-  const metadataHeader = split[0]!
-    .replace("/*@Meta", "")
-    .replace("/*@meta", "");
+  const split = fileString.split('*/');
+  const metadataHeader = split[0]!.replace('/*@Meta', '').replace('/*@meta', '');
 
-  const cleanedRows = metadataHeader.split("\n").filter((el) => el);
+  const cleanedRows = metadataHeader.split('\n').filter((el) => el);
 
   const metadata: PresetMetaEntry[] = [];
   for (let i = 0; i < cleanedRows.length; i = i + 2) {
-    if (!cleanedRows[i]) {
+    const keyRow = cleanedRows[i];
+    if (!keyRow) {
       continue;
     }
-    const key = cleanedRows[i].replace(":", "");
+    const key = keyRow.replace(':', '');
 
-    if (!cleanedRows[i + 1]) {
+    const valueRow = cleanedRows[i + 1];
+    if (!valueRow) {
       continue;
     }
-    let value: string | string[] = cleanedRows[i + 1]!.split("'").join("");
-    if (value.includes(", ")) {
-      value = value.split(", ");
+    let value: string | string[] = valueRow.split("'").join('');
+    if (value.includes(', ')) {
+      value = value.split(', ');
     }
     metadata.push({
       key,
@@ -96,29 +96,29 @@ export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
 
 export function getPresetParams(fileString: string, presetPath: string): PresetParam[] {
   const params: PresetParam[] = [];
-  const split = fileString.split("*/");
+  const split = fileString.split('*/');
 
   if (!split[1]) {
     return params;
   }
 
-  const paramBody = split[1]!.split("// Section")[0];
+  const paramBody = split[1].split('// Section')[0];
 
   if (!paramBody) {
-    throw new Error("Could not parse preset parameter body");
+    throw new Error('Could not parse preset parameter body');
   }
 
-  const cleanedRows = paramBody.split("\n").filter((el) => el);
+  const cleanedRows = paramBody.split('\n').filter((el) => el);
 
   let repeatCounter = 1;
-  let currentSection = "HEAD";
-  let currentSectionAndKey = "";
+  let currentSection = 'HEAD';
+  let currentSectionAndKey = '';
   for (let i = 0; i < cleanedRows.length; i++) {
-    const paramSplit = cleanedRows[i]!.split("=");
+    const paramSplit = cleanedRows[i]!.split('=');
     const key = paramSplit[0]!;
     const value = paramSplit[1]!;
 
-    if (key === "#cm") {
+    if (key === '#cm') {
       currentSection = value;
     }
     const param: PresetParam = {
@@ -127,23 +127,29 @@ export function getPresetParams(fileString: string, presetPath: string): PresetP
       section: currentSection,
       value: value,
       index: i,
-      type: "string",
+      type: 'string',
     };
-    
+
     // Some parameters appear more than once in the same section
     // Here we need to add the index of their appearance to get a unique ID
     if (currentSectionAndKey === param.id) {
       currentSectionAndKey = param.id;
       param.id += `/${repeatCounter}`;
-      if (repeatCounter === 1) {
-        params[params.length -1].id += `/0`;
+      if (repeatCounter === 1 && params.length > 0) {
+        const lastParam = params[params.length - 1];
+        if (lastParam) {
+          lastParam.id += `/0`;
+        }
       }
       repeatCounter++;
 
       if (!param.id.includes('#mv') && !param.id.includes('#ms')) {
-        console.warn(chalk.yellow(`Unexpected duplicated header + key for: ${param.id} in preset "${presetPath}"`))
-      } 
-
+        console.warn(
+          chalk.yellow(
+            `Unexpected duplicated header + key for: ${param.id} in preset "${presetPath}"`
+          )
+        );
+      }
     } else {
       currentSectionAndKey = param.id;
       repeatCounter = 1;
@@ -151,10 +157,10 @@ export function getPresetParams(fileString: string, presetPath: string): PresetP
 
     if (isInt(value)) {
       param.value = parseInt(value);
-      param.type = "integer";
+      param.type = 'integer';
     } else if (isNumeric(value)) {
       param.value = parseFloat(value);
-      param.type = "float";
+      param.type = 'float';
     }
 
     params.push(param);
@@ -163,11 +169,13 @@ export function getPresetParams(fileString: string, presetPath: string): PresetP
 }
 
 export function getPresetBinarySection(fileString: string): string {
-  const split = fileString.split("// Section for ugly compressed binary Data\n// DON'T TOUCH THIS\n");
+  const split = fileString.split(
+    "// Section for ugly compressed binary Data\n// DON'T TOUCH THIS\n"
+  );
   if (split[1]) {
     return split[1].trim();
   } else {
-    return ''
+    return '';
   }
 }
 
@@ -176,19 +184,19 @@ export function getPresetBinarySection(fileString: string): string {
 //////////////////////////////////////////
 
 export function serializePresetToFile(preset: Preset): string {
-  let file = "";
+  let file = '';
 
   // Add meta header
-  file += "/*@Meta\n\n";
+  file += '/*@Meta\n\n';
   for (const entry of preset.meta) {
     file += `${entry.key}:\n`;
     if (Array.isArray(entry.value)) {
-      file += `'${entry.value.join(", ")}'\n\n`;
+      file += `'${entry.value.join(', ')}'\n\n`;
     } else {
       file += `'${entry.value}'\n\n`;
     }
   }
-  file += "*/\n\n";
+  file += '*/\n\n';
 
   // Add params
   for (const param of preset.params) {
@@ -197,12 +205,12 @@ export function serializePresetToFile(preset: Preset): string {
 
   // Add footer
 
-  file += "\n\n\n\n";
-  file += "// Section for ugly compressed binary Data\n";
+  file += '\n\n\n\n';
+  file += '// Section for ugly compressed binary Data\n';
   file += "// DON'T TOUCH THIS\n\n";
 
   if (preset.binary) {
-    file += preset.binary
+    file += preset.binary;
   }
 
   file += ``; // binary end of file marker?
@@ -215,20 +223,32 @@ export function isValidPreset(preset: Preset) {
     return false;
   }
   for (const param of preset.params) {
-    if (typeof param.value === "string" && param.value.includes('[object Object]')) {
-      console.warn(chalk.yellow(`Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`))
+    if (typeof param.value === 'string' && param.value.includes('[object Object]')) {
+      console.warn(
+        chalk.yellow(
+          `Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`
+        )
+      );
       return false;
     }
-    if (typeof param.value === "string" && param.value.includes('undefined')) {
-      console.warn(chalk.yellow(`Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`))
+    if (typeof param.value === 'string' && param.value.includes('undefined')) {
+      console.warn(
+        chalk.yellow(
+          `Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`
+        )
+      );
       return false;
     }
     if (param.id.includes('[object Object]')) {
-      console.warn(chalk.yellow(`Warning: Ignoring preset ${preset.filePath} due to invalid parameter: ${param.id}`))
+      console.warn(
+        chalk.yellow(
+          `Warning: Ignoring preset ${preset.filePath} due to invalid parameter: ${param.id}`
+        )
+      );
       return false;
     }
   }
-  return true
+  return true;
 }
 
 //////////////////////////////////////////

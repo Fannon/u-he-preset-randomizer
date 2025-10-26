@@ -1,3 +1,3 @@
-export * from "./parser.js"
+export * from './parser.js';
 
-export { runWithoutInteractivity } from "./cli.js"
+export { runWithoutInteractivity } from './cli.js';

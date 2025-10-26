@@ -1,30 +1,33 @@
-import { PresetLibrary } from "./presetLibrary.js";
-import { SynthNames } from "./utils/detector.js";
+import { PresetLibrary } from './presetLibrary.js';
+import { SynthNames } from './utils/detector.js';
 
-export interface ParamsModel {
-  [key: string]: {
-    type: "string" | "float" | "integer";
-    values: Array<string | number>;
-    distinctValues: Array<string | number>;
+export type ParamsModel = Record<
+  string,
+  {
+    type: 'string' | 'float' | 'integer';
+    values: (string | number)[];
+    distinctValues: (string | number)[];
     maxValue?: number;
     minValue?: number;
     avgValue?: number;
     keepStable?: 'always' | 'stable-mode';
   }
-}
+>;
 
-export interface ParamsModelBySection {
-  [section: string]: {
-    [id: string]: {
-      type: "string" | "float" | "integer";
-      values: Array<string | number>;
-      distinctValues: Array<string | number>;
+export type ParamsModelBySection = Record<
+  string,
+  Record<
+    string,
+    {
+      type: 'string' | 'float' | 'integer';
+      values: (string | number)[];
+      distinctValues: (string | number)[];
       maxValue?: number;
       minValue?: number;
       avgValue?: number;
     }
-  }
-}
+  >
+>;
 
 export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
   const paramsModel: ParamsModel = {};
@@ -47,12 +50,12 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
           }
         }
       } else {
-        paramsModel[key]!.values.push(param.value);
-        if (paramsModel[key]!.type !== param.type) {
-          if (paramsModel[key]!.type === 'integer') {
-            paramsModel[key]!.type = param.type
-          } else if (paramsModel[key]!.type === 'float' && param.type === 'string') {
-            paramsModel[key]!.type = param.type
+        paramsModel[key].values.push(param.value);
+        if (paramsModel[key].type !== param.type) {
+          if (paramsModel[key].type === 'integer') {
+            paramsModel[key].type = param.type;
+          } else if (paramsModel[key].type === 'float' && param.type === 'string') {
+            paramsModel[key].type = param.type;
           }
         }
       }
@@ -68,9 +71,9 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
       // Save some memory by compacting `values` to a single value if they are the same anyway
       param.values = param.distinctValues;
     }
-    
-    if (param.type !== "string") {
-      const values = param.values as number[]
+
+    if (param.type !== 'string') {
+      const values = param.values as number[];
       param.maxValue = Math.max(...values);
       param.minValue = Math.min(...values);
       param.avgValue = average(values);
@@ -85,9 +88,36 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
  */
 export function getDictionaryOfNames(presetLibrary: PresetLibrary): string[] {
   const names: string[] = [];
-  const excludedWords = new Set(["bass", "guitar", "piano", "lead", "unison", "sub", "strings", "keys", "flute", "organ", "brass", "bells", "pluck", "plucked", "epiano", "chorus", "stab", "chord", "chords", "drum", "synth", "kick", "snare", "clap", "hihat", "edit"]);
+  const excludedWords = new Set([
+    'bass',
+    'guitar',
+    'piano',
+    'lead',
+    'unison',
+    'sub',
+    'strings',
+    'keys',
+    'flute',
+    'organ',
+    'brass',
+    'bells',
+    'pluck',
+    'plucked',
+    'epiano',
+    'chorus',
+    'stab',
+    'chord',
+    'chords',
+    'drum',
+    'synth',
+    'kick',
+    'snare',
+    'clap',
+    'hihat',
+    'edit',
+  ]);
   for (const preset of presetLibrary.presets) {
-    const cleanedUpName = preset.presetName.split('_').join(' ')
+    const cleanedUpName = preset.presetName.split('_').join(' ');
     const splitName = cleanedUpName.split(' ');
     for (const split of splitName) {
       if (
@@ -106,15 +136,20 @@ export function getDictionaryOfNames(presetLibrary: PresetLibrary): string[] {
 }
 
 export function convertParamsModelBySection(paramsModel: ParamsModel): ParamsModelBySection {
-  const paramsModelBySection: ParamsModelBySection = {}
+  const paramsModelBySection: ParamsModelBySection = {};
   for (const id in paramsModel) {
-    const split = id.split('/')
-    const section = split[0]
+    const split = id.split('/');
+    const section = split[0];
 
-    if (!paramsModelBySection[section]) {
-      paramsModelBySection[section] = {}
+    // Skip if section is undefined (shouldn't happen with valid preset IDs)
+    if (!section) continue;
+
+    paramsModelBySection[section] ??= {};
+    const sectionModel = paramsModelBySection[section];
+    const paramData = paramsModel[id];
+    if (sectionModel && paramData) {
+      sectionModel[id] = paramData;
     }
-    paramsModelBySection[section][id] = paramsModel[id]
   }
   return paramsModelBySection;
 }
@@ -125,23 +160,29 @@ export function average(arr: number[]) {
 
 interface SpecialParameterHandling {
   id: string;
-  keepStable: "always" | "stable-mode";
+  keepStable: 'always' | 'stable-mode';
   restrictToSynth?: SynthNames;
 }
 
-const specialParameterHandling: SpecialParameterHandling[] = [{
-  id: "VCC/Trsp",
-  keepStable: "always",
-},{
-  id: "VCC/FTun",
-  keepStable: "always",
-},{
-  id: "Tune",
-  keepStable: "stable-mode",
-},{
-  id: "main/CcOp",
-  keepStable: "stable-mode",
-},{
-  id: "ZMas/Mast",
-  keepStable: "stable-mode",
-}]
+const specialParameterHandling: SpecialParameterHandling[] = [
+  {
+    id: 'VCC/Trsp',
+    keepStable: 'always',
+  },
+  {
+    id: 'VCC/FTun',
+    keepStable: 'always',
+  },
+  {
+    id: 'Tune',
+    keepStable: 'stable-mode',
+  },
+  {
+    id: 'main/CcOp',
+    keepStable: 'stable-mode',
+  },
+  {
+    id: 'ZMas/Mast',
+    keepStable: 'stable-mode',
+  },
+];

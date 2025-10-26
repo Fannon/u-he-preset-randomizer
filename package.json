@@ -16,11 +16,15 @@
     "clean": "rimraf dist/",
     "build": "npm run build-ts",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json,md}\"",
+    "typecheck": "tsc --noEmit",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest",
     "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --watch",
     "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --coverage",
-    "test:ci": "npm run lint && npm run build && npm test",
-    "prepare": "npm run build"
+    "test:ci": "npm run format:check && npm run lint && npm run typecheck && npm run build && npm test",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -62,7 +66,10 @@
     "@types/node": "^24.9.1",
     "@types/yargs": "^17.0.34",
     "eslint": "^9.38.0",
+    "husky": "^9.1.7",
     "jest": "^30.2.0",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
@@ -76,5 +83,14 @@
     "inquirer": "^12.10.0",
     "unique-names-generator": "^4.7.1",
     "yargs": "^18.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }

@@ -18,6 +18,19 @@
     "outputDir": "dist"
   },
   "lint": {
-    "command": "npm run lint"
-  }
+    "command": "npm run lint",
+    "fixCommand": "npm run lint:fix"
+  },
+  "format": {
+    "command": "npm run format",
+    "checkCommand": "npm run format:check"
+  },
+  "rules": [
+    "Always run tests after making changes to core logic",
+    "Consider cross-platform compatibility (Windows/macOS/Linux/WSL2)",
+    "Never modify preset binary sections without explicit user request",
+    "Run 'npm run test:ci' before suggesting completion of significant changes",
+    "Use Prettier for formatting, ESLint for code quality",
+    "Pre-commit hooks will automatically format and lint staged files"
+  ]
 }
