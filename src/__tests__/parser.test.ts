@@ -5,7 +5,7 @@ import {
   serializePresetToFile,
   isValidPreset,
   type Preset,
-} from '../src/parser.js';
+} from '../parser.js';
 
 describe('parser', () => {
   describe('getPresetMetadata', () => {

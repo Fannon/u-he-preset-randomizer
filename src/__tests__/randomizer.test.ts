@@ -1,6 +1,6 @@
 import {
   calculateRandomMergeRatios,
-} from '../src/randomizer.js';
+} from '../randomizer.js';
 
 describe('randomizer', () => {
   describe('calculateRandomMergeRatios', () => {

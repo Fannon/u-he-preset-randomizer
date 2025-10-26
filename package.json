@@ -42,8 +42,9 @@
   "files": [
     "README.md",
     "package.json",
-    "src/**/*",
-    "dist/**/*"
+    "dist/**/*",
+    "!dist/**/__tests__",
+    "!dist/**/*.test.*"
   ],
   "homepage": "https://github.com/Fannon/u-he-preset-randomizer#readme",
   "engines": {
@@ -57,6 +58,7 @@
     "@tsconfig/node20": "^20.1.6",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.9",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.9.1",
     "@types/yargs": "^17.0.34",
     "eslint": "^9.38.0",

@@ -2,8 +2,8 @@ import {
   analyzeParamsTypeAndRange,
   getDictionaryOfNames,
   type ParamsModel,
-} from '../src/analyzer.js';
-import type { PresetLibrary } from '../src/presetLibrary.js';
+} from '../analyzer.js';
+import type { PresetLibrary } from '../presetLibrary.js';
 
 describe('analyzer', () => {
   describe('getDictionaryOfNames', () => {

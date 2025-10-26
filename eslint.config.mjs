@@ -6,11 +6,12 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   {
     // config with just ignores is the replacement for `.eslintignore`
-    ignores: ['**/dist/**'],
+    ignores: ['**/dist/**', '**/__tests__/**', '**/*.test.ts'],
   },
   eslint.configs.recommended,
   {
     files: ["src/**/*.ts"],
+    ignores: ["**/__tests__/**", "**/*.test.ts"],
     plugins: {
       '@typescript-eslint': tseslint.plugin,
     },

@@ -24,12 +24,13 @@
     "isolatedModules": true
   },
   "include": [
-    "src",
-    "test"
+    "src"
   ],
   "exclude": [
     "dist",
     "bundle",
-    "node_modules"
+    "node_modules",
+    "**/__tests__",
+    "**/*.test.ts"
   ]
 }
