@@ -12,9 +12,10 @@
   "scripts": {
     "start": "tsx src/cli.ts",
     "detect": "tsx src/detect-synths.ts",
-    "build-ts": "tsgo --project tsconfig.json",
-    "clean": "rimraf dist/",
-    "build": "npm run build-ts",
+    "benchmark": "hyperfine --warmup 2 --runs 7 --export-markdown tmp/hyperfine.md --export-json tmp/hyperfine.json --ignore-failure 'npm run clean' 'npm run build' 'npm run lint' 'npm run format' 'npm run test'",
+    "build": "tsgo --project tsconfig.json",
+    "build:dist": "tsgo --project tsconfig.build.json",
+    "clean": "node scripts/clean.mjs",
     "lint": "biome ci .",
     "lint:fix": "biome check --write .",
     "format": "biome format . --write",
@@ -24,7 +25,8 @@
     "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --watch",
     "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --coverage",
     "test:ci": "npm run lint && npm run build && npm test",
-    "postinstall": "simple-git-hooks"
+    "postinstall": "simple-git-hooks",
+    "prepublishOnly": "npm run clean && npm run build:dist"
   },
   "repository": {
     "type": "git",
@@ -68,7 +70,6 @@
     "@typescript/native-preview": "^7.0.0-dev.20251026.1",
     "jest": "^30.2.0",
     "lint-staged": "^16.2.6",
-    "rimraf": "^6.0.1",
     "simple-git-hooks": "^2.13.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
