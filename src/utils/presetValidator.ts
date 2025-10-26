@@ -50,7 +50,7 @@ export function validatePresetParsable(
     const presetName = path.basename(filePath, '.h2p');
     const preset = parseUhePreset(content, presetName, binary);
     return isValidPreset(preset);
-  } catch (error) {
+  } catch {
     return false;
   }
 }
