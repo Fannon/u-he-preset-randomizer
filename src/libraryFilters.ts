@@ -57,7 +57,7 @@ export function narrowDownByFavoritesFile(
       console.error(
         chalk.red(`Error: Could not find favorites file: ${favoriteFilePath}`),
       );
-      return presetLibrary.presets;
+      return []; // Return empty array instead of all presets
     }
   }
 

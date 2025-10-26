@@ -209,12 +209,12 @@ describe('libraryFilters', () => {
       );
     });
 
-    it('returns all presets when favorites file not found', () => {
+    it('returns empty array when favorites file not found', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       const result = narrowDownByFavoritesFile(mockPresetLibrary, 'nonexistent.uhe-fav');
 
-      expect(result).toHaveLength(5); // All presets
+      expect(result).toHaveLength(0); // Empty array instead of all presets
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Error: Could not find favorites file: nonexistent.uhe-fav')
       );
@@ -241,7 +241,7 @@ describe('libraryFilters', () => {
     });
 
     it('logs the filtering result for single file', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
       narrowDownByFavoritesFile(mockPresetLibrary, 'leads.uhe-fav');
 
@@ -253,7 +253,7 @@ describe('libraryFilters', () => {
     });
 
     it('logs the filtering result for multiple files', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
       narrowDownByFavoritesFile(mockPresetLibrary, ['leads.uhe-fav', 'pads.uhe-fav']);
 
@@ -270,11 +270,11 @@ describe('libraryFilters', () => {
         favorites: [],
       };
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = narrowDownByFavoritesFile(emptyLibrary, 'nonexistent.uhe-fav');
 
-      expect(result).toHaveLength(5); // All presets
+      expect(result).toHaveLength(0); // Empty array instead of all presets
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Error: Could not find favorites file: nonexistent.uhe-fav')
       );
