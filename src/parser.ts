@@ -70,9 +70,8 @@ export function parseUhePreset(
  */
 export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
   const split = fileString.split('*/');
-  const metadataHeader = split[0]!
-    .replace('/*@Meta', '')
-    .replace('/*@meta', '');
+  const metadataHeader =
+    split[0]?.replace('/*@Meta', '').replace('/*@meta', '') ?? '';
 
   const cleanedRows = metadataHeader.split('\n').filter((el) => el);
 
@@ -123,9 +122,14 @@ export function getPresetParams(
   let currentSection = 'HEAD';
   let currentSectionAndKey = '';
   for (let i = 0; i < cleanedRows.length; i++) {
-    const paramSplit = cleanedRows[i]!.split('=');
-    const key = paramSplit[0]!;
-    const value = paramSplit[1]!;
+    const row = cleanedRows[i];
+    if (!row) continue;
+
+    const paramSplit = row.split('=');
+    const key = paramSplit[0];
+    const value = paramSplit[1];
+
+    if (!key || !value) continue;
 
     if (key === '#cm') {
       currentSection = value;

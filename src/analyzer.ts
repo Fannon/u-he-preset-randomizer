@@ -67,7 +67,8 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
 
   // Post Analytics
   for (const paramName in paramsModel) {
-    const param = paramsModel[paramName]!;
+    const param = paramsModel[paramName];
+    if (!param) continue;
     param.distinctValues = [...new Set(param.values)];
 
     if (param.distinctValues.length === 1) {

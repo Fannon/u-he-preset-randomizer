@@ -24,7 +24,7 @@
     "test": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest",
     "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --watch",
     "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --coverage",
-    "test:ci": "npm run lint && npm run build && npm test",
+    "test:ci": "npm run lint && npm run typecheck && npm test",
     "postinstall": "simple-git-hooks",
     "prepublishOnly": "npm run clean && npm run build:dist"
   },
