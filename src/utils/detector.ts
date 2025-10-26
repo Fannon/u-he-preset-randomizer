@@ -1,8 +1,8 @@
-import path from 'path';
-import os from 'os';
-import fs from 'fs-extra';
-import { Config } from '../config.js';
+import os from 'node:os';
+import path from 'node:path';
 import chalk from 'chalk';
+import fs from 'fs-extra';
+import type { Config } from '../config.js';
 
 export interface DetectedPresetLibrary {
   synthName: SynthNames;
@@ -34,16 +34,18 @@ export type SynthNames = (typeof uheSynthNames)[number];
  */
 export function detectPresetLibraryLocations(
   config: Config,
-  locationsTried: string[] = []
+  locationsTried: string[] = [],
 ): DetectedPresetLibrary[] {
   const detectedPresetLibraries: DetectedPresetLibrary[] = [];
 
   if (process.platform === 'darwin') {
     if (config.customFolder) {
-      locationsTried.push(config.customFolder + '/__SynthName__/');
-      locationsTried.push(config.customFolder + '/../__SynthName__/');
+      locationsTried.push(`${config.customFolder}/__SynthName__/`);
+      locationsTried.push(`${config.customFolder}/../__SynthName__/`);
     }
-    locationsTried.push(path.join(os.homedir(), `/Library/Audio/Presets/u-he/__SynthName__/`));
+    locationsTried.push(
+      path.join(os.homedir(), `/Library/Audio/Presets/u-he/__SynthName__/`),
+    );
 
     for (const synthName of uheSynthNames) {
       for (const location of locationsTried) {
@@ -63,11 +65,15 @@ export function detectPresetLibraryLocations(
               userPresets: path.join(pathToCheck, `/UserPresets/Repro-5`),
             });
             if (config.debug) {
-              console.debug(chalk.gray(`> Found synth Repro-5 in ${pathToCheck}`));
+              console.debug(
+                chalk.gray(`> Found synth Repro-5 in ${pathToCheck}`),
+              );
             }
           }
           if (config.debug) {
-            console.debug(chalk.gray(`> Found synth ${synthName} in ${pathToCheck}`));
+            console.debug(
+              chalk.gray(`> Found synth ${synthName} in ${pathToCheck}`),
+            );
           }
           break;
         }
@@ -79,15 +85,21 @@ export function detectPresetLibraryLocations(
   // Otherwise try Windows or Linux file system conventions
 
   if (config.customFolder) {
-    locationsTried.push(config.customFolder + '/__SynthName__.data/');
-    locationsTried.push(path.resolve(config.customFolder + '/../__SynthName__.data/'));
+    locationsTried.push(`${config.customFolder}/__SynthName__.data/`);
+    locationsTried.push(
+      path.resolve(`${config.customFolder}/../__SynthName__.data/`),
+    );
   }
 
   // Windows locations
-  locationsTried.push(path.join(os.homedir(), `/Documents/u-he/__SynthName__.data/`));
+  locationsTried.push(
+    path.join(os.homedir(), `/Documents/u-he/__SynthName__.data/`),
+  );
   locationsTried.push(`C:/Program Files/Common Files/VST3/__SynthName__.data/`);
   locationsTried.push(`C:/Program Files/VSTPlugins/__SynthName__.data/`);
-  locationsTried.push(`C:/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`);
+  locationsTried.push(
+    `C:/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`,
+  );
   locationsTried.push(`C:/VstPlugins/u-he/__SynthName__.data/`);
 
   // Linux locations ?
@@ -96,9 +108,13 @@ export function detectPresetLibraryLocations(
 
   // WSL2 locations (Windows filesystem mounted in Linux)
   if (process.platform === 'linux' && fs.existsSync('/mnt/c/')) {
-    locationsTried.push(`/mnt/c/Program Files/Common Files/VST3/__SynthName__.data/`);
+    locationsTried.push(
+      `/mnt/c/Program Files/Common Files/VST3/__SynthName__.data/`,
+    );
     locationsTried.push(`/mnt/c/Program Files/VSTPlugins/__SynthName__.data/`);
-    locationsTried.push(`/mnt/c/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`);
+    locationsTried.push(
+      `/mnt/c/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`,
+    );
     locationsTried.push(`/mnt/c/VstPlugins/u-he/__SynthName__.data/`);
     // Hack: My own Google Drive location that isn't detected otherwise (no symlink following in WSL)
     locationsTried.push(`/mnt/g/My Drive/Musik/u-he/__SynthName__.data/`);
@@ -109,7 +125,9 @@ export function detectPresetLibraryLocations(
       const pathToCheck = location.replace('__SynthName__', synthName);
       if (fs.existsSync(pathToCheck)) {
         if (config.debug) {
-          console.debug(chalk.gray(`> Found synth ${synthName} in ${pathToCheck}`));
+          console.debug(
+            chalk.gray(`> Found synth ${synthName} in ${pathToCheck}`),
+          );
         }
         detectedPresetLibraries.push({
           synthName: synthName,
@@ -125,7 +143,9 @@ export function detectPresetLibraryLocations(
             userPresets: path.join(pathToCheck, `/UserPresets/Repro-5`),
           });
           if (config.debug) {
-            console.debug(chalk.gray(`> Found synth Repro-5 in ${pathToCheck}`));
+            console.debug(
+              chalk.gray(`> Found synth Repro-5 in ${pathToCheck}`),
+            );
           }
         }
         break;

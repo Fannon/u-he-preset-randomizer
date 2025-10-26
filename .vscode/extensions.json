@@ -1,9 +1,8 @@
 {
   "recommendations": [
-    "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
+    "biomejs.biome",
     "editorconfig.editorconfig",
-    "ms-vscode.vscode-typescript-next",
+    "TypeScriptTeam.native-preview",
     "usernamehw.errorlens",
     "orta.vscode-jest",
     "streetsidesoftware.code-spell-checker"

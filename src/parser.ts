@@ -1,5 +1,5 @@
+import * as path from 'node:path';
 import chalk from 'chalk';
-import * as path from 'path';
 
 export interface Preset {
   /** Relative filePath to preset folder */
@@ -38,7 +38,11 @@ export interface PresetParam {
  * @param binary - A boolean indicating whether to include the binary section of the preset file.
  * @returns The parsed Preset object.
  */
-export function parseUhePreset(fileString: string, filePath: string, binary: boolean): Preset {
+export function parseUhePreset(
+  fileString: string,
+  filePath: string,
+  binary: boolean,
+): Preset {
   const meta = getPresetMetadata(fileString);
   let categories: string[] = [];
   const categoriesMeta = meta.find((el) => el.key === 'Categories');
@@ -66,7 +70,9 @@ export function parseUhePreset(fileString: string, filePath: string, binary: boo
  */
 export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
   const split = fileString.split('*/');
-  const metadataHeader = split[0]!.replace('/*@Meta', '').replace('/*@meta', '');
+  const metadataHeader = split[0]!
+    .replace('/*@Meta', '')
+    .replace('/*@meta', '');
 
   const cleanedRows = metadataHeader.split('\n').filter((el) => el);
 
@@ -94,7 +100,10 @@ export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
   return metadata;
 }
 
-export function getPresetParams(fileString: string, presetPath: string): PresetParam[] {
+export function getPresetParams(
+  fileString: string,
+  presetPath: string,
+): PresetParam[] {
   const params: PresetParam[] = [];
   const split = fileString.split('*/');
 
@@ -146,8 +155,8 @@ export function getPresetParams(fileString: string, presetPath: string): PresetP
       if (!param.id.includes('#mv') && !param.id.includes('#ms')) {
         console.warn(
           chalk.yellow(
-            `Unexpected duplicated header + key for: ${param.id} in preset "${presetPath}"`
-          )
+            `Unexpected duplicated header + key for: ${param.id} in preset "${presetPath}"`,
+          ),
         );
       }
     } else {
@@ -156,7 +165,7 @@ export function getPresetParams(fileString: string, presetPath: string): PresetP
     }
 
     if (isInt(value)) {
-      param.value = parseInt(value);
+      param.value = parseInt(value, 10);
       param.type = 'integer';
     } else if (isNumeric(value)) {
       param.value = parseFloat(value);
@@ -170,7 +179,7 @@ export function getPresetParams(fileString: string, presetPath: string): PresetP
 
 export function getPresetBinarySection(fileString: string): string {
   const split = fileString.split(
-    "// Section for ugly compressed binary Data\n// DON'T TOUCH THIS\n"
+    "// Section for ugly compressed binary Data\n// DON'T TOUCH THIS\n",
   );
   if (split[1]) {
     return split[1].trim();
@@ -223,27 +232,30 @@ export function isValidPreset(preset: Preset) {
     return false;
   }
   for (const param of preset.params) {
-    if (typeof param.value === 'string' && param.value.includes('[object Object]')) {
+    if (
+      typeof param.value === 'string' &&
+      param.value.includes('[object Object]')
+    ) {
       console.warn(
         chalk.yellow(
-          `Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`
-        )
+          `Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`,
+        ),
       );
       return false;
     }
     if (typeof param.value === 'string' && param.value.includes('undefined')) {
       console.warn(
         chalk.yellow(
-          `Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`
-        )
+          `Warning: Ignoring preset ${preset.filePath} due to invalid value: ${param.id}`,
+        ),
       );
       return false;
     }
     if (param.id.includes('[object Object]')) {
       console.warn(
         chalk.yellow(
-          `Warning: Ignoring preset ${preset.filePath} due to invalid parameter: ${param.id}`
-        )
+          `Warning: Ignoring preset ${preset.filePath} due to invalid parameter: ${param.id}`,
+        ),
       );
       return false;
     }
@@ -257,13 +269,12 @@ export function isValidPreset(preset: Preset) {
 
 export function isInt(value: unknown): boolean {
   return (
-    !isNaN(value as number) &&
-    (function (x) {
-      return (x | 0) === x;
-    })(parseFloat(value as string))
+    !Number.isNaN(value as number) &&
+    ((x) => (x | 0) === x)(parseFloat(value as string))
   );
 }
 
 export function isNumeric(value: unknown): boolean {
-  return !isNaN(parseFloat(value as string)) && isFinite(value as number);
+  const num = parseFloat(value as string);
+  return !Number.isNaN(num) && Number.isFinite(num);
 }

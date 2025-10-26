@@ -1,10 +1,18 @@
-import path from 'path';
-import fs from 'fs-extra';
-import fg from 'fast-glob';
-import { Preset, isValidPreset, parseUhePreset, serializePresetToFile } from './parser.js';
-import { SynthNames, detectPresetLibraryLocations } from './utils/detector.js';
-import { Config } from './config.js';
+import path from 'node:path';
 import chalk from 'chalk';
+import fg from 'fast-glob';
+import fs from 'fs-extra';
+import type { Config } from './config.js';
+import {
+  isValidPreset,
+  type Preset,
+  parseUhePreset,
+  serializePresetToFile,
+} from './parser.js';
+import {
+  detectPresetLibraryLocations,
+  type SynthNames,
+} from './utils/detector.js';
 
 export interface PresetLibrary {
   synth: string;
@@ -32,20 +40,25 @@ export interface UheFavoriteFileEntry {
   name: string;
 }
 
-export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibrary {
+export function loadPresetLibrary(
+  synth: SynthNames,
+  config: Config,
+): PresetLibrary {
   let pattern = config.pattern ?? '**/*';
 
   // Detect correct Preset Library Location
   const location = detectPresetLibraryLocations(config).find(
-    (el) => el.synthName.toLowerCase() === synth.toLowerCase()
+    (el) => el.synthName.toLowerCase() === synth.toLowerCase(),
   );
 
   if (!location) {
-    throw new Error(`Could not find preset library location for synth: ${synth}`);
+    throw new Error(
+      `Could not find preset library location for synth: ${synth}`,
+    );
   }
 
   console.log(
-    `> Loading preset library for ${synth} in ${location.root} with pattern "${pattern}"`
+    `> Loading preset library for ${synth} in ${location.root} with pattern "${pattern}"`,
   );
 
   const presetLibrary: PresetLibrary = {
@@ -57,7 +70,7 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
     favorites: [],
   };
 
-  let librarySelector;
+  let librarySelector: 'User' | 'Local' | undefined;
   if (pattern.startsWith('/User/')) {
     librarySelector = 'User';
     pattern = pattern.replace('/User/', '');
@@ -83,21 +96,32 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
       for (const presetPath of libraryPresets) {
         try {
           const presetString = fs
-            .readFileSync(path.join(presetLibrary.presetsFolder, presetPath.replace('/Local/', '')))
+            .readFileSync(
+              path.join(
+                presetLibrary.presetsFolder,
+                presetPath.replace('/Local/', ''),
+              ),
+            )
             .toString();
-          const parsedPreset = parseUhePreset(presetString, presetPath, config.binary ?? false);
+          const parsedPreset = parseUhePreset(
+            presetString,
+            presetPath,
+            config.binary ?? false,
+          );
           if (isValidPreset(parsedPreset)) {
             presetLibrary.presets.push(parsedPreset);
           }
         } catch (err) {
-          console.warn(chalk.yellow(`Could not load and parse preset: ${presetPath}`, err));
+          console.warn(
+            chalk.yellow(`Could not load and parse preset: ${presetPath}`, err),
+          );
         }
       }
     } else {
       console.warn(
         chalk.yellow(
-          `Could not find presets with glob pattern: ${pattern}.h2p in library: ${presetLibrary.presetsFolder}`
-        )
+          `Could not find presets with glob pattern: ${pattern}.h2p in library: ${presetLibrary.presetsFolder}`,
+        ),
       );
     }
   }
@@ -117,22 +141,32 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
         try {
           const presetString = fs
             .readFileSync(
-              path.join(presetLibrary.userPresetsFolder, presetPath.replace('/User/', ''))
+              path.join(
+                presetLibrary.userPresetsFolder,
+                presetPath.replace('/User/', ''),
+              ),
             )
             .toString();
-          const parsedPreset = parseUhePreset(presetString, presetPath, config.binary ?? false);
+          const parsedPreset = parseUhePreset(
+            presetString,
+            presetPath,
+            config.binary ?? false,
+          );
           if (isValidPreset(parsedPreset)) {
             presetLibrary.presets.push(parsedPreset);
           }
         } catch (err) {
-          console.warn(chalk.yellow(`Could not load and parse preset: ${presetPath}`), err);
+          console.warn(
+            chalk.yellow(`Could not load and parse preset: ${presetPath}`),
+            err,
+          );
         }
       }
     } else {
       console.warn(
         chalk.yellow(
-          `Could not find presets with glob pattern: ${pattern}.h2p in user library: ${presetLibrary.userPresetsFolder}`
-        )
+          `Could not find presets with glob pattern: ${pattern}.h2p in user library: ${presetLibrary.userPresetsFolder}`,
+        ),
       );
     }
   }
@@ -141,14 +175,16 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
     console.error(
       chalk.red(
         `Error: No presets found with glob pattern: ${pattern}.h2p in ` +
-          presetLibrary.presetsFolder
-      )
+          presetLibrary.presetsFolder,
+      ),
     );
     process.exit(1);
   }
 
   // Search and load .uhe-fav files
-  const favorites = fg.sync([`**/*.uhe-fav`], { cwd: presetLibrary.rootFolder }).sort();
+  const favorites = fg
+    .sync([`**/*.uhe-fav`], { cwd: presetLibrary.rootFolder })
+    .sort();
   for (const favoriteFile of favorites) {
     const path = `${presetLibrary.rootFolder}/${favoriteFile}`;
     try {
@@ -173,16 +209,21 @@ export function loadPresetLibrary(synth: SynthNames, config: Config): PresetLibr
   }
 
   console.log(
-    `> Found and loaded ${presetLibrary.presets.length} presets and ${presetLibrary.favorites.length} favorite files`
+    `> Found and loaded ${presetLibrary.presets.length} presets and ${presetLibrary.favorites.length} favorite files`,
   );
 
   return presetLibrary;
 }
 
 export function writePresetLibrary(presetLibrary: PresetLibrary) {
-  console.log('----------------------------------------------------------------------');
+  console.log(
+    '----------------------------------------------------------------------',
+  );
   for (const preset of presetLibrary.presets) {
-    const filePath = path.join(presetLibrary.userPresetsFolder, preset.filePath);
+    const filePath = path.join(
+      presetLibrary.userPresetsFolder,
+      preset.filePath,
+    );
     const fileContent = serializePresetToFile(preset);
     fs.outputFileSync(filePath, fileContent);
     console.log(`Written: ${path.normalize(filePath)}`);

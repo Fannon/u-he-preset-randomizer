@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-import { detectPresetLibraryLocations } from './utils/detector.js';
-import { getDefaultConfig } from './config.js';
 import chalk from 'chalk';
+import { getDefaultConfig } from './config.js';
+import { detectPresetLibraryLocations } from './utils/detector.js';
 
 /**
  * Simple script to detect installed u-he synthesizers
  */
 function detectSynths() {
   console.log(
-    chalk.cyan.bold(`\n🔍 Detecting installed u-he synthesizers in ${process.platform}...\n`)
+    chalk.cyan.bold(
+      `\n🔍 Detecting installed u-he synthesizers in ${process.platform}...\n`,
+    ),
   );
 
   const config = getDefaultConfig();
@@ -16,7 +18,9 @@ function detectSynths() {
   const detected = detectPresetLibraryLocations(config, locationsTried);
 
   if (detected.length === 0) {
-    console.log(chalk.yellow('❌ No u-he synthesizers found on this system.\n'));
+    console.log(
+      chalk.yellow('❌ No u-he synthesizers found on this system.\n'),
+    );
     console.log(chalk.gray('Locations tried:'));
     locationsTried.forEach((location) => {
       console.log(chalk.gray(`  - ${location.replace('__SynthName__', '*')}`));
@@ -25,7 +29,9 @@ function detectSynths() {
     return;
   }
 
-  console.log(chalk.green(`✅ Found ${detected.length} u-he synthesizer(s):\n`));
+  console.log(
+    chalk.green(`✅ Found ${detected.length} u-he synthesizer(s):\n`),
+  );
 
   // Group by synth name to avoid duplicates
   const uniqueSynths = new Map<string, (typeof detected)[0]>();
@@ -43,7 +49,9 @@ function detectSynths() {
     console.log();
   });
 
-  console.log(chalk.cyan(`💡 Tip: Use these synth names with the --synth flag\n`));
+  console.log(
+    chalk.cyan(`💡 Tip: Use these synth names with the --synth flag\n`),
+  );
 }
 
 detectSynths();

@@ -1,9 +1,14 @@
-import { ParamsModel, getDictionaryOfNames } from './analyzer.js';
-import { Preset } from './parser.js';
-import { PresetLibrary } from './presetLibrary.js';
-import { uniqueNamesGenerator, adjectives, colors, names } from 'unique-names-generator';
-import { Config } from './config.js';
 import chalk from 'chalk';
+import {
+  adjectives,
+  colors,
+  names,
+  uniqueNamesGenerator,
+} from 'unique-names-generator';
+import { getDictionaryOfNames, type ParamsModel } from './analyzer.js';
+import type { Config } from './config.js';
+import type { Preset } from './parser.js';
+import type { PresetLibrary } from './presetLibrary.js';
 
 /**
  * Fully randomized presets, with real values from library
@@ -11,11 +16,13 @@ import chalk from 'chalk';
 export function generateFullyRandomPresets(
   presetLibrary: PresetLibrary,
   paramModel: ParamsModel,
-  config: Config
+  config: Config,
 ): PresetLibrary {
-  console.log('----------------------------------------------------------------------');
   console.log(
-    `Fully random presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`
+    '----------------------------------------------------------------------',
+  );
+  console.log(
+    `Fully random presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`,
   );
 
   if (presetLibrary.presets.length === 0) {
@@ -25,16 +32,20 @@ export function generateFullyRandomPresets(
 
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
-    userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
+    userPresetsFolder: `${presetLibrary.userPresetsFolder}/RANDOM`,
     presets: [],
   };
   for (let i = 0; i < (config.amount ?? 16); i++) {
     const basePreset = getRandomArrayItem(presetLibrary.presets);
     if (!basePreset) {
-      console.error(chalk.red('Error: Could not get random preset from library'));
+      console.error(
+        chalk.red('Error: Could not get random preset from library'),
+      );
       continue;
     }
-    const randomPreset: Preset = JSON.parse(JSON.stringify(basePreset)) as Preset;
+    const randomPreset: Preset = JSON.parse(
+      JSON.stringify(basePreset),
+    ) as Preset;
 
     if (config.stable) {
       const presetPerSectionMap: Record<string, Preset> = {};
@@ -44,8 +55,8 @@ export function generateFullyRandomPresets(
         if (!paramModelEntry) {
           console.error(
             chalk.red(
-              `Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`
-            )
+              `Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`,
+            ),
           );
           continue;
         }
@@ -59,7 +70,10 @@ export function generateFullyRandomPresets(
           }
         }
 
-        if (paramModelEntry.type === 'string' || paramModelEntry.distinctValues.length <= 2) {
+        if (
+          paramModelEntry.type === 'string' ||
+          paramModelEntry.distinctValues.length <= 2
+        ) {
           // Do not randomize string type values or values that only have 1 or 2 distinct values
           continue;
         }
@@ -70,7 +84,9 @@ export function generateFullyRandomPresets(
         }
 
         const sectionPreset = presetPerSectionMap[param.section];
-        const randomNewParam = sectionPreset?.params.find((el) => el.id === param.id);
+        const randomNewParam = sectionPreset?.params.find(
+          (el) => el.id === param.id,
+        );
 
         if (randomNewParam) {
           param.value = randomNewParam.value;
@@ -88,8 +104,8 @@ export function generateFullyRandomPresets(
         if (!paramModelEntry) {
           console.error(
             chalk.red(
-              `Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`
-            )
+              `Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`,
+            ),
           );
           continue;
         }
@@ -146,16 +162,18 @@ export function generateFullyRandomPresets(
 export function generateRandomizedPresets(
   presetLibrary: PresetLibrary,
   paramModel: ParamsModel,
-  config: Config
+  config: Config,
 ): PresetLibrary {
-  console.log('----------------------------------------------------------------------');
   console.log(
-    `Randomizing preset with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`
+    '----------------------------------------------------------------------',
+  );
+  console.log(
+    `Randomizing preset with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`,
   );
 
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
-    userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
+    userPresetsFolder: `${presetLibrary.userPresetsFolder}/RANDOM`,
     presets: [],
   };
 
@@ -167,9 +185,12 @@ export function generateRandomizedPresets(
   } else if (config.preset.startsWith('?')) {
     basePreset = getRandomArrayItem(
       presetLibrary.presets.filter((el) => {
-        const searchString = (config.preset ?? '').split('?').join('').toLowerCase();
+        const searchString = (config.preset ?? '')
+          .split('?')
+          .join('')
+          .toLowerCase();
         return el?.filePath?.toLowerCase().includes(searchString);
-      })
+      }),
     );
   } else {
     basePreset = presetLibrary.presets.find((el) => {
@@ -178,11 +199,13 @@ export function generateRandomizedPresets(
   }
 
   if (!basePreset) {
-    console.error(chalk.red(`Error: No preset with name ${config.preset ?? ''} found!`));
+    console.error(
+      chalk.red(`Error: No preset with name ${config.preset ?? ''} found!`),
+    );
     process.exit(1);
   }
 
-  console.log('Randomizing base preset: ' + basePreset.filePath);
+  console.log(`Randomizing base preset: ${basePreset.filePath}`);
 
   for (let i = 0; i < (config.amount ?? 8); i++) {
     const randomPreset = randomizePreset(basePreset, paramModel, config);
@@ -199,7 +222,9 @@ export function generateRandomizedPresets(
     randomPreset.filePath = `/Randomized Preset/${randomPreset.presetName}/RND ${randomName} ${randomPreset.presetName}.h2p`;
     randomPreset.presetName = `RND ${randomName} ${randomPreset.presetName}`;
 
-    const descriptionMeta = randomPreset.meta.find((el) => el.key === 'Description');
+    const descriptionMeta = randomPreset.meta.find(
+      (el) => el.key === 'Description',
+    );
     if (descriptionMeta && typeof descriptionMeta.value === 'string') {
       descriptionMeta.value += `. Randomized existing preset: ${randomPreset.presetName}. ${getPresetDescriptionSuffix(config)}`;
     }
@@ -215,16 +240,18 @@ export function generateRandomizedPresets(
 export function generateMergedPresets(
   presetLibrary: PresetLibrary,
   paramModel: ParamsModel,
-  config: Config
+  config: Config,
 ): PresetLibrary {
-  console.log('----------------------------------------------------------------------');
   console.log(
-    `Merging presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`
+    '----------------------------------------------------------------------',
+  );
+  console.log(
+    `Merging presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`,
   );
 
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
-    userPresetsFolder: presetLibrary.userPresetsFolder + '/RANDOM',
+    userPresetsFolder: `${presetLibrary.userPresetsFolder}/RANDOM`,
     presets: [],
   };
 
@@ -250,14 +277,14 @@ export function generateMergedPresets(
         ...presetLibrary.presets.filter((el) => {
           const searchString = presetTitle.split('*').join('').toLowerCase();
           return el?.filePath?.toLowerCase().includes(searchString);
-        })
+        }),
       );
     } else if (presetTitle.startsWith('?')) {
       const randomPreset = getRandomArrayItem(
         presetLibrary.presets.filter((el) => {
           const searchString = presetTitle.split('?').join('').toLowerCase();
           return el?.filePath?.toLowerCase().includes(searchString);
-        })
+        }),
       );
       if (randomPreset) {
         mergePresets.push(randomPreset);
@@ -267,7 +294,9 @@ export function generateMergedPresets(
         return el.filePath.includes(presetTitle);
       });
       if (!mergePreset) {
-        console.error(chalk.red(`Error: No preset with name "${presetTitle}" found!`));
+        console.error(
+          chalk.red(`Error: No preset with name "${presetTitle}" found!`),
+        );
         process.exit(1);
       }
       mergePresets.push(mergePreset);
@@ -275,12 +304,14 @@ export function generateMergedPresets(
   }
 
   console.log(
-    `Merging ${mergePresets.length} presets:\n * ${mergePresets.map((el) => el.presetName).join('\n * ')}\n`
+    `Merging ${mergePresets.length} presets:\n * ${mergePresets.map((el) => el.presetName).join('\n * ')}\n`,
   );
 
   if (mergePresets.length < 2) {
     console.error(
-      chalk.red('Error: Merge presets only works when at least two presets have been chosen')
+      chalk.red(
+        'Error: Merge presets only works when at least two presets have been chosen',
+      ),
     );
     process.exit(1);
   }
@@ -288,7 +319,9 @@ export function generateMergedPresets(
   for (let i = 0; i < (config.amount ?? 8); i++) {
     const basePreset = getRandomArrayItem<Preset>(mergePresets);
     if (!basePreset) {
-      console.error(chalk.red('Error: Could not get random preset from merge list'));
+      console.error(
+        chalk.red('Error: Could not get random preset from merge list'),
+      );
       continue;
     }
     let newPreset: Preset = JSON.parse(JSON.stringify(basePreset)) as Preset;
@@ -301,14 +334,17 @@ export function generateMergedPresets(
       if (!paramModelEntry) {
         console.error(
           chalk.red(
-            `Error: Unknown parameter ${param.id} in preset ${newPreset.filePath}, missing in analyzed parameter model`
-          )
+            `Error: Unknown parameter ${param.id} in preset ${newPreset.filePath}, missing in analyzed parameter model`,
+          ),
         );
         continue;
       }
 
       if (config.stable) {
-        if (paramModelEntry.type === 'string' || paramModelEntry.distinctValues.length <= 2) {
+        if (
+          paramModelEntry.type === 'string' ||
+          paramModelEntry.distinctValues.length <= 2
+        ) {
           // Do not randomize string type values or values that only have 1 or 2 distinct values
           continue;
         }
@@ -321,7 +357,9 @@ export function generateMergedPresets(
         continue;
       }
 
-      const oldParamValue = JSON.parse(JSON.stringify(param.value)) as string | number;
+      const oldParamValue = JSON.parse(JSON.stringify(param.value)) as
+        | string
+        | number;
       let newParamValue = oldParamValue;
       if (param.type === 'string') {
         // Randomly pick a string enum value from one of the merge patches
@@ -354,7 +392,7 @@ export function generateMergedPresets(
         console.error(
           chalk.red('Error: New param value is object, but should not be.'),
           newPreset.filePath,
-          newParamValue
+          newParamValue,
         );
       }
 
@@ -427,7 +465,7 @@ export function calculateRandomMergeRatios(amount: number) {
 export function randomizePreset(
   basePreset: Preset,
   paramModel: ParamsModel,
-  config: Config
+  config: Config,
 ): Preset {
   const randomness = config.randomness ?? 20;
   const randomRatio = Math.min(Math.max(0, randomness / 100), 100);
@@ -440,14 +478,17 @@ export function randomizePreset(
     if (!paramModelEntry) {
       console.error(
         chalk.red(
-          `Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`
-        )
+          `Error: Unknown parameter ${param.id} in preset ${randomPreset.filePath}, missing in analyzed parameter model`,
+        ),
       );
       continue;
     }
 
     if (config.stable) {
-      if (paramModelEntry.type === 'string' || paramModelEntry.distinctValues.length <= 2) {
+      if (
+        paramModelEntry.type === 'string' ||
+        paramModelEntry.distinctValues.length <= 2
+      ) {
         // Do not randomize string type values or values that only have 1 or 2 distinct values
         continue;
       }
@@ -470,7 +511,8 @@ export function randomizePreset(
       let newValue: string | number = randomParamValue;
       if (param.type !== 'string') {
         newValue =
-          (oldParamValue as number) * stableRatio + (randomParamValue as number) * randomRatio;
+          (oldParamValue as number) * stableRatio +
+          (randomParamValue as number) * randomRatio;
 
         if (param.type === 'integer') {
           newValue = Math.round(newValue);

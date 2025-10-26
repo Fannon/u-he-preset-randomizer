@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { SynthNames } from './utils/detector.js';
+import type { SynthNames } from './utils/detector.js';
 
 const argv = yargs(hideBin(process.argv)).parse() as any;
 
@@ -42,13 +40,13 @@ export function getConfigFromParameters(): Config {
     config.debug = true;
   }
   if (argv.amount) {
-    config.amount = parseInt(argv.amount as string);
+    config.amount = parseInt(argv.amount as string, 10);
   }
   if (argv.preset) {
     config.preset = argv.preset;
   }
   if (argv.randomness) {
-    config.randomness = parseInt(argv.randomness as string);
+    config.randomness = parseInt(argv.randomness as string, 10);
   }
   if (argv.merge) {
     config.merge = argv.merge;

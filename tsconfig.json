@@ -9,7 +9,6 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "dist",
-    "baseUrl": ".",
     "strict": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,

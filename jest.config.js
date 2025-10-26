@@ -7,9 +7,7 @@ export default {
   transform: {
     '^.+\\.(t|j)sx?$': '@swc/jest',
   },
-  testMatch: [
-    '**/__tests__/**/*.test.ts',
-  ],
+  testMatch: ['**/__tests__/**/*.test.ts'],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/cli.ts',

@@ -1,5 +1,5 @@
-import { PresetLibrary } from './presetLibrary.js';
-import { SynthNames } from './utils/detector.js';
+import type { PresetLibrary } from './presetLibrary.js';
+import type { SynthNames } from './utils/detector.js';
 
 export type ParamsModel = Record<
   string,
@@ -54,7 +54,10 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
         if (paramsModel[key].type !== param.type) {
           if (paramsModel[key].type === 'integer') {
             paramsModel[key].type = param.type;
-          } else if (paramsModel[key].type === 'float' && param.type === 'string') {
+          } else if (
+            paramsModel[key].type === 'float' &&
+            param.type === 'string'
+          ) {
             paramsModel[key].type = param.type;
           }
         }
@@ -135,7 +138,9 @@ export function getDictionaryOfNames(presetLibrary: PresetLibrary): string[] {
   return names;
 }
 
-export function convertParamsModelBySection(paramsModel: ParamsModel): ParamsModelBySection {
+export function convertParamsModelBySection(
+  paramsModel: ParamsModel,
+): ParamsModelBySection {
   const paramsModelBySection: ParamsModelBySection = {};
   for (const id in paramsModel) {
     const split = id.split('/');

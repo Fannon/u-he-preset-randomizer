@@ -1,38 +1,55 @@
 #!/usr/bin/env node
-import { ParamsModel, analyzeParamsTypeAndRange, convertParamsModelBySection } from './analyzer.js';
-import { PresetLibrary, loadPresetLibrary, writePresetLibrary } from './presetLibrary.js';
-import fs from 'fs-extra';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import searchPrompt from '@inquirer/search';
+import chalk from 'chalk';
 import fg from 'fast-glob';
-import { Config, getConfigFromParameters } from './config.js';
+import fs from 'fs-extra';
+import inquirer from 'inquirer';
+import {
+  analyzeParamsTypeAndRange,
+  convertParamsModelBySection,
+  type ParamsModel,
+} from './analyzer.js';
+import { type Config, getConfigFromParameters } from './config.js';
+import type { Preset } from './parser.js';
+import {
+  loadPresetLibrary,
+  type PresetLibrary,
+  writePresetLibrary,
+} from './presetLibrary.js';
 import {
   generateFullyRandomPresets,
   generateMergedPresets,
   generateRandomizedPresets,
 } from './randomizer.js';
 import {
-  DetectedPresetLibrary,
-  SynthNames,
+  type DetectedPresetLibrary,
   detectPresetLibraryLocations,
+  type SynthNames,
 } from './utils/detector.js';
-import inquirer from 'inquirer';
-import searchPrompt from '@inquirer/search';
-import { fileURLToPath } from 'url';
-import chalk from 'chalk';
-import { dirname } from 'path';
-import { Preset } from './parser.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const packageJson = fs.readJSONSync(__dirname + '/../package.json') as { version: string };
+const packageJson = fs.readJSONSync(`${__dirname}/../package.json`) as {
+  version: string;
+};
 
 interface ChoiceOptions {
   name: string;
   value: string;
 }
 
-console.log('======================================================================');
-console.log('u-he Preset Randomizer CLI v' + packageJson.version);
-console.log('======================================================================');
-console.log('Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme');
+console.log(
+  '======================================================================',
+);
+console.log(`u-he Preset Randomizer CLI v${packageJson.version}`);
+console.log(
+  '======================================================================',
+);
+console.log(
+  'Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme',
+);
 console.log('');
 
 let config = getConfigFromParameters();
@@ -70,7 +87,10 @@ export function runWithoutInteractivity(overrideConfig?: Config) {
 
   // Filter out presets by favorite file (if given)
   if (config.favorites && config.favorites !== true) {
-    presetLibrary.presets = narrowDownByFavoritesFile(presetLibrary, config.favorites);
+    presetLibrary.presets = narrowDownByFavoritesFile(
+      presetLibrary,
+      config.favorites,
+    );
   }
   // Filter out presets by author (if given)
   if (config.author && config.author !== true) {
@@ -78,14 +98,19 @@ export function runWithoutInteractivity(overrideConfig?: Config) {
   }
   // Filter out presets by category (if given)
   if (config.category && config.category !== true) {
-    presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category);
+    presetLibrary.presets = narrowDownByCategory(
+      presetLibrary,
+      config.category,
+    );
   }
 
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary);
 
   if (config.debug) {
     // Write a cleaned up parameter model to ./tmp/paramsModel.json
-    const outputParamsModel = JSON.parse(JSON.stringify(paramsModel)) as ParamsModel;
+    const outputParamsModel = JSON.parse(
+      JSON.stringify(paramsModel),
+    ) as ParamsModel;
     // Remove values from debug paramsModel, as it would blow up the result too much.
     for (const paramKey in outputParamsModel) {
       const param = outputParamsModel[paramKey];
@@ -95,7 +120,7 @@ export function runWithoutInteractivity(overrideConfig?: Config) {
     }
     fs.outputFileSync(
       './tmp/paramsModel.json',
-      JSON.stringify(convertParamsModelBySection(outputParamsModel), null, 2)
+      JSON.stringify(convertParamsModelBySection(outputParamsModel), null, 2),
     );
 
     console.debug(chalk.gray(JSON.stringify(config, null, 2)));
@@ -103,19 +128,33 @@ export function runWithoutInteractivity(overrideConfig?: Config) {
 
   if (config.merge) {
     // Merge multiple presets together, with additional randomness
-    const generatedPresets = generateMergedPresets(presetLibrary, paramsModel, config);
+    const generatedPresets = generateMergedPresets(
+      presetLibrary,
+      paramsModel,
+      config,
+    );
     writePresetLibrary(generatedPresets);
   } else if (config.preset) {
     // Randomize a particular preset
-    const generatedPresets = generateRandomizedPresets(presetLibrary, paramsModel, config);
+    const generatedPresets = generateRandomizedPresets(
+      presetLibrary,
+      paramsModel,
+      config,
+    );
     writePresetLibrary(generatedPresets);
   } else {
     // Generate fully randomized presets
-    const generatedPresets = generateFullyRandomPresets(presetLibrary, paramsModel, config);
+    const generatedPresets = generateFullyRandomPresets(
+      presetLibrary,
+      paramsModel,
+      config,
+    );
     writePresetLibrary(generatedPresets);
   }
 
-  console.log('======================================================================');
+  console.log(
+    '======================================================================',
+  );
   console.log('Successfully completed.');
 }
 
@@ -145,7 +184,7 @@ async function runInteractiveMode() {
       return Promise.resolve(
         synthChoices.filter((el) => {
           return el.value.toLowerCase().startsWith(normalized);
-        })
+        }),
       );
     },
   });
@@ -175,9 +214,18 @@ async function runInteractiveMode() {
         type: 'checkbox',
         message: 'Set optional flags / modifiers (multi-choice):',
         choices: [
-          { value: 'folder', name: '[Folder]     Narrow down presets by folder' },
-          { value: 'category', name: '[Category]   Narrow down presets by category' },
-          { value: 'author', name: '[Author]     Narrow down presets by author' },
+          {
+            value: 'folder',
+            name: '[Folder]     Narrow down presets by folder',
+          },
+          {
+            value: 'category',
+            name: '[Category]   Narrow down presets by category',
+          },
+          {
+            value: 'author',
+            name: '[Author]     Narrow down presets by author',
+          },
           {
             value: 'favorites',
             name: '[Favorites]  Narrow down presets by favorites from .uhe-fav file',
@@ -226,11 +274,13 @@ async function runInteractiveMode() {
   if (config.folder === true) {
     // Detect correct Preset Library Location
     const location = detectPresetLibraryLocations(config).find(
-      (el) => el.synthName.toLowerCase() === (config.synth ?? '').toLowerCase()
+      (el) => el.synthName.toLowerCase() === (config.synth ?? '').toLowerCase(),
     );
 
     if (!location) {
-      throw new Error(`Could not find preset library location for synth: ${config.synth ?? ''}`);
+      throw new Error(
+        `Could not find preset library location for synth: ${config.synth ?? ''}`,
+      );
     }
 
     const userFolders = fg
@@ -250,7 +300,13 @@ async function runInteractiveMode() {
         return `/Local/${el}/`;
       });
 
-    const folders = ['/', '/User/', '/Local/', ...userFolders, ...presetFolders].sort();
+    const folders = [
+      '/',
+      '/User/',
+      '/Local/',
+      ...userFolders,
+      ...presetFolders,
+    ].sort();
 
     const folderChoice = await searchPrompt<string>({
       message: 'Which folder to narrow down to?',
@@ -263,7 +319,7 @@ async function runInteractiveMode() {
         return Promise.resolve(
           folders.filter((el) => {
             return el.toLowerCase().includes(normalized);
-          })
+          }),
         );
       },
     });
@@ -300,8 +356,15 @@ async function runInteractiveMode() {
     config.favorites = favoritesPrompt.value;
   }
   // Filter out presets by favorite file (if given)
-  if (config.favorites && config.favorites !== true && config.favorites.length > 0) {
-    presetLibrary.presets = narrowDownByFavoritesFile(presetLibrary, config.favorites);
+  if (
+    config.favorites &&
+    config.favorites !== true &&
+    config.favorites.length > 0
+  ) {
+    presetLibrary.presets = narrowDownByFavoritesFile(
+      presetLibrary,
+      config.favorites,
+    );
   } else {
     console.log('> No selection made, skipping this step.');
   }
@@ -342,7 +405,7 @@ async function runInteractiveMode() {
           return Promise.resolve(
             allChoices.filter((el) => {
               return el.name.toLowerCase().includes(normalized);
-            })
+            }),
           );
         },
       });
@@ -394,7 +457,7 @@ async function runInteractiveMode() {
           return Promise.resolve(
             allChoices.filter((el) => {
               return el.name.toLowerCase().includes(normalized);
-            })
+            }),
           );
         },
       });
@@ -404,7 +467,10 @@ async function runInteractiveMode() {
 
   // Filter out presets by category (if given)
   if (config.category && config.category !== true) {
-    presetLibrary.presets = narrowDownByCategory(presetLibrary, config.category);
+    presetLibrary.presets = narrowDownByCategory(
+      presetLibrary,
+      config.category,
+    );
   }
 
   const paramsModel = analyzeParamsTypeAndRange(presetLibrary);
@@ -415,7 +481,11 @@ async function runInteractiveMode() {
     //////////////////////////////////////////////////
 
     config.amount ??= await chooseAmountOfPresets(32);
-    const generatedPresets = generateFullyRandomPresets(presetLibrary, paramsModel, config);
+    const generatedPresets = generateFullyRandomPresets(
+      presetLibrary,
+      paramsModel,
+      config,
+    );
     writePresetLibrary(generatedPresets);
   } else if (mode.value === 'Randomize existing preset') {
     //////////////////////////////////////////////////
@@ -431,7 +501,11 @@ async function runInteractiveMode() {
     config.randomness ??= await chooseRandomness(20);
     config.amount ??= await chooseAmountOfPresets(16);
 
-    const generatedPresets = generateRandomizedPresets(presetLibrary, paramsModel, config);
+    const generatedPresets = generateRandomizedPresets(
+      presetLibrary,
+      paramsModel,
+      config,
+    );
     writePresetLibrary(generatedPresets);
   } else if (mode.value === 'Merge existing presets') {
     //////////////////////////////////////////////////
@@ -455,11 +529,17 @@ async function runInteractiveMode() {
     // Choose amount of randomness
     config.randomness ??= await chooseRandomness(0);
     config.amount ??= await chooseAmountOfPresets(16);
-    const generatedPresets = generateMergedPresets(presetLibrary, paramsModel, config);
+    const generatedPresets = generateMergedPresets(
+      presetLibrary,
+      paramsModel,
+      config,
+    );
     writePresetLibrary(generatedPresets);
   }
 
-  console.log('======================================================================');
+  console.log(
+    '======================================================================',
+  );
   console.log(chalk.green('Successfully completed.'));
   console.log('');
   console.log('To run it with the same configuration again, execute:');
@@ -541,7 +621,10 @@ async function chooseRandomness(initial = 20): Promise<number> {
   return amount.value;
 }
 
-async function choosePreset(foundPresets: string[], allowSelectAll = false): Promise<string> {
+async function choosePreset(
+  foundPresets: string[],
+  allowSelectAll = false,
+): Promise<string> {
   const controlChoices = [
     { value: '', name: '  (no choice / complete)' },
     { value: '?', name: '? (random pick)' },
@@ -556,7 +639,7 @@ async function choosePreset(foundPresets: string[], allowSelectAll = false): Pro
         value: el,
         name: el,
       };
-    })
+    }),
   );
 
   const presetChoice = await searchPrompt<string>({
@@ -582,8 +665,8 @@ async function choosePreset(foundPresets: string[], allowSelectAll = false): Pro
         staticChoices.concat(
           allChoices.filter((el) => {
             return el.name.toLowerCase().includes(normalized);
-          })
-        )
+          }),
+        ),
       );
     },
   });
@@ -602,7 +685,9 @@ function narrowDownByCategory(presetLibrary: PresetLibrary, category: string) {
     }
     return false;
   });
-  console.log(`Narrowed down by category "${category}" to ${filteredPresets.length} presets`);
+  console.log(
+    `Narrowed down by category "${category}" to ${filteredPresets.length} presets`,
+  );
   return filteredPresets;
 }
 
@@ -614,10 +699,15 @@ function narrowDownByAuthor(presetLibrary: PresetLibrary, author: string) {
     const authorMeta = el.meta.find((el) => el.key === 'Author');
     return authorMeta?.value === author;
   });
-  console.log(`Narrowed down by author "${author}" to ${filteredPresets.length} presets`);
+  console.log(
+    `Narrowed down by author "${author}" to ${filteredPresets.length} presets`,
+  );
   return filteredPresets;
 }
-function narrowDownByFavoritesFile(presetLibrary: PresetLibrary, favorites: string | string[]) {
+function narrowDownByFavoritesFile(
+  presetLibrary: PresetLibrary,
+  favorites: string | string[],
+) {
   if (!Array.isArray(favorites)) {
     favorites = [favorites];
   }
@@ -626,12 +716,16 @@ function narrowDownByFavoritesFile(presetLibrary: PresetLibrary, favorites: stri
   const filteredPresets: Preset[] = [];
 
   for (const favoriteFilePath of favorites) {
-    const favoriteFile = presetLibrary.favorites.find((el) => el.fileName === favoriteFilePath);
+    const favoriteFile = presetLibrary.favorites.find(
+      (el) => el.fileName === favoriteFilePath,
+    );
 
     if (favoriteFile) {
       favPresets.push(...favoriteFile.presets);
     } else {
-      console.error(chalk.red(`Error: Could not find favorites file: ${favoriteFilePath}`));
+      console.error(
+        chalk.red(`Error: Could not find favorites file: ${favoriteFilePath}`),
+      );
       return presetLibrary.presets;
     }
   }
@@ -643,7 +737,7 @@ function narrowDownByFavoritesFile(presetLibrary: PresetLibrary, favorites: stri
     for (const fav of favPresets) {
       if (
         preset.filePath.toLowerCase() ===
-        fav.path.toLowerCase() + '/' + fav.name.toLowerCase() + '.h2p'
+        `${fav.path.toLowerCase()}/${fav.name.toLowerCase()}.h2p`
       ) {
         filteredPresets.push(preset);
         break;
@@ -651,9 +745,11 @@ function narrowDownByFavoritesFile(presetLibrary: PresetLibrary, favorites: stri
     }
   }
 
-  const favoritesLabel = Array.isArray(favorites) ? favorites.join(', ') : favorites;
+  const favoritesLabel = Array.isArray(favorites)
+    ? favorites.join(', ')
+    : favorites;
   console.log(
-    `Narrowed down via favorite file "${favoritesLabel}" to ${filteredPresets.length} presets`
+    `Narrowed down via favorite file "${favoritesLabel}" to ${filteredPresets.length} presets`,
   );
   return filteredPresets;
 }

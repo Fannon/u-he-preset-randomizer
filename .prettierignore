@@ -1,7 +1,0 @@
-dist/
-coverage/
-node_modules/
-*.log
-.swc/
-*.tsbuildinfo
-package-lock.json
