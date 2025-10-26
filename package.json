@@ -15,7 +15,10 @@
     "clean": "rimraf dist/",
     "build": "npm run build-ts",
     "lint": "eslint .",
-    "test": "npm run lint && npm run build",
+    "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
+    "test:watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
+    "test:coverage": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --coverage",
+    "test:ci": "npm run lint && npm run build && npm test",
     "prepare": "npm run build"
   },
   "repository": {
@@ -50,10 +53,13 @@
     "@tsconfig/node20": "^20.1.6",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.9",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.9.1",
     "@types/yargs": "^17.0.34",
     "eslint": "^9.38.0",
+    "jest": "^30.2.0",
     "rimraf": "^6.0.1",
+    "ts-jest": "^29.4.5",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2"

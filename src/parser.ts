@@ -235,7 +235,7 @@ export function isValidPreset(preset: Preset) {
 // HELPER FUNCTIONS                     //
 //////////////////////////////////////////
 
-function isInt(value: unknown): boolean {
+export function isInt(value: unknown): boolean {
   return (
     !isNaN(value as number) &&
     (function (x) {
@@ -244,6 +244,6 @@ function isInt(value: unknown): boolean {
   );
 }
 
-function isNumeric(value: unknown): boolean {
+export function isNumeric(value: unknown): boolean {
   return !isNaN(parseFloat(value as string)) && isFinite(value as number);
 }
