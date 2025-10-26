@@ -1,4 +1,9 @@
-import { analyzeParamsTypeAndRange, getDictionaryOfNames, type ParamsModel } from '../analyzer.js';
+import {
+  analyzeParamsTypeAndRange,
+  convertParamsModelBySection,
+  getDictionaryOfNames,
+  type ParamsModel,
+} from '../analyzer.js';
 import type { PresetLibrary } from '../presetLibrary.js';
 
 describe('analyzer', () => {
@@ -260,6 +265,73 @@ describe('analyzer', () => {
       // Values array should be compacted when all identical
       expect(result['VCO/Fixed'].values).toEqual([440]);
       expect(result['VCO/Fixed'].distinctValues).toEqual([440]);
+    });
+
+    it('skips parameters that contain serialized object markers', () => {
+      const presetLibrary: PresetLibrary = {
+        synth: 'Diva',
+        rootFolder: '/test',
+        userPresetsFolder: '/test',
+        favorites: [],
+        presets: [
+          {
+            filePath: '/test/preset1.h2p',
+            presetName: 'Test1',
+            categories: [],
+            meta: [],
+            params: [
+              {
+                id: 'HEAD/Valid',
+                key: 'Valid',
+                section: 'HEAD',
+                value: 10,
+                index: 0,
+                type: 'integer',
+              },
+              {
+                id: '[object Object]/Broken',
+                key: 'Broken',
+                section: '[object Object]',
+                value: 99,
+                index: 1,
+                type: 'integer',
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = analyzeParamsTypeAndRange(presetLibrary);
+      expect(result['HEAD/Valid']).toBeDefined();
+      expect(result['[object Object]/Broken']).toBeUndefined();
+    });
+  });
+
+  describe('convertParamsModelBySection', () => {
+    it('groups params by section while discarding malformed IDs', () => {
+      const paramsModel: ParamsModel = {
+        'HEAD/Valid': {
+          type: 'integer',
+          values: [1, 2],
+          distinctValues: [1, 2],
+          maxValue: 2,
+          minValue: 1,
+          avgValue: 1.5,
+        },
+        '/Broken': {
+          type: 'integer',
+          values: [5],
+          distinctValues: [5],
+          maxValue: 5,
+          minValue: 5,
+          avgValue: 5,
+        },
+      };
+
+      const result = convertParamsModelBySection(paramsModel);
+      expect(result.HEAD).toBeDefined();
+      expect(result.HEAD['HEAD/Valid']).toBe(paramsModel['HEAD/Valid']);
+      expect(result['']).toBeUndefined();
     });
   });
 });
