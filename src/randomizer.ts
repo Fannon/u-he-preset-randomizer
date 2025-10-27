@@ -18,13 +18,6 @@ export function generateFullyRandomPresets(
   paramModel: ParamsModel,
   config: Config,
 ): PresetLibrary {
-  console.log(
-    '----------------------------------------------------------------------',
-  );
-  console.log(
-    `Fully random presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`,
-  );
-
   if (presetLibrary.presets.length === 0) {
     console.error(chalk.red('Error: No presets available for randomization.'));
     process.exit(1);
@@ -164,50 +157,93 @@ export function generateRandomizedPresets(
   paramModel: ParamsModel,
   config: Config,
 ): PresetLibrary {
-  console.log(
-    '----------------------------------------------------------------------',
-  );
-  console.log(
-    `Randomizing preset with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`,
-  );
-
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
     userPresetsFolder: `${presetLibrary.userPresetsFolder}/RANDOM`,
     presets: [],
   };
 
-  let basePreset: Preset | undefined;
+  // Handle multiple presets
+  if (Array.isArray(config.preset)) {
+    const totalAmount = config.amount ?? 8;
+    const amountPerPreset = Math.ceil(totalAmount / config.preset.length);
 
+    for (const presetString of config.preset) {
+      const basePreset = findBasePreset(presetLibrary, presetString);
+      if (!basePreset) {
+        console.error(
+          chalk.red(`Error: No preset with name ${presetString} found!`),
+        );
+        process.exit(1);
+      }
+
+      generateVariationsForPreset(
+        basePreset,
+        amountPerPreset,
+        newPresetLibrary,
+        paramModel,
+        config,
+        presetLibrary,
+      );
+    }
+
+    // Trim to exact amount if we generated too many
+    if (newPresetLibrary.presets.length > totalAmount) {
+      newPresetLibrary.presets = newPresetLibrary.presets.slice(0, totalAmount);
+    }
+  } else {
+    // Handle single preset (existing behavior)
+    const basePreset = findBasePreset(presetLibrary, config.preset);
+    if (!basePreset) {
+      console.error(
+        chalk.red(`Error: No preset with name ${config.preset ?? ''} found!`),
+      );
+      process.exit(1);
+    }
+
+    generateVariationsForPreset(
+      basePreset,
+      config.amount ?? 8,
+      newPresetLibrary,
+      paramModel,
+      config,
+      presetLibrary,
+    );
+  }
+
+  return newPresetLibrary;
+}
+
+function findBasePreset(
+  presetLibrary: PresetLibrary,
+  presetString?: string,
+): Preset | undefined {
   // If no preset given or "?" is passed, choose a random preset
-  if (config.preset === '?' || !config.preset) {
-    basePreset = getRandomArrayItem(presetLibrary.presets);
-  } else if (config.preset.startsWith('?')) {
-    basePreset = getRandomArrayItem(
+  if (presetString === '?' || !presetString) {
+    return getRandomArrayItem(presetLibrary.presets);
+  } else if (presetString.startsWith('?')) {
+    return getRandomArrayItem(
       presetLibrary.presets.filter((el) => {
-        const searchString = (config.preset ?? '')
-          .split('?')
-          .join('')
-          .toLowerCase();
+        const searchString = presetString.split('?').join('').toLowerCase();
         return el?.filePath?.toLowerCase().includes(searchString);
       }),
     );
   } else {
-    basePreset = presetLibrary.presets.find((el) => {
-      return el.filePath.includes(config.preset ?? '');
+    return presetLibrary.presets.find((el) => {
+      return el.filePath.includes(presetString);
     });
   }
+}
 
-  if (!basePreset) {
-    console.error(
-      chalk.red(`Error: No preset with name ${config.preset ?? ''} found!`),
-    );
-    process.exit(1);
-  }
-
-  console.log(`Randomizing base preset: ${basePreset.filePath}`);
-
-  for (let i = 0; i < (config.amount ?? 8); i++) {
+function generateVariationsForPreset(
+  basePreset: Preset,
+  amount: number,
+  newPresetLibrary: PresetLibrary,
+  paramModel: ParamsModel,
+  config: Config,
+  presetLibrary: PresetLibrary,
+): void {
+  for (let i = 0; i < amount; i++) {
     const randomPreset = randomizePreset(basePreset, paramModel, config);
     let randomName = uniqueNamesGenerator({
       dictionaries: [adjectives, colors],
@@ -231,7 +267,6 @@ export function generateRandomizedPresets(
 
     newPresetLibrary.presets.push(randomPreset);
   }
-  return newPresetLibrary;
 }
 
 /**
@@ -242,13 +277,6 @@ export function generateMergedPresets(
   paramModel: ParamsModel,
   config: Config,
 ): PresetLibrary {
-  console.log(
-    '----------------------------------------------------------------------',
-  );
-  console.log(
-    `Merging presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`,
-  );
-
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
     userPresetsFolder: `${presetLibrary.userPresetsFolder}/RANDOM`,
@@ -302,10 +330,6 @@ export function generateMergedPresets(
       mergePresets.push(mergePreset);
     }
   }
-
-  console.log(
-    `Merging ${mergePresets.length} presets:\n * ${mergePresets.map((el) => el.presetName).join('\n * ')}\n`,
-  );
 
   if (mergePresets.length < 2) {
     console.error(

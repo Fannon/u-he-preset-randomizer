@@ -57,10 +57,6 @@ export function loadPresetLibrary(
     );
   }
 
-  console.log(
-    `> Loading preset library for ${synth} in ${location.root} with pattern "${pattern}"`,
-  );
-
   const presetLibrary: PresetLibrary = {
     synth: location.synthName,
     rootFolder: location.root,
@@ -208,10 +204,6 @@ export function loadPresetLibrary(
     }
   }
 
-  console.log(
-    `> Found and loaded ${presetLibrary.presets.length} presets and ${presetLibrary.favorites.length} favorite files`,
-  );
-
   return presetLibrary;
 }
 
@@ -239,10 +231,8 @@ function validateSafePath(targetDir: string, filePath: string): string {
   return resolvedFilePath;
 }
 
-export function writePresetLibrary(presetLibrary: PresetLibrary) {
-  console.log(
-    '----------------------------------------------------------------------',
-  );
+export function writePresetLibrary(presetLibrary: PresetLibrary): string[] {
+  const writtenFiles: string[] = [];
   for (const preset of presetLibrary.presets) {
     // Validate the file path to prevent path traversal attacks
     const filePath = validateSafePath(
@@ -251,6 +241,7 @@ export function writePresetLibrary(presetLibrary: PresetLibrary) {
     );
     const fileContent = serializePresetToFile(preset);
     fs.outputFileSync(filePath, fileContent);
-    console.log(`Written: ${path.normalize(filePath)}`);
+    writtenFiles.push(path.normalize(filePath));
   }
+  return writtenFiles;
 }

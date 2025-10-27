@@ -22,6 +22,12 @@ import {
   generateRandomizedPresets,
 } from './randomizer.js';
 
+export interface GenerationResult {
+  writtenFiles: string[];
+  outputFolder: string;
+  presetCount: number;
+}
+
 /**
  * Main function to generate presets based on the provided configuration.
  * @param inputConfig Configuration options for preset generation.
@@ -30,7 +36,7 @@ import {
 export function generatePresets(
   inputConfig: Config,
   inputPresetLibrary?: PresetLibrary,
-) {
+): GenerationResult {
   const config: Config = {
     ...inputConfig,
   };
@@ -54,33 +60,37 @@ export function generatePresets(
     console.debug(chalk.gray(JSON.stringify(config, null, 2)));
   }
 
+  let generatedPresets: PresetLibrary;
+  let writtenFiles: string[];
+
   if (config.merge) {
-    const generatedPresets = generateMergedPresets(
+    generatedPresets = generateMergedPresets(
       filteredLibrary,
       paramsModel,
       config,
     );
-    writePresetLibrary(generatedPresets);
+    writtenFiles = writePresetLibrary(generatedPresets);
   } else if (config.preset) {
-    const generatedPresets = generateRandomizedPresets(
+    generatedPresets = generateRandomizedPresets(
       filteredLibrary,
       paramsModel,
       config,
     );
-    writePresetLibrary(generatedPresets);
+    writtenFiles = writePresetLibrary(generatedPresets);
   } else {
-    const generatedPresets = generateFullyRandomPresets(
+    generatedPresets = generateFullyRandomPresets(
       filteredLibrary,
       paramsModel,
       config,
     );
-    writePresetLibrary(generatedPresets);
+    writtenFiles = writePresetLibrary(generatedPresets);
   }
 
-  console.log(
-    '======================================================================',
-  );
-  console.log('Successfully completed.');
+  return {
+    writtenFiles,
+    outputFolder: generatedPresets.userPresetsFolder,
+    presetCount: generatedPresets.presets.length,
+  };
 }
 
 function applyPresetFilters(

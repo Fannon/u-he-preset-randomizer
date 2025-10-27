@@ -2,12 +2,15 @@
 import { dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import searchPrompt from '@inquirer/search';
+import boxen from 'boxen';
 import chalk from 'chalk';
+import Table from 'cli-table3';
 import fg from 'fast-glob';
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
+import ora from 'ora';
 import { type Config, getConfigFromParameters } from './config.js';
-import { generatePresets } from './generatePresets.js';
+import { type GenerationResult, generatePresets } from './generatePresets.js';
 import {
   narrowDownByAuthor,
   narrowDownByCategory,
@@ -34,15 +37,30 @@ interface ChoiceOptions {
 const config = getConfigFromParameters();
 
 function logCliBanner() {
-  console.log(
-    '======================================================================',
+  const title = chalk.cyan.bold(
+    `u-he Preset Randomizer v${packageJson.version}`,
   );
-  console.log(`u-he Preset Randomizer CLI v${packageJson.version}`);
-  console.log(
-    '======================================================================',
+
+  const welcomeMessage = boxen(
+    `${title}\n\n` +
+      `Create new synth presets through:\n` +
+      `  ${chalk.dim('•')} Fully random generation\n` +
+      `  ${chalk.dim('•')} Variations of existing presets\n` +
+      `  ${chalk.dim('•')} Merging multiple presets\n\n` +
+      `${chalk.dim('https://github.com/Fannon/u-he-preset-randomizer')}`,
+    {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: 'cyan',
+      textAlignment: 'left',
+    },
   );
+
+  console.log(welcomeMessage);
+  console.log('');
   console.log(
-    'Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme',
+    chalk.dim('Tip: Use ↑↓ to navigate, Space to select, Enter to confirm'),
   );
   console.log('');
 }
@@ -53,7 +71,8 @@ export async function startCli() {
     await runInteractiveMode();
     return;
   }
-  generatePresets(config);
+  const result = generatePresets(config);
+  logGenerationSuccess(result);
 }
 
 const executionArg = process.argv[1];
@@ -80,7 +99,24 @@ async function runInteractiveMode() {
     };
   });
   if (!synthChoices.length) {
-    console.error(chalk.red('Error: No u-he synths detected. Exiting.'));
+    const errorMessage = boxen(
+      `${chalk.red.bold('⚠ No u-he synths found on your system')}\n\n` +
+        `${chalk.bold('Please make sure:')}\n` +
+        `  ${chalk.dim('•')} You have at least one u-he synth installed\n` +
+        `  ${chalk.dim('•')} The synth is installed in the standard location\n` +
+        `  ${chalk.dim('•')} You have created or loaded some presets\n\n` +
+        `${chalk.dim('If your u-he folder is in a custom location, use:')}\n` +
+        `  ${chalk.cyan('npx u-he-preset-randomizer --custom-folder "path/to/u-he"')}`,
+      {
+        padding: 1,
+        margin: 1,
+        borderStyle: 'round',
+        borderColor: 'red',
+        textAlignment: 'left',
+      },
+    );
+
+    console.log(errorMessage);
     process.exit(1);
   }
   const synth = await searchPrompt<SynthNames>({
@@ -105,12 +141,21 @@ async function runInteractiveMode() {
     {
       name: 'value',
       type: 'list',
-      message: 'Which random mode?',
+      message: 'What would you like to do?',
       default: 'Fully randomized presets',
       choices: [
-        { value: 'Fully randomized presets' },
-        { value: 'Randomize existing preset' },
-        { value: 'Merge existing presets' },
+        {
+          value: 'Fully randomized presets',
+          name: 'Create fully random presets (best for discovering new sounds)',
+        },
+        {
+          value: 'Randomize existing preset',
+          name: 'Create variations of a specific preset (keep the character, add variation)',
+        },
+        {
+          value: 'Merge existing presets',
+          name: 'Blend multiple presets together (combine your favorites)',
+        },
       ],
     },
   ]);
@@ -118,65 +163,95 @@ async function runInteractiveMode() {
   // 2.5) Choose optional modifiers for randomization
   if (!config.stable || !config.binary) {
     const binaryEnabled = ['Repro-1', 'Repro-5'].includes(config.synth);
-    const modifiers = await inquirer.prompt<{ value: string }>([
+
+    // First: Basic filtering options
+    const basicOptions = await inquirer.prompt<{ value: string[] }>([
       {
         name: 'value',
         type: 'checkbox',
-        message: 'Set optional flags / modifiers (multi-choice):',
+        message: 'Narrow down which presets to use as inspiration (optional):',
         choices: [
           {
             value: 'folder',
-            name: '[Folder]     Narrow down presets by folder',
+            name: 'Select a specific folder',
           },
           {
             value: 'category',
-            name: '[Category]   Narrow down presets by category',
+            name: 'Filter by category (e.g., Bass, Lead, Pad)',
           },
           {
             value: 'author',
-            name: '[Author]     Narrow down presets by author',
+            name: 'Filter by preset creator',
           },
           {
             value: 'favorites',
-            name: '[Favorites]  Narrow down presets by favorites from .uhe-fav file',
-          },
-          {
-            value: 'stable',
-            name: '[Stable]     More stable randomization approach',
-            checked: true,
-          },
-          {
-            value: 'binary',
-            name: '[Binary]     Include binary section (WARNING: unstable with some synths!)',
-            checked: binaryEnabled,
-          },
-          {
-            value: 'dictionary',
-            name: '[Dictionary] Use real preset names to generate random preset names',
+            name: 'Use only your favorited presets',
           },
         ],
       },
     ]);
-    if (modifiers.value.includes('folder')) {
+
+    // Apply basic options
+    if (basicOptions.value.includes('folder')) {
       config.folder = true;
     }
-    if (modifiers.value.includes('category')) {
+    if (basicOptions.value.includes('category')) {
       config.category = true;
     }
-    if (modifiers.value.includes('author')) {
+    if (basicOptions.value.includes('author')) {
       config.author = true;
     }
-    if (modifiers.value.includes('favorites')) {
+    if (basicOptions.value.includes('favorites')) {
       config.favorites = true;
     }
-    if (modifiers.value.includes('stable')) {
+
+    // Then: Ask if they want advanced options
+    const wantsAdvanced = await inquirer.prompt<{ value: boolean }>([
+      {
+        name: 'value',
+        type: 'confirm',
+        message: 'Show advanced options?',
+        default: false,
+      },
+    ]);
+
+    if (wantsAdvanced.value) {
+      const advancedOptions = await inquirer.prompt<{ value: string[] }>([
+        {
+          name: 'value',
+          type: 'checkbox',
+          message: 'Advanced settings:',
+          choices: [
+            {
+              value: 'stable',
+              name: '[Stable] Use safer randomization (recommended for most synths)',
+              checked: true,
+            },
+            {
+              value: 'binary',
+              name: '[Binary] Include advanced modulation data (may cause crashes)',
+              checked: binaryEnabled,
+            },
+            {
+              value: 'dictionary',
+              name: '[Dictionary] Generate realistic preset names',
+            },
+          ],
+        },
+      ]);
+
+      if (advancedOptions.value.includes('stable')) {
+        config.stable = true;
+      }
+      if (advancedOptions.value.includes('binary')) {
+        config.binary = true;
+      }
+      if (advancedOptions.value.includes('dictionary')) {
+        config.dictionary = true;
+      }
+    } else {
+      // Default: stable mode enabled
       config.stable = true;
-    }
-    if (modifiers.value.includes('binary')) {
-      config.binary = true;
-    }
-    if (modifiers.value.includes('dictionary')) {
-      config.dictionary = true;
     }
   }
 
@@ -243,8 +318,16 @@ async function runInteractiveMode() {
     throw new Error('Synth not specified in config');
   }
 
-  console.log(`> Loading and analyzing preset library...`);
+  const spinner = ora({
+    text: 'Loading your preset library...',
+    color: 'cyan',
+  }).start();
+
   const presetLibrary = loadPresetLibrary(config.synth, config);
+
+  spinner.succeed(
+    chalk.green(`Loaded ${presetLibrary.presets.length} presets`),
+  );
 
   // Optionally: Narrow down by u-he favorites
   if (config.favorites === true && presetLibrary.favorites.length) {
@@ -276,7 +359,7 @@ async function runInteractiveMode() {
       config.favorites,
     );
   } else {
-    console.log('> No selection made, skipping this step.');
+    console.log(chalk.dim('No selection made, skipping this step.'));
   }
 
   // Optionally: Narrow down by author
@@ -394,11 +477,35 @@ async function runInteractiveMode() {
     // MODE 2: Randomize existing preset            //
     //////////////////////////////////////////////////
 
+    console.log('');
+    console.log(
+      chalk.dim('Select presets one by one. Choose "no choice" when done.'),
+    );
+    console.log('');
+
+    const presetSelections: string[] = [];
     const foundPresets = presetLibrary.presets.map((el) => el.filePath);
-    config.preset = await choosePreset(foundPresets);
-    if (!config.preset) {
+    while (true) {
+      const presetChoice = await choosePreset(foundPresets, false);
+      if (presetChoice) {
+        presetSelections.push(presetChoice);
+        const displayName = presetChoice === '?' ? 'random' : presetChoice;
+        console.log(chalk.green(`✓ Added ${displayName}`));
+      } else {
+        break;
+      }
+    }
+
+    if (presetSelections.length === 0) {
+      console.log(chalk.yellow('No presets selected. Exiting.'));
       process.exit(0);
     }
+
+    console.log(chalk.dim(`Selected ${presetSelections.length} preset(s)`));
+    console.log('');
+
+    config.preset =
+      presetSelections.length === 1 ? presetSelections[0] : presetSelections;
 
     config.randomness ??= await chooseRandomness(20);
     config.amount ??= await chooseAmountOfPresets(16);
@@ -407,26 +514,133 @@ async function runInteractiveMode() {
     // MODE 3: Merge Random Presets                 //
     //////////////////////////////////////////////////
 
+    console.log('');
+    console.log(
+      chalk.dim('Select presets one by one. Choose "no choice" when done.'),
+    );
+    console.log('');
+
     config.merge = [];
     const foundPresets = presetLibrary.presets.map((el) => el.filePath);
     while (true) {
       const presetChoice = await choosePreset(foundPresets, true);
       if (presetChoice) {
         config.merge.push(presetChoice);
-        if (presetChoice === '*') {
+        const displayName =
+          presetChoice === '?'
+            ? 'random'
+            : presetChoice.startsWith('*') || presetChoice === '*'
+              ? 'all matching'
+              : presetChoice;
+        console.log(chalk.green(`✓ Added ${displayName}`));
+        if (presetChoice === '*' || presetChoice.startsWith('*')) {
           break;
         }
       } else {
         break;
       }
     }
+    console.log(chalk.dim(`Selected ${config.merge.length} preset(s)`));
+    console.log('');
 
     // Choose amount of randomness
     config.randomness ??= await chooseRandomness(0);
     config.amount ??= await chooseAmountOfPresets(16);
   }
 
-  generatePresets(config, presetLibrary);
+  // Show summary before generating
+  console.log('');
+  const table = new Table({
+    head: [chalk.bold.gray('Setting'), chalk.bold.gray('Value')],
+    colWidths: [20, 50],
+    style: {
+      head: [],
+      border: ['gray'],
+    },
+  });
+
+  table.push(
+    [chalk.bold('Synth'), config.synth],
+    [chalk.bold('Mode'), mode.value],
+    [chalk.bold('Amount'), `${config.amount} presets`],
+  );
+
+  if (config.randomness) {
+    table.push([chalk.bold('Randomness'), `${config.randomness}%`]);
+  }
+  if (config.preset) {
+    if (Array.isArray(config.preset)) {
+      table.push([
+        chalk.bold('Base Presets'),
+        `${config.preset.length} selected`,
+      ]);
+    } else {
+      table.push([chalk.bold('Base Preset'), config.preset]);
+    }
+  }
+  if (config.category && typeof config.category === 'string') {
+    table.push([chalk.bold('Category'), config.category]);
+  }
+  if (config.author && typeof config.author === 'string') {
+    table.push([chalk.bold('Author'), config.author]);
+  }
+  if (config.folder && typeof config.folder === 'string') {
+    table.push([chalk.bold('Folder'), config.folder]);
+  }
+  if (config.stable) {
+    table.push([
+      chalk.bold('Stable Mode'),
+      chalk.green('Enabled') + chalk.dim(' (safer randomization)'),
+    ]);
+  }
+  if (config.binary) {
+    table.push([
+      chalk.bold('Binary Mode'),
+      chalk.yellow('Enabled') + chalk.dim(' (may cause issues)'),
+    ]);
+  }
+  if (config.dictionary) {
+    table.push([
+      chalk.bold('Dictionary'),
+      chalk.green('Enabled') + chalk.dim(' (realistic names)'),
+    ]);
+  }
+
+  console.log(table.toString());
+  console.log('');
+
+  const proceed = await inquirer.prompt<{ value: boolean }>([
+    {
+      name: 'value',
+      type: 'confirm',
+      message: 'Generate presets with these settings?',
+      default: true,
+    },
+  ]);
+
+  if (!proceed.value) {
+    console.log(
+      chalk.yellow('Cancelled. Run the command again to start over.'),
+    );
+    process.exit(0);
+  }
+
+  console.log('');
+  const generationSpinner = ora({
+    text: 'Generating your presets...',
+    color: 'cyan',
+  }).start();
+
+  let result: GenerationResult;
+  try {
+    result = generatePresets(config, presetLibrary);
+    generationSpinner.stop();
+  } catch (error) {
+    generationSpinner.fail('Failed to generate presets');
+    throw error;
+  }
+
+  logGenerationSuccess(result);
   logRepeatCommand(config);
 }
 
@@ -434,28 +648,82 @@ async function runInteractiveMode() {
 // HELPER FUNCTIONS                     //
 //////////////////////////////////////////
 
+function logGenerationSuccess(result: GenerationResult) {
+  console.log('');
+  console.log(
+    chalk.green(
+      '✓ Successfully generated ' +
+        result.presetCount +
+        ' ' +
+        (result.presetCount === 1 ? 'preset' : 'presets'),
+    ),
+  );
+  console.log('');
+
+  // Show list of generated presets
+  if (result.writtenFiles.length > 0) {
+    console.log(chalk.bold('Generated presets:'));
+    for (const file of result.writtenFiles) {
+      // Extract just the preset name from the full path
+      const fileName = file.split('/').pop() || file;
+      console.log(chalk.dim('  • ') + fileName);
+    }
+    console.log('');
+  }
+
+  console.log(chalk.bold('Output folder:'));
+  console.log(chalk.cyan('  ' + result.outputFolder));
+  console.log('');
+  console.log(
+    chalk.dim(
+      'Open your DAW and look for the RANDOM folder in your user presets.',
+    ),
+  );
+  console.log('');
+}
+
 /** Choose number of presets to generate */
 async function chooseAmountOfPresets(initial = 8): Promise<number> {
+  console.log('');
+  console.log(
+    chalk.dim(
+      'Tip: Start with 8-16 presets to review. You can always generate more!',
+    ),
+  );
   const amount = await inquirer.prompt<{ value: number }>([
     {
       name: 'value',
       type: 'number',
-      message: 'How many presets to generate?',
+      message: 'How many presets would you like to generate?',
       default: initial,
+      validate: (input: number | undefined) => {
+        if (typeof input !== 'number' || Number.isNaN(input))
+          return 'Please enter a number';
+        if (input < 1) return 'Please enter at least 1';
+        return true;
+      },
     },
   ]);
   return amount.value;
 }
 /** Choose randomness amount */
 async function chooseRandomness(initial = 20): Promise<number> {
+  console.log('');
+  console.log(chalk.dim('Randomness guide:'));
+  console.log(chalk.dim('   0-20%   = Subtle variations'));
+  console.log(chalk.dim('   20-50%  = Noticeable differences'));
+  console.log(chalk.dim('   50-100% = Dramatically different'));
   const amount = await inquirer.prompt<{ value: number }>({
     name: 'value',
     type: 'number',
-    message: 'How much randomness to apply (0-100)',
+    message: 'How much variation? (0-100)',
     default: initial,
     validate: (input: number | undefined) => {
-      if (typeof input !== 'number') return false;
-      return input >= 0 && input <= 100;
+      if (typeof input !== 'number' || Number.isNaN(input))
+        return 'Please enter a number';
+      if (input < 0 || input > 100)
+        return 'Please enter a value between 0 and 100';
+      return true;
     },
   });
   return amount.value;
@@ -514,12 +782,16 @@ async function choosePreset(
 }
 
 function logRepeatCommand(config: Config) {
-  console.log('');
-  console.log('To run it with the same configuration again, execute:');
-
   let cliCommand = `npx u-he-preset-randomizer@latest --synth ${config.synth ?? ''} --amount ${config.amount ?? 8}`;
-  if (config.preset && typeof config.preset === 'string') {
-    cliCommand += ` --preset "${config.preset}"`;
+  if (config.preset) {
+    const presets = Array.isArray(config.preset)
+      ? config.preset
+      : [config.preset];
+    for (const preset of presets) {
+      if (typeof preset === 'string') {
+        cliCommand += ` --preset "${preset}"`;
+      }
+    }
   } else if (config.merge) {
     const merges = Array.isArray(config.merge) ? config.merge : [config.merge];
     for (const merge of merges) {
@@ -560,5 +832,8 @@ function logRepeatCommand(config: Config) {
   if (config.debug) {
     cliCommand += ` --debug`;
   }
-  console.log(chalk.bgGray(chalk.black(cliCommand)));
+
+  console.log(chalk.dim('To repeat with same settings:'));
+  console.log(chalk.cyan(cliCommand));
+  console.log('');
 }

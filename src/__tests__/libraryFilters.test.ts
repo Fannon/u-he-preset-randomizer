@@ -131,18 +131,6 @@ describe('libraryFilters', () => {
 
       expect(result).toHaveLength(0); // Should be case sensitive
     });
-
-    it('logs the filtering result', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-      narrowDownByCategory(mockPresetLibrary, 'LD');
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Narrowed down by category "LD" to 1 presets'
-      );
-
-      consoleSpy.mockRestore();
-    });
   });
 
   describe('narrowDownByAuthor', () => {
@@ -172,18 +160,6 @@ describe('libraryFilters', () => {
       const result = narrowDownByAuthor(mockPresetLibrary, 'artist1');
 
       expect(result).toHaveLength(0); // Should be case sensitive
-    });
-
-    it('logs the filtering result', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-      narrowDownByAuthor(mockPresetLibrary, 'Artist1');
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Narrowed down by author "Artist1" to 3 presets'
-      );
-
-      consoleSpy.mockRestore();
     });
   });
 
@@ -238,30 +214,6 @@ describe('libraryFilters', () => {
       expect(result.map(p => p.presetName)).toEqual(
         expect.arrayContaining(['Lead1', 'Bass1'])
       );
-    });
-
-    it('logs the filtering result for single file', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-      narrowDownByFavoritesFile(mockPresetLibrary, 'leads.uhe-fav');
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Narrowed down via favorite file "leads.uhe-fav" to 2 presets'
-      );
-
-      consoleSpy.mockRestore();
-    });
-
-    it('logs the filtering result for multiple files', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-      narrowDownByFavoritesFile(mockPresetLibrary, ['leads.uhe-fav', 'pads.uhe-fav']);
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Narrowed down via favorite file "leads.uhe-fav, pads.uhe-fav" to 3 presets'
-      );
-
-      consoleSpy.mockRestore();
     });
 
     it('handles empty favorites array', () => {
