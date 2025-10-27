@@ -369,7 +369,7 @@ export function generateMergedPresets(
           newParamValue = findParam.value;
         }
       } else {
-        let newParamValue = 0;
+        newParamValue = 0;
 
         for (const [i, preset] of mergePresets.entries()) {
           const findParam = preset.params.find((el) => el.id === param.id);

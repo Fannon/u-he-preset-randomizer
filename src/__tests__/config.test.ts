@@ -70,4 +70,28 @@ describe('config utilities', () => {
     expect(withCustomFolder.customFolder).toBe('/tmp/u-he');
     expect(getConfig().preset).toBeUndefined();
   });
+
+  it('creates new config objects instead of mutating shared state', () => {
+    // Create first config
+    const config1 = getConfigFromParameters({
+      synth: 'Diva',
+      amount: '5',
+    });
+
+    // Create second config - should not be affected by first config
+    const config2 = getConfigFromParameters({
+      synth: 'Repro',
+      randomness: '80',
+    });
+
+    // Verify both configs are independent
+    expect(config1.synth).toBe('Diva');
+    expect(config1.amount).toBe(5);
+    expect(config1.randomness).toBeUndefined();
+
+    expect(config2.synth).toBe('Repro');
+    expect(config2.randomness).toBe(80);
+    // amount should not be inherited from config1
+    expect(config2.amount).toBeUndefined();
+  });
 });
