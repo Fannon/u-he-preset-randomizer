@@ -477,11 +477,35 @@ async function runInteractiveMode() {
     // MODE 2: Randomize existing preset            //
     //////////////////////////////////////////////////
 
+    console.log('');
+    console.log(
+      chalk.dim('Select presets one by one. Choose "no choice" when done.'),
+    );
+    console.log('');
+
+    const presetSelections: string[] = [];
     const foundPresets = presetLibrary.presets.map((el) => el.filePath);
-    config.preset = await choosePreset(foundPresets);
-    if (!config.preset) {
+    while (true) {
+      const presetChoice = await choosePreset(foundPresets, false);
+      if (presetChoice) {
+        presetSelections.push(presetChoice);
+        const displayName = presetChoice === '?' ? 'random' : presetChoice;
+        console.log(chalk.green(`✓ Added ${displayName}`));
+      } else {
+        break;
+      }
+    }
+
+    if (presetSelections.length === 0) {
+      console.log(chalk.yellow('No presets selected. Exiting.'));
       process.exit(0);
     }
+
+    console.log(chalk.dim(`Selected ${presetSelections.length} preset(s)`));
+    console.log('');
+
+    config.preset =
+      presetSelections.length === 1 ? presetSelections[0] : presetSelections;
 
     config.randomness ??= await chooseRandomness(20);
     config.amount ??= await chooseAmountOfPresets(16);
@@ -544,8 +568,15 @@ async function runInteractiveMode() {
   if (config.randomness) {
     table.push([chalk.bold('Randomness'), `${config.randomness}%`]);
   }
-  if (config.preset && typeof config.preset === 'string') {
-    table.push([chalk.bold('Base Preset'), config.preset]);
+  if (config.preset) {
+    if (Array.isArray(config.preset)) {
+      table.push([
+        chalk.bold('Base Presets'),
+        `${config.preset.length} selected`,
+      ]);
+    } else {
+      table.push([chalk.bold('Base Preset'), config.preset]);
+    }
   }
   if (config.category && typeof config.category === 'string') {
     table.push([chalk.bold('Category'), config.category]);
@@ -628,6 +659,18 @@ function logGenerationSuccess(result: GenerationResult) {
     ),
   );
   console.log('');
+
+  // Show list of generated presets
+  if (result.writtenFiles.length > 0) {
+    console.log(chalk.bold('Generated presets:'));
+    for (const file of result.writtenFiles) {
+      // Extract just the preset name from the full path
+      const fileName = file.split('/').pop() || file;
+      console.log(chalk.dim('  • ') + fileName);
+    }
+    console.log('');
+  }
+
   console.log(chalk.bold('Output folder:'));
   console.log(chalk.cyan('  ' + result.outputFolder));
   console.log('');
@@ -740,8 +783,15 @@ async function choosePreset(
 
 function logRepeatCommand(config: Config) {
   let cliCommand = `npx u-he-preset-randomizer@latest --synth ${config.synth ?? ''} --amount ${config.amount ?? 8}`;
-  if (config.preset && typeof config.preset === 'string') {
-    cliCommand += ` --preset "${config.preset}"`;
+  if (config.preset) {
+    const presets = Array.isArray(config.preset)
+      ? config.preset
+      : [config.preset];
+    for (const preset of presets) {
+      if (typeof preset === 'string') {
+        cliCommand += ` --preset "${preset}"`;
+      }
+    }
   } else if (config.merge) {
     const merges = Array.isArray(config.merge) ? config.merge : [config.merge];
     for (const merge of merges) {

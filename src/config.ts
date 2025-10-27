@@ -6,7 +6,7 @@ export interface Config {
   debug: boolean;
   synth?: SynthNames;
   amount?: number;
-  preset?: string;
+  preset?: string | string[];
   randomness?: number;
   merge?: string | string[];
   /** Pattern to narrow down presets to load from library */
@@ -52,7 +52,7 @@ export function getConfigFromParameters(
     newConfig.amount = parseInt(argv.amount as string, 10);
   }
   if (argv.preset) {
-    newConfig.preset = argv.preset as string;
+    newConfig.preset = argv.preset as string | string[];
   }
   if (argv.randomness) {
     newConfig.randomness = parseInt(argv.randomness as string, 10);
