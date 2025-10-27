@@ -11,7 +11,7 @@ import gradient from 'gradient-string';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import { type Config, getConfigFromParameters } from './config.js';
-import { generatePresets } from './generatePresets.js';
+import { type GenerationResult, generatePresets } from './generatePresets.js';
 import {
   narrowDownByAuthor,
   narrowDownByCategory,
@@ -67,7 +67,8 @@ export async function startCli() {
     await runInteractiveMode();
     return;
   }
-  generatePresets(config);
+  const result = generatePresets(config);
+  logGenerationSuccess(result);
 }
 
 const executionArg = process.argv[1];
@@ -541,11 +542,11 @@ async function runInteractiveMode() {
   // Show summary before generating
   console.log('');
   const table = new Table({
-    head: [chalk.bold.cyan('Setting'), chalk.bold.cyan('Value')],
+    head: [chalk.bold.gray('Setting'), chalk.bold.gray('Value')],
     colWidths: [20, 50],
     style: {
       head: [],
-      border: ['cyan'],
+      border: ['gray'],
     },
   });
 
@@ -614,20 +615,44 @@ async function runInteractiveMode() {
     color: 'cyan',
   }).start();
 
+  let result: GenerationResult;
   try {
-    generatePresets(config);
+    result = generatePresets(config);
     generationSpinner.stop();
   } catch (error) {
     generationSpinner.fail('Failed to generate presets');
     throw error;
   }
 
+  logGenerationSuccess(result);
   logRepeatCommand(config);
 }
 
 //////////////////////////////////////////
 // HELPER FUNCTIONS                     //
 //////////////////////////////////////////
+
+function logGenerationSuccess(result: GenerationResult) {
+  const successMessage = boxen(
+    `${chalk.green.bold('✓ Successfully generated presets!')}\n\n` +
+      `${chalk.bold('📁 Where to find them:')}\n` +
+      `   ${chalk.cyan(result.outputFolder)}\n\n` +
+      `${chalk.bold('🎹 Next steps:')}\n` +
+      `   ${chalk.dim('1.')} Open your DAW and load the synth\n` +
+      `   ${chalk.dim('2.')} Look in the ${chalk.cyan('"RANDOM"')} folder in your user presets\n` +
+      `   ${chalk.dim('3.')} Browse and audition the generated sounds\n\n` +
+      `${chalk.dim(`Generated ${result.presetCount} ${result.presetCount === 1 ? 'preset' : 'presets'}`)}`,
+    {
+      padding: 1,
+      margin: { top: 1, bottom: 0, left: 0, right: 0 },
+      borderStyle: 'round',
+      borderColor: 'green',
+      textAlignment: 'left',
+    },
+  );
+
+  console.log(successMessage);
+}
 
 /** Choose number of presets to generate */
 async function chooseAmountOfPresets(initial = 8): Promise<number> {

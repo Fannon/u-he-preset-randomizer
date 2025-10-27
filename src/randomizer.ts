@@ -18,13 +18,6 @@ export function generateFullyRandomPresets(
   paramModel: ParamsModel,
   config: Config,
 ): PresetLibrary {
-  console.log(
-    '----------------------------------------------------------------------',
-  );
-  console.log(
-    `Fully random presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`,
-  );
-
   if (presetLibrary.presets.length === 0) {
     console.error(chalk.red('Error: No presets available for randomization.'));
     process.exit(1);
@@ -164,13 +157,6 @@ export function generateRandomizedPresets(
   paramModel: ParamsModel,
   config: Config,
 ): PresetLibrary {
-  console.log(
-    '----------------------------------------------------------------------',
-  );
-  console.log(
-    `Randomizing preset with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`,
-  );
-
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
     userPresetsFolder: `${presetLibrary.userPresetsFolder}/RANDOM`,
@@ -204,8 +190,6 @@ export function generateRandomizedPresets(
     );
     process.exit(1);
   }
-
-  console.log(`Randomizing base preset: ${basePreset.filePath}`);
 
   for (let i = 0; i < (config.amount ?? 8); i++) {
     const randomPreset = randomizePreset(basePreset, paramModel, config);
@@ -242,13 +226,6 @@ export function generateMergedPresets(
   paramModel: ParamsModel,
   config: Config,
 ): PresetLibrary {
-  console.log(
-    '----------------------------------------------------------------------',
-  );
-  console.log(
-    `Merging presets with modes: stable=${config.stable ?? false}, binary=${config.binary ?? false}`,
-  );
-
   const newPresetLibrary: PresetLibrary = {
     ...presetLibrary,
     userPresetsFolder: `${presetLibrary.userPresetsFolder}/RANDOM`,
@@ -302,10 +279,6 @@ export function generateMergedPresets(
       mergePresets.push(mergePreset);
     }
   }
-
-  console.log(
-    `Merging ${mergePresets.length} presets:\n * ${mergePresets.map((el) => el.presetName).join('\n * ')}\n`,
-  );
 
   if (mergePresets.length < 2) {
     console.error(

@@ -1,4 +1,3 @@
-import boxen from 'boxen';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import {
@@ -23,11 +22,17 @@ import {
   generateRandomizedPresets,
 } from './randomizer.js';
 
+export interface GenerationResult {
+  writtenFiles: string[];
+  outputFolder: string;
+  presetCount: number;
+}
+
 /**
  * Main function to generate presets based on the provided configuration.
  * @param inputConfig Configuration options for preset generation.
  */
-export function generatePresets(inputConfig: Config) {
+export function generatePresets(inputConfig: Config): GenerationResult {
   const config: Config = {
     ...inputConfig,
   };
@@ -51,47 +56,36 @@ export function generatePresets(inputConfig: Config) {
   }
 
   let generatedPresets: PresetLibrary;
+  let writtenFiles: string[];
+
   if (config.merge) {
     generatedPresets = generateMergedPresets(
       filteredLibrary,
       paramsModel,
       config,
     );
-    writePresetLibrary(generatedPresets);
+    writtenFiles = writePresetLibrary(generatedPresets);
   } else if (config.preset) {
     generatedPresets = generateRandomizedPresets(
       filteredLibrary,
       paramsModel,
       config,
     );
-    writePresetLibrary(generatedPresets);
+    writtenFiles = writePresetLibrary(generatedPresets);
   } else {
     generatedPresets = generateFullyRandomPresets(
       filteredLibrary,
       paramsModel,
       config,
     );
-    writePresetLibrary(generatedPresets);
+    writtenFiles = writePresetLibrary(generatedPresets);
   }
 
-  const successMessage = boxen(
-    `${chalk.green.bold('✓ Successfully generated presets!')}\n\n` +
-      `${chalk.bold('📁 Where to find them:')}\n` +
-      `   ${chalk.cyan(generatedPresets.userPresetsFolder)}\n\n` +
-      `${chalk.bold('🎹 Next steps:')}\n` +
-      `   ${chalk.dim('1.')} Open your DAW and load the synth\n` +
-      `   ${chalk.dim('2.')} Look in the ${chalk.cyan('"RANDOM"')} folder in your user presets\n` +
-      `   ${chalk.dim('3.')} Browse and audition the generated sounds`,
-    {
-      padding: 1,
-      margin: { top: 1, bottom: 0, left: 0, right: 0 },
-      borderStyle: 'round',
-      borderColor: 'green',
-      textAlignment: 'left',
-    },
-  );
-
-  console.log(successMessage);
+  return {
+    writtenFiles,
+    outputFolder: generatedPresets.userPresetsFolder,
+    presetCount: generatedPresets.presets.length,
+  };
 }
 
 function applyPresetFilters(

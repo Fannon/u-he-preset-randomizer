@@ -17,9 +17,6 @@ export function narrowDownByCategory(
     }
     return false;
   });
-  console.log(
-    `Narrowed down by category "${category}" to ${filteredPresets.length} presets`,
-  );
   return filteredPresets;
 }
 
@@ -31,9 +28,6 @@ export function narrowDownByAuthor(
     const authorMeta = el.meta.find((meta) => meta.key === 'Author');
     return authorMeta?.value === author;
   });
-  console.log(
-    `Narrowed down by author "${author}" to ${filteredPresets.length} presets`,
-  );
   return filteredPresets;
 }
 
@@ -73,11 +67,5 @@ export function narrowDownByFavoritesFile(
     }
   }
 
-  const favoritesLabel = Array.isArray(favorites)
-    ? favorites.join(', ')
-    : favorites;
-  console.log(
-    `Narrowed down via favorite file "${favoritesLabel}" to ${filteredPresets.length} presets`,
-  );
   return filteredPresets;
 }
