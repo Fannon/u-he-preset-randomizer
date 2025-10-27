@@ -25,8 +25,12 @@ import {
 /**
  * Main function to generate presets based on the provided configuration.
  * @param inputConfig Configuration options for preset generation.
+ * @param inputPresetLibrary Optional preset library to reuse if already loaded (avoids slow filesystem reload).
  */
-export function generatePresets(inputConfig: Config) {
+export function generatePresets(
+  inputConfig: Config,
+  inputPresetLibrary?: PresetLibrary,
+) {
   const config: Config = {
     ...inputConfig,
   };
@@ -39,7 +43,8 @@ export function generatePresets(inputConfig: Config) {
     config.pattern = `${config.folder}${config.pattern ?? '**/*'}`;
   }
 
-  const presetLibrary = loadPresetLibrary(config.synth, config);
+  const presetLibrary =
+    inputPresetLibrary ?? loadPresetLibrary(config.synth, config);
   const filteredLibrary = applyPresetFilters(presetLibrary, config);
 
   const paramsModel = analyzeParamsTypeAndRange(filteredLibrary);

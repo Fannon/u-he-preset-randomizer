@@ -426,7 +426,7 @@ async function runInteractiveMode() {
     config.amount ??= await chooseAmountOfPresets(16);
   }
 
-  generatePresets(config);
+  generatePresets(config, presetLibrary);
   logRepeatCommand(config);
 }
 
