@@ -160,6 +160,10 @@ async function runInteractiveMode() {
     const binaryEnabled = ['Repro-1', 'Repro-5'].includes(config.synth);
 
     // First: Basic filtering options
+    console.log('');
+    console.log(
+      chalk.dim('Use ↑↓ arrows to navigate, Space to select, Enter to confirm'),
+    );
     const basicOptions = await inquirer.prompt<{ value: string[] }>([
       {
         name: 'value',
@@ -211,6 +215,12 @@ async function runInteractiveMode() {
     ]);
 
     if (wantsAdvanced.value) {
+      console.log('');
+      console.log(
+        chalk.dim(
+          'Use ↑↓ arrows to navigate, Space to select, Enter to confirm',
+        ),
+      );
       const advancedOptions = await inquirer.prompt<{ value: string[] }>([
         {
           name: 'value',
@@ -333,6 +343,10 @@ async function runInteractiveMode() {
       };
     });
 
+    console.log('');
+    console.log(
+      chalk.dim('Use ↑↓ arrows to navigate, Space to select, Enter to confirm'),
+    );
     const favoritesPrompt = await inquirer.prompt<{ value: string }>([
       {
         name: 'value',
@@ -485,15 +499,35 @@ async function runInteractiveMode() {
     // MODE 3: Merge Random Presets                 //
     //////////////////////////////////////////////////
 
+    console.log('');
+    console.log(chalk.cyan('Select multiple presets to merge:'));
+    console.log(chalk.dim('Choose presets one by one.'));
+    console.log(
+      chalk.dim(
+        'When done selecting, choose "  (no choice / complete)" to continue.',
+      ),
+    );
+
     config.merge = [];
     const foundPresets = presetLibrary.presets.map((el) => el.filePath);
     while (true) {
       const presetChoice = await choosePreset(foundPresets, true);
       if (presetChoice) {
         config.merge.push(presetChoice);
-        if (presetChoice === '*') {
+        console.log(
+          chalk.green(
+            `✓ Added: ${presetChoice === '?' ? 'Random preset' : presetChoice === '*' || presetChoice.startsWith('*') ? 'All matching presets' : presetChoice}`,
+          ),
+        );
+        if (presetChoice === '*' || presetChoice.startsWith('*')) {
           break;
         }
+        console.log(
+          chalk.dim(
+            `Selected ${config.merge.length} preset(s). Continue selecting or choose "no choice" when done.`,
+          ),
+        );
+        console.log('');
       } else {
         break;
       }
@@ -609,6 +643,12 @@ async function chooseAmountOfPresets(initial = 8): Promise<number> {
       type: 'number',
       message: 'How many presets would you like to generate?',
       default: initial,
+      validate: (input: number | undefined) => {
+        if (typeof input !== 'number' || Number.isNaN(input))
+          return 'Please enter a number';
+        if (input < 1) return 'Please enter at least 1';
+        return true;
+      },
     },
   ]);
   return amount.value;
@@ -626,7 +666,8 @@ async function chooseRandomness(initial = 20): Promise<number> {
     message: 'How much variation? (0-100)',
     default: initial,
     validate: (input: number | undefined) => {
-      if (typeof input !== 'number') return 'Please enter a number';
+      if (typeof input !== 'number' || Number.isNaN(input))
+        return 'Please enter a number';
       if (input < 0 || input > 100)
         return 'Please enter a value between 0 and 100';
       return true;
