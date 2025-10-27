@@ -83,7 +83,6 @@
     "cli-table3": "^0.6.5",
     "fast-glob": "^3.3.3",
     "fs-extra": "^11.3.2",
-    "gradient-string": "^3.0.0",
     "inquirer": "^12.10.0",
     "ora": "^9.0.0",
     "unique-names-generator": "^4.7.1",
