@@ -2,10 +2,14 @@
 import { dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import searchPrompt from '@inquirer/search';
+import boxen from 'boxen';
 import chalk from 'chalk';
+import Table from 'cli-table3';
 import fg from 'fast-glob';
 import fs from 'fs-extra';
+import gradient from 'gradient-string';
 import inquirer from 'inquirer';
+import ora from 'ora';
 import { type Config, getConfigFromParameters } from './config.js';
 import { generatePresets } from './generatePresets.js';
 import {
@@ -34,29 +38,27 @@ interface ChoiceOptions {
 const config = getConfigFromParameters();
 
 function logCliBanner() {
-  console.log(
-    '======================================================================',
+  const title = gradient.pastel.multiline(
+    `u-he Preset Randomizer v${packageJson.version}`,
   );
-  console.log(`u-he Preset Randomizer CLI v${packageJson.version}`);
-  console.log(
-    '======================================================================',
+
+  const welcomeMessage = boxen(
+    `${title}\n\n` +
+      `${chalk.bold('Welcome!')} This tool helps you create new synth presets through:\n\n` +
+      `  ${chalk.cyan('1.')} Fully random generation ${chalk.dim('(great for discovery)')}\n` +
+      `  ${chalk.cyan('2.')} Variations of existing presets ${chalk.dim('(similar but different)')}\n` +
+      `  ${chalk.cyan('3.')} Merging multiple presets ${chalk.dim('(combine your favorites)')}\n\n` +
+      `${chalk.dim('Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme')}`,
+    {
+      padding: 1,
+      margin: 1,
+      borderStyle: 'round',
+      borderColor: 'cyan',
+      textAlignment: 'left',
+    },
   );
-  console.log('');
-  console.log(
-    chalk.bold(
-      'Welcome! This tool helps you create new synth presets through:',
-    ),
-  );
-  console.log('  1. Fully random generation (great for discovery)');
-  console.log('  2. Variations of existing presets (similar but different)');
-  console.log('  3. Merging multiple presets (combine your favorites)');
-  console.log('');
-  console.log(
-    chalk.dim(
-      'Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme',
-    ),
-  );
-  console.log('');
+
+  console.log(welcomeMessage);
 }
 
 export async function startCli() {
@@ -92,19 +94,24 @@ async function runInteractiveMode() {
     };
   });
   if (!synthChoices.length) {
-    console.log('');
-    console.error(chalk.red('No u-he synths found on your system.'));
-    console.log('');
-    console.log('Please make sure:');
-    console.log('  - You have at least one u-he synth installed');
-    console.log('  - The synth is installed in the standard location');
-    console.log('  - You have created or loaded some presets');
-    console.log('');
-    console.log(chalk.dim('If your u-he folder is in a custom location, use:'));
-    console.log(
-      chalk.dim('  npx u-he-preset-randomizer --custom-folder "path/to/u-he"'),
+    const errorMessage = boxen(
+      `${chalk.red.bold('⚠ No u-he synths found on your system')}\n\n` +
+        `${chalk.bold('Please make sure:')}\n` +
+        `  ${chalk.dim('•')} You have at least one u-he synth installed\n` +
+        `  ${chalk.dim('•')} The synth is installed in the standard location\n` +
+        `  ${chalk.dim('•')} You have created or loaded some presets\n\n` +
+        `${chalk.dim('If your u-he folder is in a custom location, use:')}\n` +
+        `  ${chalk.cyan('npx u-he-preset-randomizer --custom-folder "path/to/u-he"')}`,
+      {
+        padding: 1,
+        margin: 1,
+        borderStyle: 'round',
+        borderColor: 'red',
+        textAlignment: 'left',
+      },
     );
-    console.log('');
+
+    console.log(errorMessage);
     process.exit(1);
   }
   const synth = await searchPrompt<SynthNames>({
@@ -306,11 +313,16 @@ async function runInteractiveMode() {
     throw new Error('Synth not specified in config');
   }
 
-  console.log('');
-  console.log(chalk.cyan('Loading your preset library...'));
+  const spinner = ora({
+    text: 'Loading your preset library...',
+    color: 'cyan',
+  }).start();
+
   const presetLibrary = loadPresetLibrary(config.synth, config);
-  console.log(chalk.green(`Loaded ${presetLibrary.presets.length} presets`));
-  console.log('');
+
+  spinner.succeed(
+    chalk.green(`Loaded ${presetLibrary.presets.length} presets`),
+  );
 
   // Optionally: Narrow down by u-he favorites
   if (config.favorites === true && presetLibrary.favorites.length) {
@@ -494,27 +506,56 @@ async function runInteractiveMode() {
 
   // Show summary before generating
   console.log('');
-  console.log(chalk.bold.cyan('Summary:'));
-  console.log(chalk.dim('─────────────────────────────────────'));
-  console.log(`  Synth:      ${config.synth}`);
-  console.log(`  Mode:       ${mode.value}`);
-  console.log(`  Amount:     ${config.amount} presets`);
+  const table = new Table({
+    head: [chalk.bold.cyan('Setting'), chalk.bold.cyan('Value')],
+    colWidths: [20, 50],
+    style: {
+      head: [],
+      border: ['cyan'],
+    },
+  });
+
+  table.push(
+    [chalk.bold('Synth'), config.synth],
+    [chalk.bold('Mode'), mode.value],
+    [chalk.bold('Amount'), `${config.amount} presets`],
+  );
+
   if (config.randomness) {
-    console.log(`  Randomness: ${config.randomness}%`);
+    table.push([chalk.bold('Randomness'), `${config.randomness}%`]);
   }
   if (config.preset && typeof config.preset === 'string') {
-    console.log(`  Base:       ${config.preset}`);
+    table.push([chalk.bold('Base Preset'), config.preset]);
   }
   if (config.category && typeof config.category === 'string') {
-    console.log(`  Category:   ${config.category}`);
+    table.push([chalk.bold('Category'), config.category]);
   }
   if (config.author && typeof config.author === 'string') {
-    console.log(`  Author:     ${config.author}`);
+    table.push([chalk.bold('Author'), config.author]);
   }
   if (config.folder && typeof config.folder === 'string') {
-    console.log(`  Folder:     ${config.folder}`);
+    table.push([chalk.bold('Folder'), config.folder]);
   }
-  console.log(chalk.dim('─────────────────────────────────────'));
+  if (config.stable) {
+    table.push([
+      chalk.bold('Stable Mode'),
+      chalk.green('Enabled') + chalk.dim(' (safer randomization)'),
+    ]);
+  }
+  if (config.binary) {
+    table.push([
+      chalk.bold('Binary Mode'),
+      chalk.yellow('Enabled') + chalk.dim(' (may cause issues)'),
+    ]);
+  }
+  if (config.dictionary) {
+    table.push([
+      chalk.bold('Dictionary'),
+      chalk.green('Enabled') + chalk.dim(' (realistic names)'),
+    ]);
+  }
+
+  console.log(table.toString());
   console.log('');
 
   const proceed = await inquirer.prompt<{ value: boolean }>([
@@ -534,8 +575,19 @@ async function runInteractiveMode() {
   }
 
   console.log('');
-  console.log(chalk.cyan('Generating your presets...'));
-  generatePresets(config);
+  const generationSpinner = ora({
+    text: 'Generating your presets...',
+    color: 'cyan',
+  }).start();
+
+  try {
+    generatePresets(config);
+    generationSpinner.stop();
+  } catch (error) {
+    generationSpinner.fail('Failed to generate presets');
+    throw error;
+  }
+
   logRepeatCommand(config);
 }
 
@@ -636,9 +688,6 @@ async function choosePreset(
 }
 
 function logRepeatCommand(config: Config) {
-  console.log('');
-  console.log('To run it with the same configuration again, execute:');
-
   let cliCommand = `npx u-he-preset-randomizer@latest --synth ${config.synth ?? ''} --amount ${config.amount ?? 8}`;
   if (config.preset && typeof config.preset === 'string') {
     cliCommand += ` --preset "${config.preset}"`;
@@ -682,5 +731,17 @@ function logRepeatCommand(config: Config) {
   if (config.debug) {
     cliCommand += ` --debug`;
   }
-  console.log(chalk.bgGray(chalk.black(cliCommand)));
+
+  const repeatBox = boxen(
+    `${chalk.bold('💡 To run with the same configuration again:')}\n\n${chalk.cyan(cliCommand)}`,
+    {
+      padding: 1,
+      margin: { top: 1, bottom: 1, left: 0, right: 0 },
+      borderStyle: 'round',
+      borderColor: 'blue',
+      textAlignment: 'left',
+    },
+  );
+
+  console.log(repeatBox);
 }

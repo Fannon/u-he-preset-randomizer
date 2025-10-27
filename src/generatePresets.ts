@@ -1,3 +1,4 @@
+import boxen from 'boxen';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import {
@@ -73,19 +74,24 @@ export function generatePresets(inputConfig: Config) {
     writePresetLibrary(generatedPresets);
   }
 
-  console.log('');
-  console.log(chalk.green('Successfully generated presets!'));
-  console.log('');
-  console.log(chalk.bold('Where to find them:'));
-  console.log(`   ${generatedPresets.userPresetsFolder}`);
-  console.log('');
-  console.log(chalk.bold('Next steps:'));
-  console.log('   1. Open your DAW and load the synth');
-  console.log('   2. Look in the "RANDOM" folder in your user presets');
-  console.log('   3. Browse and audition the generated sounds');
-  console.log(
-    '======================================================================',
+  const successMessage = boxen(
+    `${chalk.green.bold('✓ Successfully generated presets!')}\n\n` +
+      `${chalk.bold('📁 Where to find them:')}\n` +
+      `   ${chalk.cyan(generatedPresets.userPresetsFolder)}\n\n` +
+      `${chalk.bold('🎹 Next steps:')}\n` +
+      `   ${chalk.dim('1.')} Open your DAW and load the synth\n` +
+      `   ${chalk.dim('2.')} Look in the ${chalk.cyan('"RANDOM"')} folder in your user presets\n` +
+      `   ${chalk.dim('3.')} Browse and audition the generated sounds`,
+    {
+      padding: 1,
+      margin: { top: 1, bottom: 0, left: 0, right: 0 },
+      borderStyle: 'round',
+      borderColor: 'green',
+      textAlignment: 'left',
+    },
   );
+
+  console.log(successMessage);
 }
 
 function applyPresetFilters(
