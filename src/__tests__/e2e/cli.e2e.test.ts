@@ -51,7 +51,7 @@ describe('CLI E2E Tests', () => {
       }
     }
     if (createdPresetFiles.length > 0) {
-      console.log(`Cleaned up ${createdPresetFiles.length} test preset(s)`);
+      console.debug(`Cleaned up ${createdPresetFiles.length} test preset(s): \n - ${createdPresetFiles.join('\n- ')}`);
     }
     createdPresetFiles = [];
   });
