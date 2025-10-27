@@ -71,8 +71,17 @@ export async function startCli() {
     await runInteractiveMode();
     return;
   }
-  const result = generatePresets(config);
-  logGenerationSuccess(result);
+  try {
+    const result = generatePresets(config);
+    logGenerationSuccess(result);
+  } catch (error) {
+    console.error(
+      chalk.red(
+        'Error: ' + (error instanceof Error ? error.message : String(error)),
+      ),
+    );
+    process.exit(1);
+  }
 }
 
 const executionArg = process.argv[1];
@@ -637,7 +646,12 @@ async function runInteractiveMode() {
     generationSpinner.stop();
   } catch (error) {
     generationSpinner.fail('Failed to generate presets');
-    throw error;
+    console.error(
+      chalk.red(
+        'Error: ' + (error instanceof Error ? error.message : String(error)),
+      ),
+    );
+    process.exit(1);
   }
 
   logGenerationSuccess(result);
