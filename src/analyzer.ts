@@ -7,6 +7,7 @@ export type ParamsModel = Record<
     type: 'string' | 'float' | 'integer';
     values: (string | number)[];
     distinctValues: (string | number)[];
+    frequencies?: Record<string, number>; // Track how often each distinct value appears
     maxValue?: number;
     minValue?: number;
     avgValue?: number;
@@ -71,13 +72,19 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
     if (!param) continue;
     param.distinctValues = [...new Set(param.values)];
 
-    if (param.distinctValues.length === 1) {
-      // Save some memory by compacting `values` to a single value if they are the same anyway
-      param.values = param.distinctValues;
+    // Build frequency map for weighted sampling
+    param.frequencies = {};
+    for (const value of param.values) {
+      const key = String(value);
+      param.frequencies[key] = (param.frequencies[key] ?? 0) + 1;
     }
 
+    // Memory optimization: Always compact values to distinctValues
+    // Frequency information is preserved in the frequencies map
+    param.values = param.distinctValues;
+
     if (param.type !== 'string') {
-      const values = param.values as number[];
+      const values = param.distinctValues as number[];
       param.maxValue = Math.max(...values);
       param.minValue = Math.min(...values);
       param.avgValue = average(values);
