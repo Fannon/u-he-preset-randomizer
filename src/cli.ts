@@ -7,7 +7,6 @@ import chalk from 'chalk';
 import Table from 'cli-table3';
 import fg from 'fast-glob';
 import fs from 'fs-extra';
-import gradient from 'gradient-string';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import { type Config, getConfigFromParameters } from './config.js';
@@ -38,17 +37,17 @@ interface ChoiceOptions {
 const config = getConfigFromParameters();
 
 function logCliBanner() {
-  const title = gradient.pastel.multiline(
+  const title = chalk.cyan.bold(
     `u-he Preset Randomizer v${packageJson.version}`,
   );
 
   const welcomeMessage = boxen(
     `${title}\n\n` +
-      `${chalk.bold('Welcome!')} This tool helps you create new synth presets through:\n\n` +
-      `  ${chalk.cyan('1.')} Fully random generation ${chalk.dim('(great for discovery)')}\n` +
-      `  ${chalk.cyan('2.')} Variations of existing presets ${chalk.dim('(similar but different)')}\n` +
-      `  ${chalk.cyan('3.')} Merging multiple presets ${chalk.dim('(combine your favorites)')}\n\n` +
-      `${chalk.dim('Documentation: https://github.com/Fannon/u-he-preset-randomizer#readme')}`,
+      `Create new synth presets through:\n` +
+      `  ${chalk.dim('•')} Fully random generation\n` +
+      `  ${chalk.dim('•')} Variations of existing presets\n` +
+      `  ${chalk.dim('•')} Merging multiple presets\n\n` +
+      `${chalk.dim('https://github.com/Fannon/u-he-preset-randomizer')}`,
     {
       padding: 1,
       margin: 1,
@@ -59,6 +58,11 @@ function logCliBanner() {
   );
 
   console.log(welcomeMessage);
+  console.log('');
+  console.log(
+    chalk.dim('Tip: Use ↑↓ to navigate, Space to select, Enter to confirm'),
+  );
+  console.log('');
 }
 
 export async function startCli() {
@@ -161,10 +165,6 @@ async function runInteractiveMode() {
     const binaryEnabled = ['Repro-1', 'Repro-5'].includes(config.synth);
 
     // First: Basic filtering options
-    console.log('');
-    console.log(
-      chalk.dim('Use ↑↓ arrows to navigate, Space to select, Enter to confirm'),
-    );
     const basicOptions = await inquirer.prompt<{ value: string[] }>([
       {
         name: 'value',
@@ -216,12 +216,6 @@ async function runInteractiveMode() {
     ]);
 
     if (wantsAdvanced.value) {
-      console.log('');
-      console.log(
-        chalk.dim(
-          'Use ↑↓ arrows to navigate, Space to select, Enter to confirm',
-        ),
-      );
       const advancedOptions = await inquirer.prompt<{ value: string[] }>([
         {
           name: 'value',
@@ -344,10 +338,6 @@ async function runInteractiveMode() {
       };
     });
 
-    console.log('');
-    console.log(
-      chalk.dim('Use ↑↓ arrows to navigate, Space to select, Enter to confirm'),
-    );
     const favoritesPrompt = await inquirer.prompt<{ value: string }>([
       {
         name: 'value',
@@ -501,13 +491,10 @@ async function runInteractiveMode() {
     //////////////////////////////////////////////////
 
     console.log('');
-    console.log(chalk.cyan('Select multiple presets to merge:'));
-    console.log(chalk.dim('Choose presets one by one.'));
     console.log(
-      chalk.dim(
-        'When done selecting, choose "  (no choice / complete)" to continue.',
-      ),
+      chalk.dim('Select presets one by one. Choose "no choice" when done.'),
     );
+    console.log('');
 
     config.merge = [];
     const foundPresets = presetLibrary.presets.map((el) => el.filePath);
@@ -515,24 +502,22 @@ async function runInteractiveMode() {
       const presetChoice = await choosePreset(foundPresets, true);
       if (presetChoice) {
         config.merge.push(presetChoice);
-        console.log(
-          chalk.green(
-            `✓ Added: ${presetChoice === '?' ? 'Random preset' : presetChoice === '*' || presetChoice.startsWith('*') ? 'All matching presets' : presetChoice}`,
-          ),
-        );
+        const displayName =
+          presetChoice === '?'
+            ? 'random'
+            : presetChoice.startsWith('*') || presetChoice === '*'
+              ? 'all matching'
+              : presetChoice;
+        console.log(chalk.green(`✓ Added ${displayName}`));
         if (presetChoice === '*' || presetChoice.startsWith('*')) {
           break;
         }
-        console.log(
-          chalk.dim(
-            `Selected ${config.merge.length} preset(s). Continue selecting or choose "no choice" when done.`,
-          ),
-        );
-        console.log('');
       } else {
         break;
       }
     }
+    console.log(chalk.dim(`Selected ${config.merge.length} preset(s)`));
+    console.log('');
 
     // Choose amount of randomness
     config.randomness ??= await chooseRandomness(0);
@@ -633,25 +618,25 @@ async function runInteractiveMode() {
 //////////////////////////////////////////
 
 function logGenerationSuccess(result: GenerationResult) {
-  const successMessage = boxen(
-    `${chalk.green.bold('✓ Successfully generated presets!')}\n\n` +
-      `${chalk.bold('📁 Where to find them:')}\n` +
-      `   ${chalk.cyan(result.outputFolder)}\n\n` +
-      `${chalk.bold('🎹 Next steps:')}\n` +
-      `   ${chalk.dim('1.')} Open your DAW and load the synth\n` +
-      `   ${chalk.dim('2.')} Look in the ${chalk.cyan('"RANDOM"')} folder in your user presets\n` +
-      `   ${chalk.dim('3.')} Browse and audition the generated sounds\n\n` +
-      `${chalk.dim(`Generated ${result.presetCount} ${result.presetCount === 1 ? 'preset' : 'presets'}`)}`,
-    {
-      padding: 1,
-      margin: { top: 1, bottom: 0, left: 0, right: 0 },
-      borderStyle: 'round',
-      borderColor: 'green',
-      textAlignment: 'left',
-    },
+  console.log('');
+  console.log(
+    chalk.green(
+      '✓ Successfully generated ' +
+        result.presetCount +
+        ' ' +
+        (result.presetCount === 1 ? 'preset' : 'presets'),
+    ),
   );
-
-  console.log(successMessage);
+  console.log('');
+  console.log(chalk.bold('Output folder:'));
+  console.log(chalk.cyan('  ' + result.outputFolder));
+  console.log('');
+  console.log(
+    chalk.dim(
+      'Open your DAW and look for the RANDOM folder in your user presets.',
+    ),
+  );
+  console.log('');
 }
 
 /** Choose number of presets to generate */
@@ -798,16 +783,7 @@ function logRepeatCommand(config: Config) {
     cliCommand += ` --debug`;
   }
 
-  const repeatBox = boxen(
-    `${chalk.bold('💡 To run with the same configuration again:')}\n\n${chalk.cyan(cliCommand)}`,
-    {
-      padding: 1,
-      margin: { top: 1, bottom: 1, left: 0, right: 0 },
-      borderStyle: 'round',
-      borderColor: 'blue',
-      textAlignment: 'left',
-    },
-  );
-
-  console.log(repeatBox);
+  console.log(chalk.dim('To repeat with same settings:'));
+  console.log(chalk.cyan(cliCommand));
+  console.log('');
 }
