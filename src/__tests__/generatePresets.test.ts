@@ -13,6 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { generatePresets } from '../generatePresets.js';
 import type { Config } from '../config.js';
+import { loadPresetLibrary } from '../presetLibrary.js';
 import {
   findPresetFiles,
   getNewestPresetFiles,
@@ -303,6 +304,52 @@ describe('generatePresets Integration Tests (TestSynth)', () => {
         for (const presetPath of generatedPresets) {
           fs.removeSync(presetPath);
         }
+      }
+    });
+  });
+
+  describe('Preset Library Optimization', () => {
+    it('should accept pre-loaded preset library to avoid duplicate loading', () => {
+      const config: Config = {
+        debug: false,
+        synth: 'TestSynth',
+        amount: 1,
+      };
+
+      // Load preset library once
+      const presetLibrary = loadPresetLibrary('TestSynth', config);
+      expect(presetLibrary.presets.length).toBeGreaterThan(0);
+
+      // Pass the already-loaded library to generatePresets
+      generatePresets(config, presetLibrary);
+
+      const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
+      expect(generatedPresets.length).toBe(1);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
+
+      // Clean up
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
+      }
+    });
+
+    it('should still work without pre-loaded library (backward compatibility)', () => {
+      const config: Config = {
+        debug: false,
+        synth: 'TestSynth',
+        amount: 1,
+      };
+
+      // Call without pre-loaded library (should load internally)
+      generatePresets(config);
+
+      const generatedPresets = getNewestPresetFiles(testSynthRandomDir, 1);
+      expect(generatedPresets.length).toBe(1);
+      expect(generatedPresets[0] && validatePreset(generatedPresets[0])).toBe(true);
+
+      // Clean up
+      if (generatedPresets[0]) {
+        fs.removeSync(generatedPresets[0]);
       }
     });
   });

@@ -617,7 +617,7 @@ async function runInteractiveMode() {
 
   let result: GenerationResult;
   try {
-    result = generatePresets(config);
+    result = generatePresets(config, presetLibrary);
     generationSpinner.stop();
   } catch (error) {
     generationSpinner.fail('Failed to generate presets');

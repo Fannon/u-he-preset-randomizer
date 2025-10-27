@@ -157,4 +157,72 @@ describe('randomizer', () => {
       expect(suffix).toContain('Based on presets of category: Pads.');
     });
   });
+
+  describe('numeric parameter randomization', () => {
+    it('properly applies randomness ratio to numeric parameters', () => {
+      // Regression test to ensure numeric parameters are properly randomized
+      // This indirectly tests the variable shadowing fix at randomizer.ts:372
+
+      const preset1: Preset = {
+        filePath: '/Local/Preset1.h2p',
+        presetName: 'Preset1',
+        categories: [],
+        meta: [],
+        params: [
+          {
+            id: 'HEAD/Volume',
+            key: 'Volume',
+            section: 'HEAD',
+            value: 0,
+            index: 0,
+            type: 'integer',
+          },
+          {
+            id: 'HEAD/Cutoff',
+            key: 'Cutoff',
+            section: 'HEAD',
+            value: 0.0,
+            index: 1,
+            type: 'float',
+          },
+        ],
+      };
+
+      const paramsModel: ParamsModel = {
+        'HEAD/Volume': {
+          type: 'integer',
+          values: [100], // Only one value to make test deterministic
+          distinctValues: [0, 100],
+          maxValue: 100,
+          minValue: 0,
+          avgValue: 50,
+        },
+        'HEAD/Cutoff': {
+          type: 'float',
+          values: [1.0], // Only one value to make test deterministic
+          distinctValues: [0.0, 1.0],
+          maxValue: 1.0,
+          minValue: 0.0,
+          avgValue: 0.5,
+        },
+      };
+
+      const config: Config = {
+        debug: false,
+        randomness: 60, // 60% randomness, 40% stability
+      };
+
+      // Apply randomization
+      const result = randomizePreset(preset1, paramsModel, config);
+
+      // With randomness=60 and picking value 100:
+      // newValue = oldValue * (1-0.6) + randomValue * 0.6
+      //          = 0 * 0.4 + 100 * 0.6 = 60
+      expect(result.params[0]?.value).toBe(60);
+
+      // For float with value 1.0:
+      // newValue = 0.0 * 0.4 + 1.0 * 0.6 = 0.6
+      expect(result.params[1]?.value).toBe(0.6);
+    });
+  });
 });

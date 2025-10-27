@@ -133,6 +133,64 @@ describe('presetLibrary', () => {
     expect(library.presets[0]?.presetName).toBe('Valid');
   });
 
+  it('prevents path traversal attacks when writing presets', () => {
+    const randomFolder = path.join(userDir, 'RANDOM');
+    fs.ensureDirSync(randomFolder);
+
+    // Attempt to write a preset with path traversal
+    const library: PresetLibrary = {
+      synth: 'TestSynth',
+      rootFolder: synthRoot,
+      userPresetsFolder: randomFolder,
+      presetsFolder: presetsDir,
+      presets: [
+        {
+          filePath: '../../etc/malicious.h2p', // Attempt path traversal
+          presetName: 'Malicious',
+          categories: [],
+          meta: [],
+          params: [],
+        },
+      ],
+      favorites: [],
+    };
+
+    // Should throw an error preventing path traversal
+    expect(() => writePresetLibrary(library)).toThrow(/Path traversal detected/);
+
+    // Verify file was not created outside the target directory
+    const attemptedPath = path.join(randomFolder, '../../etc/malicious.h2p');
+    expect(fs.existsSync(attemptedPath)).toBe(false);
+  });
+
+  it('allows legitimate subdirectory paths', () => {
+    const randomFolder = path.join(userDir, 'RANDOM');
+    fs.ensureDirSync(randomFolder);
+
+    const library: PresetLibrary = {
+      synth: 'TestSynth',
+      rootFolder: synthRoot,
+      userPresetsFolder: randomFolder,
+      presetsFolder: presetsDir,
+      presets: [
+        {
+          filePath: '/Subfolder/Legitimate.h2p',
+          presetName: 'Legitimate',
+          categories: [],
+          meta: [{ key: 'Author', value: 'Test' }],
+          params: [],
+        },
+      ],
+      favorites: [],
+    };
+
+    // Should not throw an error for legitimate subdirectory
+    expect(() => writePresetLibrary(library)).not.toThrow();
+
+    // Verify file was created in the correct location
+    const expectedPath = path.join(randomFolder, '/Subfolder/Legitimate.h2p');
+    expect(fs.existsSync(expectedPath)).toBe(true);
+  });
 
 
   function writePresetFixture(targetDir: string, fileName: string, overrides: Partial<Preset> = {}) {
