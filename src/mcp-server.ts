@@ -8,6 +8,7 @@ import {
   type Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import chalk from 'chalk';
+import packageJson from '../package.json' with { type: 'json' };
 import { type Config, getDefaultConfig } from './config.js';
 import { type GenerationResult, generatePresets } from './generatePresets.js';
 import {
@@ -41,7 +42,7 @@ const state: ServerState = {
 const server = new Server(
   {
     name: 'u-he-preset-randomizer',
-    version: '1.0.0',
+    version: packageJson.version,
   },
   {
     capabilities: {
