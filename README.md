@@ -49,6 +49,41 @@ npm i -g u-he-preset-randomizer
 u-he-preset-randomizer
 ```
 
+## MCP Server Interface
+
+In addition to the CLI, this tool provides a **Model Context Protocol (MCP) server** that allows AI assistants like Claude to interact with your u-he presets through natural conversation.
+
+**Features:**
+- 🔍 Search and browse your preset libraries conversationally
+- 📝 Get detailed explanations of what makes presets unique
+- 🎲 Generate random presets with natural language instructions
+- 🔄 Create variations and merge presets through AI-assisted workflows
+- 💾 Stateful sessions - select a synth once, then explore freely
+
+**Quick Setup for Claude Desktop:**
+
+Add this to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+
+```json
+{
+  "mcpServers": {
+    "u-he-preset-randomizer": {
+      "command": "u-he-mcp-server"
+    }
+  }
+}
+```
+
+Then you can ask Claude things like:
+- *"What synths do I have installed?"*
+- *"Show me bass presets from Diva"*
+- *"Create 5 variations of the '303 Bass' preset with 30% randomness"*
+- *"Merge my favorite pad presets to create hybrid sounds"*
+
+📚 **[Read the full MCP Server documentation →](./MCP_SERVER.md)**
+
+## CLI Usage Examples
+
 ### Generate Fully Randomized Presets
 
 This command will run the randomizer to generate 3 fully randomized Diva presets.
