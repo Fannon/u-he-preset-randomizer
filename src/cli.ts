@@ -216,17 +216,50 @@ async function runInteractiveMode() {
     ]);
 
     if (wantsAdvanced.value) {
+      // First: Choose randomization mode
+      const randomizationMode = await inquirer.prompt<{ value: string }>([
+        {
+          name: 'value',
+          type: 'list',
+          message: 'Randomization approach:',
+          choices: [
+            {
+              value: 'stable',
+              name: '[Stable] Safer randomization, stays close to library character (recommended)',
+            },
+            {
+              value: 'balanced',
+              name: '[Balanced] Default randomization',
+            },
+            {
+              value: 'creative',
+              name: '[Creative] Experimental, explores unusual combinations',
+            },
+          ],
+          default: 'stable',
+        },
+      ]);
+
+      // Set mode flags
+      if (randomizationMode.value === 'stable') {
+        config.stable = true;
+        config.creative = false;
+      } else if (randomizationMode.value === 'creative') {
+        config.stable = false;
+        config.creative = true;
+      } else {
+        // balanced mode
+        config.stable = false;
+        config.creative = false;
+      }
+
+      // Then: Other advanced options
       const advancedOptions = await inquirer.prompt<{ value: string[] }>([
         {
           name: 'value',
           type: 'checkbox',
-          message: 'Advanced settings:',
+          message: 'Additional advanced settings:',
           choices: [
-            {
-              value: 'stable',
-              name: '[Stable] Use safer randomization (recommended for most synths)',
-              checked: true,
-            },
             {
               value: 'binary',
               name: '[Binary] Include advanced modulation data (may cause crashes)',
@@ -240,9 +273,6 @@ async function runInteractiveMode() {
         },
       ]);
 
-      if (advancedOptions.value.includes('stable')) {
-        config.stable = true;
-      }
       if (advancedOptions.value.includes('binary')) {
         config.binary = true;
       }
@@ -252,6 +282,7 @@ async function runInteractiveMode() {
     } else {
       // Default: stable mode enabled
       config.stable = true;
+      config.creative = false;
     }
   }
 
@@ -587,12 +618,25 @@ async function runInteractiveMode() {
   if (config.folder && typeof config.folder === 'string') {
     table.push([chalk.bold('Folder'), config.folder]);
   }
+
+  // Show randomization mode
   if (config.stable) {
     table.push([
-      chalk.bold('Stable Mode'),
-      chalk.green('Enabled') + chalk.dim(' (safer randomization)'),
+      chalk.bold('Randomization'),
+      chalk.green('Stable') + chalk.dim(' (safer, stays close to library)'),
+    ]);
+  } else if (config.creative) {
+    table.push([
+      chalk.bold('Randomization'),
+      chalk.yellow('Creative') + chalk.dim(' (experimental, explores edges)'),
+    ]);
+  } else {
+    table.push([
+      chalk.bold('Randomization'),
+      chalk.blue('Balanced') + chalk.dim(' (default behavior)'),
     ]);
   }
+
   if (config.binary) {
     table.push([
       chalk.bold('Binary Mode'),
@@ -828,6 +872,9 @@ function logRepeatCommand(config: Config) {
   }
   if (config.stable) {
     cliCommand += ` --stable`;
+  }
+  if (config.creative) {
+    cliCommand += ` --creative`;
   }
   if (config.debug) {
     cliCommand += ` --debug`;
