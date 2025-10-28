@@ -35,6 +35,7 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
 };
 
 const DEFAULT_PRESET_AMOUNT = 16;
+const SKILLS_DIR = join(__dirname, '..', 'src', 'skills');
 
 // Server state
 interface ServerState {
@@ -71,6 +72,36 @@ function ensureSynthDetection() {
   }
 }
 
+/**
+ * Load synth-specific context documentation from the skills directory.
+ * @param synthName The name of the synth to load context for
+ * @returns The context content as a string, or null if not available
+ */
+function loadSynthContext(synthName: SynthNames): string | null {
+  try {
+    const contextFilePath = join(SKILLS_DIR, `${synthName}.md`);
+
+    if (!existsSync(contextFilePath)) {
+      return null;
+    }
+
+    return readFileSync(contextFilePath, 'utf-8');
+  } catch (error) {
+    console.error(`Failed to load context file for ${synthName}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Check if context documentation is available for a synth.
+ * @param synthName The name of the synth to check
+ * @returns True if context documentation exists
+ */
+function hasContextAvailable(synthName: SynthNames): boolean {
+  const contextFilePath = join(SKILLS_DIR, `${synthName}.md`);
+  return existsSync(contextFilePath);
+}
+
 function getSynthOptions(): string[] {
   ensureSynthDetection();
 
@@ -102,6 +133,7 @@ const serverInstructions = [
     ').',
   `3. Generate new sounds / presets / patches with generate_random_presets (omit "amount" to create ${DEFAULT_PRESET_AMOUNT} presets by default).`,
   '4. Explore variations via randomize_presets or blend sources with merge_presets.',
+  "5. Use get_synth_context to access detailed documentation about the synth's architecture and parameters (available for some synths).",
 ].join('\n');
 
 // Initialize MCP server
@@ -285,6 +317,16 @@ const tools: Tool[] = [
     },
   },
   {
+    name: 'get_synth_context',
+    description:
+      'Get detailed technical documentation about how the currently selected u-he synth works, including its preset format, parameters, modules, and architecture. This is extremely useful for understanding synth-specific settings before analyzing or creating presets. Requires a synth to be selected first.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
+  {
     name: 'generate_random_presets',
     description: `Generate fully random presets based on parameter statistics from the loaded preset library. Creates new sounds by randomizing all parameters within their typical ranges. Files are saved to the RANDOM folder. Requires a synth to be selected first. If you omit "amount", the server will create ${DEFAULT_PRESET_AMOUNT} presets.`,
     inputSchema: {
@@ -453,6 +495,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return handleGetAuthors();
       case 'get_favorites_files':
         return handleGetFavoritesFiles();
+      case 'get_synth_context':
+        return handleGetSynthContext();
       case 'generate_random_presets':
         return handleGenerateRandomPresets(
           args as { amount?: number; stable?: boolean; dictionary?: boolean },
@@ -555,8 +599,8 @@ function handleSelectSynth(args: { synth: string; pattern?: string }) {
     state.presetLibrary !== null
   ) {
     // Normalize pattern comparison (undefined should equal undefined or empty)
-    const currentPattern = state.config.pattern || undefined;
-    const requestedPattern = pattern || undefined;
+    const currentPattern = state.config.pattern ?? undefined;
+    const requestedPattern = pattern ?? undefined;
 
     if (currentPattern === requestedPattern) {
       return {
@@ -583,11 +627,17 @@ function handleSelectSynth(args: { synth: string; pattern?: string }) {
     state.currentSynth = synthInfo.synthName;
     const loadTime = Date.now() - startTime;
 
+    // Check if context documentation is available
+    const contextAvailable = hasContextAvailable(synthInfo.synthName);
+    const contextNote = contextAvailable
+      ? `\n\nDetailed technical documentation is available for ${synthInfo.synthName}. Use get_synth_context to learn about its architecture, parameters, and preset format.`
+      : '';
+
     return {
       content: [
         {
           type: 'text',
-          text: `Successfully selected ${synthInfo.synthName} and loaded ${state.presetLibrary.presets.length} presets in ${loadTime}ms.\n\nYou can now use other tools to browse, search, filter, and generate presets. Call generate_random_presets without arguments to create ${DEFAULT_PRESET_AMOUNT} fresh patches immediately.`,
+          text: `Successfully selected ${synthInfo.synthName} and loaded ${state.presetLibrary.presets.length} presets in ${loadTime}ms.\n\nYou can now use other tools to browse, search, filter, and generate presets. Call generate_random_presets without arguments to create ${DEFAULT_PRESET_AMOUNT} fresh patches immediately.${contextNote}`,
         },
       ],
     };
@@ -631,6 +681,19 @@ function requireSynth(): PresetLibrary {
     throw new Error('No synth is currently selected. Use select_synth first.');
   }
   return state.presetLibrary;
+}
+
+function requireSynthWithName(): {
+  library: PresetLibrary;
+  synthName: SynthNames;
+} {
+  if (!state.currentSynth || !state.presetLibrary) {
+    throw new Error('No synth is currently selected. Use select_synth first.');
+  }
+  return {
+    library: state.presetLibrary,
+    synthName: state.currentSynth,
+  };
 }
 
 function handleListPresets(args: { limit?: number; offset?: number }) {
@@ -834,25 +897,9 @@ function handleExplainPreset(args: {
   }
 
   // Try to load context file for the synth
-  let contextContent = '';
-  if (state.currentSynth) {
-    // __dirname points to dist/, so we need to go up to the project root and into src/skills
-    const contextFilePath = join(
-      __dirname,
-      '..',
-      'src',
-      'skills',
-      `${state.currentSynth}.md`,
-    );
-    if (existsSync(contextFilePath)) {
-      try {
-        contextContent = readFileSync(contextFilePath, 'utf-8');
-      } catch (error) {
-        // Silently ignore errors loading context file
-        console.error(`Failed to load context file: ${contextFilePath}`, error);
-      }
-    }
-  }
+  const contextContent = state.currentSynth
+    ? loadSynthContext(state.currentSynth)
+    : null;
 
   let explanation = `# ${preset.presetName}\n\n`;
   explanation += `**Path:** ${preset.filePath}\n\n`;
@@ -1017,16 +1064,51 @@ function handleGetFavoritesFiles() {
   };
 }
 
+function handleGetSynthContext() {
+  if (!state.currentSynth) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: 'No synth is currently selected. Use select_synth to choose a synth first.',
+        },
+      ],
+    };
+  }
+
+  const contextContent = loadSynthContext(state.currentSynth);
+
+  if (!contextContent) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `No technical documentation is currently available for ${state.currentSynth}. Documentation is available for: Diva, Hive, Repro-1, and Repro-5.`,
+        },
+      ],
+    };
+  }
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: `# ${state.currentSynth} Technical Documentation\n\n${contextContent}`,
+      },
+    ],
+  };
+}
+
 function handleGenerateRandomPresets(args: {
   amount?: number;
   stable?: boolean;
   dictionary?: boolean;
 }) {
-  const library = requireSynth();
+  const { library, synthName } = requireSynthWithName();
 
   const config: Config = {
     ...state.config,
-    synth: state.currentSynth!,
+    synth: synthName,
     amount: resolveAmount(args.amount),
     stable: args.stable ?? false,
     dictionary: args.dictionary ?? true,
@@ -1056,7 +1138,7 @@ function handleRandomizePresets(args: {
   randomness?: number;
   stable?: boolean;
 }) {
-  const library = requireSynth();
+  const { library, synthName } = requireSynthWithName();
 
   // Determine which preset(s) to randomize
   let preset: string | string[];
@@ -1065,11 +1147,12 @@ function handleRandomizePresets(args: {
     preset = args.preset_names;
   } else if (args.pattern) {
     // Find presets matching the pattern
+    const pattern = args.pattern;
     const matchingPresets = library.presets.filter((p) =>
-      p.filePath.toLowerCase().includes(args.pattern!.toLowerCase()),
+      p.filePath.toLowerCase().includes(pattern.toLowerCase()),
     );
     if (matchingPresets.length === 0) {
-      throw new Error(`No presets found matching pattern: ${args.pattern}`);
+      throw new Error(`No presets found matching pattern: ${pattern}`);
     }
     preset = matchingPresets.map((p) => p.presetName);
   } else {
@@ -1080,7 +1163,7 @@ function handleRandomizePresets(args: {
 
   const config: Config = {
     ...state.config,
-    synth: state.currentSynth!,
+    synth: synthName,
     preset: preset,
     amount: resolveAmount(args.amount),
     randomness: args.randomness ?? 50,
@@ -1111,7 +1194,7 @@ function handleMergePresets(args: {
   randomness?: number;
   stable?: boolean;
 }) {
-  const library = requireSynth();
+  const { library, synthName } = requireSynthWithName();
 
   // Determine which preset(s) to merge
   let merge: string | string[];
@@ -1129,7 +1212,7 @@ function handleMergePresets(args: {
 
   const config: Config = {
     ...state.config,
-    synth: state.currentSynth!,
+    synth: synthName,
     merge: merge,
     amount: resolveAmount(args.amount),
     randomness: args.randomness ?? 0,
