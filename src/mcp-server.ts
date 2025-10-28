@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -8,7 +11,6 @@ import {
   type Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import chalk from 'chalk';
-import packageJson from '../package.json' with { type: 'json' };
 import { type Config, getDefaultConfig } from './config.js';
 import { type GenerationResult, generatePresets } from './generatePresets.js';
 import {
@@ -22,6 +24,14 @@ import {
   detectPresetLibraryLocations,
   type SynthNames,
 } from './utils/detector.js';
+
+// Load package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJsonPath = join(__dirname, '../package.json');
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
+  version: string;
+};
 
 // Server state
 interface ServerState {
@@ -457,6 +467,27 @@ function handleSelectSynth(args: { synth: string; pattern?: string }) {
     };
   }
 
+  // Check if this synth is already loaded with the same pattern
+  if (
+    state.currentSynth === synthInfo.synthName &&
+    state.presetLibrary !== null
+  ) {
+    // Normalize pattern comparison (undefined should equal undefined or empty)
+    const currentPattern = state.config.pattern || undefined;
+    const requestedPattern = pattern || undefined;
+
+    if (currentPattern === requestedPattern) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `${synthInfo.synthName} is already loaded with ${state.presetLibrary.presets.length} presets. No need to reload.`,
+          },
+        ],
+      };
+    }
+  }
+
   // Update config
   state.config.synth = synthInfo.synthName;
   if (pattern) {
@@ -720,6 +751,27 @@ function handleExplainPreset(args: {
     };
   }
 
+  // Try to load context file for the synth
+  let contextContent = '';
+  if (state.currentSynth) {
+    // __dirname points to dist/, so we need to go up to the project root and into src/skills
+    const contextFilePath = join(
+      __dirname,
+      '..',
+      'src',
+      'skills',
+      `${state.currentSynth}.md`,
+    );
+    if (existsSync(contextFilePath)) {
+      try {
+        contextContent = readFileSync(contextFilePath, 'utf-8');
+      } catch (error) {
+        // Silently ignore errors loading context file
+        console.error(`Failed to load context file: ${contextFilePath}`, error);
+      }
+    }
+  }
+
   let explanation = `# ${preset.presetName}\n\n`;
   explanation += `**Path:** ${preset.filePath}\n\n`;
 
@@ -767,13 +819,23 @@ function handleExplainPreset(args: {
       '\nUse include_parameters: true to see the full parameter list.\n';
   }
 
+  // Build response with context if available
+  const content: Array<{ type: string; text: string }> = [
+    {
+      type: 'text',
+      text: explanation,
+    },
+  ];
+
+  if (contextContent) {
+    content.push({
+      type: 'text',
+      text: `\n---\n\n## Context: ${state.currentSynth} Preset Format Reference\n\n${contextContent}`,
+    });
+  }
+
   return {
-    content: [
-      {
-        type: 'text',
-        text: explanation,
-      },
-    ],
+    content,
   };
 }
 
@@ -1021,7 +1083,7 @@ async function main() {
     state.availableSynths = detectPresetLibraryLocations(state.config);
     console.error(
       chalk.green(
-        `u-he Preset Randomizer MCP Server started. Detected ${state.availableSynths.length} synth(s).`,
+        `u-he Preset Randomizer MCP Server v${packageJson.version} started. Detected ${state.availableSynths.length} synth(s).`,
       ),
     );
   } catch (error) {

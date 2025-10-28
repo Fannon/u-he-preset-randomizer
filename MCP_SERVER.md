@@ -81,15 +81,31 @@ Or use the local development version:
   "mcpServers": {
     "u-he-preset-randomizer": {
       "command": "node",
-      "args": ["/path/to/u-he-preset-randomizer/dist/mcp-server.js"]
+      // TODO: Replace this with your own custom path. 
+      // In future let's use npx and published NPM name 
+      "args": ["~/dev/u-he-preset-randomizer/dist/mcp-server.js"]
     }
   }
 }
 ```
 
-### Other MCP Clients
+### Claude Code (CLI)
+
+Local development version:
+
+```bash
+claude mcp add u-he-preset-randomizer node ~/dev/u-he-preset-randomizer/dist/mcp-server.js
+```
+
+
+### Codex and Other MCP Clients
 
 The server uses stdio transport and can be integrated with any MCP-compatible client. Refer to your client's documentation for configuration instructions.
+
+**General configuration pattern:**
+- **Command**: `u-he-mcp-server` (or `node /path/to/dist/mcp-server.js`)
+- **Transport**: stdio
+- **Arguments**: None required (optional environment variables for custom paths)
 
 ## Available Tools
 
