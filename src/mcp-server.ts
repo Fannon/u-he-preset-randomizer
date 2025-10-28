@@ -133,13 +133,15 @@ const serverInstructions = [
     ').',
   '3. Explore presets with search_presets, filter_presets (by author, category, favorites).',
   '4. Generate new sounds:',
-  '   - generate_random_presets: Fully random patches from scratch',
-  '   - randomize_presets: Variations of existing presets (supports author/category filters)',
+  '   - generate_random_presets: Fully random patches from scratch (supports author/category/pattern/favorites filters)',
+  '   - randomize_presets: Variations of existing presets (supports author/category/pattern filters)',
   '   - merge_presets: Hybrid blends of multiple presets (supports wildcards *, ?)',
   '5. Use get_synth_context for technical documentation (available for Diva, Hive, Repro-1, Repro-5).',
   '',
   'COMMON WORKFLOWS:',
-  '- Generate from specific author: randomize_presets(author="Howard Scarr", amount=4)',
+  '- Random bass presets: generate_random_presets(category="Bass", amount=16)',
+  '- Random from specific author: generate_random_presets(author="Howard Scarr", amount=8)',
+  '- Variations from author: randomize_presets(author="Howard Scarr", amount=4, randomness=30)',
   '- Merge random bass presets: merge_presets(category="Bass", amount=8)',
   '- Create variations: randomize_presets(preset_names=["My Favorite"], amount=16, randomness=30)',
   '',
@@ -340,7 +342,7 @@ const tools: Tool[] = [
   },
   {
     name: 'generate_random_presets',
-    description: `Generate fully random presets based on parameter statistics from the loaded preset library. Creates new sounds by randomizing all parameters within their typical ranges. Files are saved to the RANDOM folder. Requires a synth to be selected first. If you omit "amount", the server will create ${DEFAULT_PRESET_AMOUNT} presets.`,
+    description: `Generate fully random presets based on parameter statistics from the loaded preset library. Creates new sounds by randomizing all parameters within their typical ranges. Optionally filter which presets to use as statistical basis (e.g., generate random bass sounds based only on bass presets). Files are saved to the RANDOM folder. Requires a synth to be selected first. If you omit "amount", the server will create ${DEFAULT_PRESET_AMOUNT} presets.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -349,10 +351,30 @@ const tools: Tool[] = [
           description: `Number of random presets to generate. Defaults to ${DEFAULT_PRESET_AMOUNT}.`,
           default: DEFAULT_PRESET_AMOUNT,
         },
+        pattern: {
+          type: 'string',
+          description:
+            'Optional glob pattern to filter which presets to use as statistical basis (e.g., "Bass/**/*", "**/*Pad*").',
+        },
+        author: {
+          type: 'string',
+          description:
+            'Filter statistical basis by author name (exact match). Use presets from specific author as inspiration.',
+        },
+        category: {
+          type: 'string',
+          description:
+            'Filter statistical basis by category prefix (e.g., "Bass", "Bass:Sub"). Generate random sounds in specific category style.',
+        },
+        favorites: {
+          type: 'string',
+          description:
+            'Filter statistical basis by favorites file name (e.g., "MyFavorites.uhe-fav"). Use only favorited presets as inspiration.',
+        },
         stable: {
           type: 'boolean',
           description:
-            'Use stable randomization (randomizes per-section to maintain coherence). Defaults to false.',
+            'Use stable randomization (randomizes per-section to maintain coherence). Defaults to true.',
         },
         dictionary: {
           type: 'boolean',
@@ -570,7 +592,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return handleGetSynthContext();
       case 'generate_random_presets':
         return handleGenerateRandomPresets(
-          args as { amount?: number; stable?: boolean; dictionary?: boolean },
+          args as {
+            amount?: number;
+            pattern?: string;
+            author?: string;
+            category?: string;
+            favorites?: string;
+            stable?: boolean;
+            dictionary?: boolean;
+          },
         );
       case 'randomize_presets':
         return handleRandomizePresets(
@@ -1176,27 +1206,84 @@ function handleGetSynthContext() {
 
 function handleGenerateRandomPresets(args: {
   amount?: number;
+  pattern?: string;
+  author?: string;
+  category?: string;
+  favorites?: string;
   stable?: boolean;
   dictionary?: boolean;
 }) {
   const { library, synthName } = requireSynthWithName();
 
+  // Apply filters to create a filtered library for statistical basis
+  let filteredLibrary = library;
+  const appliedFilters: string[] = [];
+
+  if (args.pattern || args.author || args.category || args.favorites) {
+    let filteredPresets = [...library.presets];
+
+    if (args.category) {
+      filteredPresets = narrowDownByCategory(
+        { ...library, presets: filteredPresets },
+        args.category,
+      );
+      appliedFilters.push(`category: "${args.category}"`);
+    }
+
+    if (args.author) {
+      filteredPresets = narrowDownByAuthor(
+        { ...library, presets: filteredPresets },
+        args.author,
+      );
+      appliedFilters.push(`author: "${args.author}"`);
+    }
+
+    if (args.favorites) {
+      filteredPresets = narrowDownByFavoritesFile(
+        { ...library, presets: filteredPresets },
+        args.favorites,
+      );
+      appliedFilters.push(`favorites: "${args.favorites}"`);
+    }
+
+    if (args.pattern) {
+      const patternLower = args.pattern.toLowerCase();
+      filteredPresets = filteredPresets.filter((preset) =>
+        preset.filePath.toLowerCase().includes(patternLower),
+      );
+      appliedFilters.push(`pattern: "${args.pattern}"`);
+    }
+
+    if (filteredPresets.length === 0) {
+      throw new Error(
+        `No presets found matching filters: ${appliedFilters.join(', ')}`,
+      );
+    }
+
+    filteredLibrary = { ...library, presets: filteredPresets };
+  }
+
   const config: Config = {
     ...state.config,
     synth: synthName,
     amount: resolveAmount(args.amount),
-    stable: args.stable ?? false,
+    stable: args.stable ?? true,
     dictionary: args.dictionary ?? true,
   };
 
   try {
-    const result: GenerationResult = generatePresets(config, library);
+    const result: GenerationResult = generatePresets(config, filteredLibrary);
+
+    const filterInfo =
+      appliedFilters.length > 0
+        ? `\nStatistical basis: ${filteredLibrary.presets.length} presets matching ${appliedFilters.join(', ')}\n`
+        : '';
 
     return {
       content: [
         {
           type: 'text',
-          text: `Successfully generated ${result.presetCount} random preset(s)!\n\nSaved to: ${result.outputFolder}/RANDOM/Fully Random/\n\nGenerated files:\n${result.writtenFiles.map((f) => `- ${f}`).join('\n')}`,
+          text: `Successfully generated ${result.presetCount} random preset(s)!${filterInfo}\nSaved to: ${result.outputFolder}/RANDOM/Fully Random/\n\nGenerated files:\n${result.writtenFiles.map((f) => `- ${f}`).join('\n')}`,
         },
       ],
     };
