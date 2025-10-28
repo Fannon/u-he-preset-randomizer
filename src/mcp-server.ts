@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, normalize, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -18,6 +18,7 @@ import {
   narrowDownByCategory,
   narrowDownByFavoritesFile,
 } from './libraryFilters.js';
+import { isValidPreset, parseUhePreset } from './parser.js';
 import { loadPresetLibrary, type PresetLibrary } from './presetLibrary.js';
 import {
   type DetectedPresetLibrary,
@@ -643,6 +644,52 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // Tool implementation functions
+
+/**
+ * Load and add generated presets to the current preset library.
+ * This allows generated presets to be immediately searchable and explainable.
+ */
+function addGeneratedPresetsToLibrary(
+  writtenFiles: string[],
+  userPresetsFolder: string,
+): number {
+  if (!state.presetLibrary) {
+    return 0;
+  }
+
+  let addedCount = 0;
+  const binary = state.config.binary ?? false;
+
+  for (const absolutePath of writtenFiles) {
+    try {
+      // Convert absolute path to relative path from userPresetsFolder
+      const normalizedAbsolute = normalize(absolutePath);
+      const normalizedUserFolder = normalize(userPresetsFolder);
+      const relativePath = relative(normalizedUserFolder, normalizedAbsolute);
+
+      // Create a virtual path in the format expected by the preset library
+      const virtualPath = `/User/${relativePath.split('\\').join('/')}`;
+
+      // Read and parse the preset file
+      const presetString = readFileSync(normalizedAbsolute, 'utf-8');
+      const parsedPreset = parseUhePreset(presetString, virtualPath, binary);
+
+      if (isValidPreset(parsedPreset)) {
+        state.presetLibrary.presets.push(parsedPreset);
+        addedCount++;
+      }
+    } catch (error) {
+      console.error(
+        chalk.yellow(
+          `Warning: Could not load generated preset: ${absolutePath}`,
+        ),
+        error,
+      );
+    }
+  }
+
+  return addedCount;
+}
 
 function handleListSynths() {
   ensureSynthDetection();
@@ -1274,16 +1321,27 @@ function handleGenerateRandomPresets(args: {
   try {
     const result: GenerationResult = generatePresets(config, filteredLibrary);
 
+    // Add generated presets to the library so they can be searched/explained immediately
+    const addedCount = addGeneratedPresetsToLibrary(
+      result.writtenFiles,
+      library.userPresetsFolder,
+    );
+
     const filterInfo =
       appliedFilters.length > 0
         ? `\nStatistical basis: ${filteredLibrary.presets.length} presets matching ${appliedFilters.join(', ')}\n`
+        : '';
+
+    const libraryInfo =
+      addedCount > 0
+        ? `\n✓ Added ${addedCount} preset(s) to loaded library (now searchable via search_presets and explain_preset)\n`
         : '';
 
     return {
       content: [
         {
           type: 'text',
-          text: `Successfully generated ${result.presetCount} random preset(s)!${filterInfo}\nSaved to: ${result.outputFolder}/RANDOM/Fully Random/\n\nGenerated files:\n${result.writtenFiles.map((f) => `- ${f}`).join('\n')}`,
+          text: `Successfully generated ${result.presetCount} random preset(s)!${filterInfo}${libraryInfo}\nSaved to: ${result.outputFolder}/RANDOM/Fully Random/\n\nGenerated files:\n${result.writtenFiles.map((f) => `- ${f}`).join('\n')}`,
         },
       ],
     };
@@ -1358,6 +1416,17 @@ function handleRandomizePresets(args: {
   try {
     const result: GenerationResult = generatePresets(config, library);
 
+    // Add generated presets to the library so they can be searched/explained immediately
+    const addedCount = addGeneratedPresetsToLibrary(
+      result.writtenFiles,
+      library.userPresetsFolder,
+    );
+
+    const libraryInfo =
+      addedCount > 0
+        ? `\n✓ Added ${addedCount} preset(s) to loaded library (now searchable via search_presets and explain_preset)\n`
+        : '';
+
     return {
       content: [
         {
@@ -1367,7 +1436,7 @@ function handleRandomizePresets(args: {
 Source: ${sourceDescription}
 Generated: ${amountPerPreset} variation(s) per source preset
 Total files: ${result.presetCount} (expected: ${expectedTotal})
-Randomness: ${config.randomness}%
+Randomness: ${config.randomness}%${libraryInfo}
 
 Saved to: ${result.outputFolder}/RANDOM/Randomized Preset/
 
@@ -1450,6 +1519,17 @@ function handleMergePresets(args: {
       state.presetLibrary = library;
     }
 
+    // Add generated presets to the library so they can be searched/explained immediately
+    const addedCount = addGeneratedPresetsToLibrary(
+      result.writtenFiles,
+      library.userPresetsFolder,
+    );
+
+    const libraryInfo =
+      addedCount > 0
+        ? `\n✓ Added ${addedCount} preset(s) to loaded library (now searchable via search_presets and explain_preset)\n`
+        : '';
+
     return {
       content: [
         {
@@ -1458,7 +1538,7 @@ function handleMergePresets(args: {
 
 Source: ${sourceDescription}
 Total files: ${result.presetCount}
-Additional randomness: ${config.randomness}%
+Additional randomness: ${config.randomness}%${libraryInfo}
 
 Saved to: ${result.outputFolder}/RANDOM/Merged Preset/
 
