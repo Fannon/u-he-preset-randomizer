@@ -132,19 +132,18 @@ const serverInstructions = [
   '2. Call select_synth to load a library (supported: ' +
     Array.from(uheSynthNames).join(', ') +
     ').',
-  '3. Explore presets with search_presets, filter_presets (by author, category, favorites).',
-  '4. Generate new sounds:',
-  '   - generate_random_presets: Fully random patches from scratch (supports author/category/pattern/favorites filters)',
+  '3. Explore presets with search_presets, filter_presets, explain_preset.',
+  '4. Generate new sounds (all generated presets are automatically added to the loaded library):',
+  '   - generate_random_presets: Fully random patches (supports author/category/pattern/favorites filters)',
   '   - randomize_presets: Variations of existing presets (supports author/category/pattern filters)',
-  '   - merge_presets: Hybrid blends of multiple presets (supports wildcards *, ?)',
-  '5. Use get_synth_context for technical documentation (available for Diva, Hive, Repro-1, Repro-5).',
+  '   - merge_presets: Hybrid blends of multiple presets (supports author/category filters + wildcards)',
+  '5. Use get_synth_context for technical documentation (Diva, Hive, Repro-1, Repro-5).',
   '',
   'COMMON WORKFLOWS:',
-  '- Random bass presets: generate_random_presets(category="Bass", amount=16)',
-  '- Random from specific author: generate_random_presets(author="Howard Scarr", amount=8)',
-  '- Variations from author: randomize_presets(author="Howard Scarr", amount=4, randomness=30)',
-  '- Merge random bass presets: merge_presets(category="Bass", amount=8)',
-  '- Create variations: randomize_presets(preset_names=["My Favorite"], amount=16, randomness=30)',
+  '- Random bass sounds: generate_random_presets(category="Bass", amount=16)',
+  '- Author-inspired sounds: generate_random_presets(author="Howard Scarr", amount=8)',
+  '- Preset variations: randomize_presets(preset_names=["My Favorite"], amount=4, randomness=30)',
+  '- Merge category presets: merge_presets(category="Bass", amount=8)',
   '',
   'IMPORTANT: In randomize_presets, "amount" is per source preset:',
   '- 1 preset + amount=4 → 4 files total',
@@ -343,7 +342,7 @@ const tools: Tool[] = [
   },
   {
     name: 'generate_random_presets',
-    description: `Generate fully random presets based on parameter statistics from the loaded preset library. Creates new sounds by randomizing all parameters within their typical ranges. Optionally filter which presets to use as statistical basis (e.g., generate random bass sounds based only on bass presets). Files are saved to the RANDOM folder. Requires a synth to be selected first. If you omit "amount", the server will create ${DEFAULT_PRESET_AMOUNT} presets.`,
+    description: `Generate fully random presets based on parameter statistics from the loaded preset library. Optionally filter the statistical basis by author, category, pattern, or favorites to generate more focused/coherent sounds (e.g., random bass presets). Generated presets are automatically added to the library for immediate use with search_presets and explain_preset. Defaults to ${DEFAULT_PRESET_AMOUNT} presets if amount is omitted.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -388,25 +387,7 @@ const tools: Tool[] = [
   },
   {
     name: 'randomize_presets',
-    description: `Create variations of existing presets by randomly modifying their parameters. You can control how much randomness to apply (0-100%).
-
-IMPORTANT: The 'amount' parameter specifies variations PER source preset:
-- 1 preset + amount=4 → 4 variations total
-- 3 presets + amount=4 → 12 variations total (4 per preset)
-- author filter matching 10 presets + amount=2 → 20 variations total
-
-SELECTION METHODS (choose one):
-- preset_names: Specific preset names ["Preset A", "Preset B"]
-- pattern: Path substring match (e.g., "Bass/**/*")
-- author: All presets by author (e.g., "Howard Scarr")
-- category: All presets in category (e.g., "Bass:Sub")
-
-EXAMPLES:
-- randomize_presets(preset_names=["Bass One"], amount=16, randomness=30)
-- randomize_presets(author="Howard Scarr", amount=1, randomness=50)
-- randomize_presets(category="Bass:Sub", amount=4, randomness=70)
-
-Files are saved to the RANDOM folder. Requires a synth to be selected first.`,
+    description: `Create variations of existing presets by randomly modifying their parameters (0-100% randomness). Select source presets by preset_names, pattern, author, or category. IMPORTANT: 'amount' is per source preset (1 preset + amount=4 → 4 files; 10 presets + amount=2 → 20 files). Generated variations are automatically added to the library. Defaults to ${DEFAULT_PRESET_AMOUNT} variations per preset and 50% randomness.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -452,28 +433,7 @@ Files are saved to the RANDOM folder. Requires a synth to be selected first.`,
   },
   {
     name: 'merge_presets',
-    description: `Merge multiple presets together to create hybrid sounds. Parameters are blended using weighted random ratios.
-
-WILDCARD SUPPORT in preset_names:
-- "*" = Random preset from ALL loaded presets
-- "?" = Random preset from the provided list
-Example: ["Preset A", "Preset B", "?", "?", "*"] merges:
-  - Preset A, Preset B, 2 random from list, and 1 random from entire library
-
-SELECTION METHODS (choose one):
-- preset_names: Specific names with wildcards ["Bass A", "Lead B", "?", "*"]
-- pattern: Path substring to select random presets from
-- author: Use random presets from specific author (e.g., "Howard Scarr")
-- category: Use random presets from category (e.g., "Bass:Sub")
-
-When using author/category/pattern, the tool randomly selects presets from the filtered set for each merge operation.
-
-EXAMPLES:
-- merge_presets(preset_names=["Preset A", "Preset B", "?"], amount=4)
-- merge_presets(author="Howard Scarr", amount=8, randomness=20)
-- merge_presets(category="Bass", amount=6, randomness=10)
-
-Files are saved to the RANDOM folder. Requires a synth to be selected first.`,
+    description: `Merge multiple presets to create hybrid sounds using weighted random ratios. Select presets via preset_names (supports wildcards: "*" for random from all, "?" for random from list), or filter by author/category/pattern. Generated merges are automatically added to the library. Defaults to ${DEFAULT_PRESET_AMOUNT} merged presets with 0% additional randomness.`,
     inputSchema: {
       type: 'object',
       properties: {
