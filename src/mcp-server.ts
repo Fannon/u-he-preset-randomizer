@@ -132,18 +132,23 @@ const serverInstructions = [
   '2. Call select_synth to load a library (supported: ' +
     Array.from(uheSynthNames).join(', ') +
     ').',
+  '   TIP: For large libraries (3000+ presets), use pattern parameter for faster loading.',
+  '   Example: select_synth(synth="Hive", pattern="Bass/**/*") loads only bass presets.',
+  '   Omit pattern to load all presets (slower but gives full library access).',
   '3. Explore presets with search_presets, filter_presets, explain_preset.',
   '4. Generate new sounds (all generated presets are automatically added to the loaded library):',
   '   - generate_random_presets: Fully random patches (supports author/category/pattern/favorites filters)',
   '   - randomize_presets: Variations of existing presets (supports author/category/pattern filters)',
   '   - merge_presets: Hybrid blends of multiple presets (supports author/category filters + wildcards)',
+  '   NOTE: Generation filters work on loaded presets only. If library was loaded with pattern,',
+  '   only those presets are available for filtering/generation.',
   '5. Use get_synth_context for technical documentation (Diva, Hive, Repro-1, Repro-5).',
   '',
   'COMMON WORKFLOWS:',
-  '- Random bass sounds: generate_random_presets(category="Bass", amount=16)',
-  '- Author-inspired sounds: generate_random_presets(author="Howard Scarr", amount=8)',
+  '- Load and generate: select_synth(synth="Hive") → generate_random_presets(category="Bass", amount=16)',
+  '- Fast focused workflow: select_synth(synth="Hive", pattern="Bass/**/*") → generate_random_presets(amount=16)',
   '- Preset variations: randomize_presets(preset_names=["My Favorite"], amount=4, randomness=30)',
-  '- Merge category presets: merge_presets(category="Bass", amount=8)',
+  '- Expand filtered library: select_synth(synth="Hive") [omit pattern to reload all]',
   '',
   'IMPORTANT: In randomize_presets, "amount" is per source preset:',
   '- 1 preset + amount=4 → 4 files total',
@@ -180,7 +185,7 @@ const tools: Tool[] = [
   {
     name: 'select_synth',
     description:
-      'Select a synth to work with and load all its presets. This must be called before using other preset-related tools. The synth context will remain active until a different synth is selected.',
+      'Select a synth and load its preset library. MUST be called before other preset tools. Optional pattern filters which presets are loaded (for faster loading with large libraries). Trade-off: filtered loading is faster but limits subsequent operations to only those presets until reloaded. Omit pattern for full library access (recommended unless library is very large).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -192,7 +197,7 @@ const tools: Tool[] = [
         pattern: {
           type: 'string',
           description:
-            'Optional glob pattern to filter which presets to load (e.g., "Bass/**/*", "**/*Pad*"). Defaults to loading all presets.',
+            'Optional glob pattern to filter loaded presets (e.g., "Bass/**/*", "**/*Pad*"). Use for faster loading with large libraries (3000+ presets). Omit to load all presets (default, recommended). To switch between filtered/full, call again with/without pattern.',
         },
       },
       required: ['synth'],
@@ -710,27 +715,39 @@ function handleSelectSynth(args: { synth: string; pattern?: string }) {
     state.currentSynth === synthInfo.synthName &&
     state.presetLibrary !== null
   ) {
-    // Normalize pattern comparison (undefined should equal undefined or empty)
-    const currentPattern = state.config.pattern ?? undefined;
-    const requestedPattern = pattern ?? undefined;
+    // Normalize pattern comparison (undefined/null should match default '**/*')
+    const normalizePattern = (p: string | undefined) => p ?? '**/*';
+    const currentPattern = normalizePattern(state.config.pattern);
+    const requestedPattern = normalizePattern(pattern);
 
     if (currentPattern === requestedPattern) {
+      const patternInfo =
+        pattern && pattern !== '**/*' ? ` (filtered by: ${pattern})` : '';
       return {
         content: [
           {
             type: 'text',
-            text: `${synthInfo.synthName} is already loaded with ${state.presetLibrary.presets.length} presets. No need to reload.`,
+            text: `${synthInfo.synthName} is already loaded with ${state.presetLibrary.presets.length} presets${patternInfo}. No need to reload.`,
           },
         ],
       };
     }
+
+    // Pattern changed - inform user why we're reloading
+    const oldPatternInfo =
+      currentPattern !== '**/*' ? ` (was: ${currentPattern})` : '';
+    const newPatternInfo =
+      requestedPattern !== '**/*' ? ` (now: ${requestedPattern})` : '';
+    console.error(
+      chalk.yellow(
+        `Pattern changed${oldPatternInfo}${newPatternInfo}. Reloading preset library...`,
+      ),
+    );
   }
 
-  // Update config
+  // Update config - ALWAYS set pattern (even if undefined) to clear old value
   state.config.synth = synthInfo.synthName;
-  if (pattern) {
-    state.config.pattern = pattern;
-  }
+  state.config.pattern = pattern;
 
   // Load preset library
   try {
@@ -745,11 +762,15 @@ function handleSelectSynth(args: { synth: string; pattern?: string }) {
       ? `\n\nDetailed technical documentation is available for ${synthInfo.synthName}. Use get_synth_context to learn about its architecture, parameters, and preset format.`
       : '';
 
+    const patternInfo = pattern
+      ? `\nPattern filter: ${pattern} (call select_synth again without pattern to load full library)`
+      : '';
+
     return {
       content: [
         {
           type: 'text',
-          text: `Successfully selected ${synthInfo.synthName} and loaded ${state.presetLibrary.presets.length} presets in ${loadTime}ms.\n\nYou can now use other tools to browse, search, filter, and generate presets. Call generate_random_presets without arguments to create ${DEFAULT_PRESET_AMOUNT} fresh patches immediately.${contextNote}`,
+          text: `Successfully selected ${synthInfo.synthName} and loaded ${state.presetLibrary.presets.length} presets in ${loadTime}ms.${patternInfo}\n\nYou can now use other tools to browse, search, filter, and generate presets. Call generate_random_presets without arguments to create ${DEFAULT_PRESET_AMOUNT} fresh patches immediately.${contextNote}`,
         },
       ],
     };
