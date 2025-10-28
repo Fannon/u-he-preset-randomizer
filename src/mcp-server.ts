@@ -128,12 +128,24 @@ function resolveAmount(requestedAmount: number | undefined): number {
 
 const serverInstructions = [
   '1. Use list_synths to discover installed u-he synths.',
-  '2. Call select_synth {"synth":"Diva"} to load a library (supported names include: ' +
+  '2. Call select_synth to load a library (supported: ' +
     Array.from(uheSynthNames).join(', ') +
     ').',
-  `3. Generate new sounds / presets / patches with generate_random_presets (omit "amount" to create ${DEFAULT_PRESET_AMOUNT} presets by default).`,
-  '4. Explore variations via randomize_presets or blend sources with merge_presets.',
-  "5. Use get_synth_context to access detailed documentation about the synth's architecture and parameters (available for some synths).",
+  '3. Explore presets with search_presets, filter_presets (by author, category, favorites).',
+  '4. Generate new sounds:',
+  '   - generate_random_presets: Fully random patches from scratch',
+  '   - randomize_presets: Variations of existing presets (supports author/category filters)',
+  '   - merge_presets: Hybrid blends of multiple presets (supports wildcards *, ?)',
+  '5. Use get_synth_context for technical documentation (available for Diva, Hive, Repro-1, Repro-5).',
+  '',
+  'COMMON WORKFLOWS:',
+  '- Generate from specific author: randomize_presets(author="Howard Scarr", amount=4)',
+  '- Merge random bass presets: merge_presets(category="Bass", amount=8)',
+  '- Create variations: randomize_presets(preset_names=["My Favorite"], amount=16, randomness=30)',
+  '',
+  'IMPORTANT: In randomize_presets, "amount" is per source preset:',
+  '- 1 preset + amount=4 → 4 files total',
+  '- 10 presets (via author filter) + amount=2 → 20 files total',
 ].join('\n');
 
 // Initialize MCP server
@@ -353,7 +365,25 @@ const tools: Tool[] = [
   },
   {
     name: 'randomize_presets',
-    description: `Create variations of existing presets by randomly modifying their parameters. You can control how much randomness to apply (0-100%). Useful for creating variations of presets you like. Files are saved to the RANDOM folder. Requires a synth to be selected first. Leaving "amount" empty generates ${DEFAULT_PRESET_AMOUNT} variations per source preset.`,
+    description: `Create variations of existing presets by randomly modifying their parameters. You can control how much randomness to apply (0-100%).
+
+IMPORTANT: The 'amount' parameter specifies variations PER source preset:
+- 1 preset + amount=4 → 4 variations total
+- 3 presets + amount=4 → 12 variations total (4 per preset)
+- author filter matching 10 presets + amount=2 → 20 variations total
+
+SELECTION METHODS (choose one):
+- preset_names: Specific preset names ["Preset A", "Preset B"]
+- pattern: Path substring match (e.g., "Bass/**/*")
+- author: All presets by author (e.g., "Howard Scarr")
+- category: All presets in category (e.g., "Bass:Sub")
+
+EXAMPLES:
+- randomize_presets(preset_names=["Bass One"], amount=16, randomness=30)
+- randomize_presets(author="Howard Scarr", amount=1, randomness=50)
+- randomize_presets(category="Bass:Sub", amount=4, randomness=70)
+
+Files are saved to the RANDOM folder. Requires a synth to be selected first.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -366,7 +396,17 @@ const tools: Tool[] = [
         pattern: {
           type: 'string',
           description:
-            'Glob pattern to select presets to randomize (e.g., "Bass/**/*"). Alternative to preset_names.',
+            'Path substring to filter presets (e.g., "Bass/**/*"). Alternative to preset_names.',
+        },
+        author: {
+          type: 'string',
+          description:
+            'Filter source presets by author name (exact match). Alternative to preset_names/pattern.',
+        },
+        category: {
+          type: 'string',
+          description:
+            'Filter source presets by category prefix (e.g., "Bass", "Bass:Sub"). Alternative to preset_names/pattern.',
         },
         amount: {
           type: 'number',
@@ -389,7 +429,28 @@ const tools: Tool[] = [
   },
   {
     name: 'merge_presets',
-    description: `Merge multiple presets together to create hybrid sounds. Parameters are blended using weighted random ratios. Supports wildcards (*) and random selection (?). Files are saved to the RANDOM folder. Requires a synth to be selected first. If "amount" is omitted, ${DEFAULT_PRESET_AMOUNT} merged presets will be produced.`,
+    description: `Merge multiple presets together to create hybrid sounds. Parameters are blended using weighted random ratios.
+
+WILDCARD SUPPORT in preset_names:
+- "*" = Random preset from ALL loaded presets
+- "?" = Random preset from the provided list
+Example: ["Preset A", "Preset B", "?", "?", "*"] merges:
+  - Preset A, Preset B, 2 random from list, and 1 random from entire library
+
+SELECTION METHODS (choose one):
+- preset_names: Specific names with wildcards ["Bass A", "Lead B", "?", "*"]
+- pattern: Path substring to select random presets from
+- author: Use random presets from specific author (e.g., "Howard Scarr")
+- category: Use random presets from category (e.g., "Bass:Sub")
+
+When using author/category/pattern, the tool randomly selects presets from the filtered set for each merge operation.
+
+EXAMPLES:
+- merge_presets(preset_names=["Preset A", "Preset B", "?"], amount=4)
+- merge_presets(author="Howard Scarr", amount=8, randomness=20)
+- merge_presets(category="Bass", amount=6, randomness=10)
+
+Files are saved to the RANDOM folder. Requires a synth to be selected first.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -402,7 +463,17 @@ const tools: Tool[] = [
         pattern: {
           type: 'string',
           description:
-            'Glob pattern to select presets to merge from (e.g., "Bass/**/*"). Alternative to preset_names.',
+            'Path substring to select presets to merge from (e.g., "Bass/**/*"). Alternative to preset_names.',
+        },
+        author: {
+          type: 'string',
+          description:
+            'Filter source presets by author name. Random presets from this author will be merged. Alternative to preset_names/pattern.',
+        },
+        category: {
+          type: 'string',
+          description:
+            'Filter source presets by category prefix. Random presets from this category will be merged. Alternative to preset_names/pattern.',
         },
         amount: {
           type: 'number',
@@ -506,6 +577,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           args as {
             preset_names?: string[];
             pattern?: string;
+            author?: string;
+            category?: string;
             amount?: number;
             randomness?: number;
             stable?: boolean;
@@ -516,6 +589,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           args as {
             preset_names?: string[];
             pattern?: string;
+            author?: string;
+            category?: string;
             amount?: number;
             randomness?: number;
             stable?: boolean;
@@ -1134,6 +1209,8 @@ function handleGenerateRandomPresets(args: {
 function handleRandomizePresets(args: {
   preset_names?: string[];
   pattern?: string;
+  author?: string;
+  category?: string;
   amount?: number;
   randomness?: number;
   stable?: boolean;
@@ -1142,9 +1219,25 @@ function handleRandomizePresets(args: {
 
   // Determine which preset(s) to randomize
   let preset: string | string[];
+  let sourceDescription: string;
 
   if (args.preset_names && args.preset_names.length > 0) {
     preset = args.preset_names;
+    sourceDescription = `${preset.length} specified preset(s)`;
+  } else if (args.author) {
+    const filteredPresets = narrowDownByAuthor(library, args.author);
+    if (filteredPresets.length === 0) {
+      throw new Error(`No presets found by author: ${args.author}`);
+    }
+    preset = filteredPresets.map((p) => p.presetName);
+    sourceDescription = `${preset.length} preset(s) by ${args.author}`;
+  } else if (args.category) {
+    const filteredPresets = narrowDownByCategory(library, args.category);
+    if (filteredPresets.length === 0) {
+      throw new Error(`No presets found in category: ${args.category}`);
+    }
+    preset = filteredPresets.map((p) => p.presetName);
+    sourceDescription = `${preset.length} preset(s) in category ${args.category}`;
   } else if (args.pattern) {
     // Find presets matching the pattern
     const pattern = args.pattern;
@@ -1155,17 +1248,22 @@ function handleRandomizePresets(args: {
       throw new Error(`No presets found matching pattern: ${pattern}`);
     }
     preset = matchingPresets.map((p) => p.presetName);
+    sourceDescription = `${preset.length} preset(s) matching pattern "${pattern}"`;
   } else {
     throw new Error(
-      'Either preset_names or pattern must be specified for randomization',
+      'Either preset_names, pattern, author, or category must be specified for randomization',
     );
   }
+
+  const amountPerPreset = resolveAmount(args.amount);
+  const sourceCount = Array.isArray(preset) ? preset.length : 1;
+  const expectedTotal = sourceCount * amountPerPreset;
 
   const config: Config = {
     ...state.config,
     synth: synthName,
     preset: preset,
-    amount: resolveAmount(args.amount),
+    amount: amountPerPreset,
     randomness: args.randomness ?? 50,
     stable: args.stable ?? true,
   };
@@ -1177,7 +1275,17 @@ function handleRandomizePresets(args: {
       content: [
         {
           type: 'text',
-          text: `Successfully generated ${result.presetCount} randomized preset variation(s)!\n\nBase preset(s): ${Array.isArray(preset) ? preset.join(', ') : preset}\nRandomness: ${config.randomness}%\n\nSaved to: ${result.outputFolder}/RANDOM/Randomized Preset/\n\nGenerated files:\n${result.writtenFiles.map((f) => `- ${f}`).join('\n')}`,
+          text: `Successfully generated ${result.presetCount} randomized preset variation(s)!
+
+Source: ${sourceDescription}
+Generated: ${amountPerPreset} variation(s) per source preset
+Total files: ${result.presetCount} (expected: ${expectedTotal})
+Randomness: ${config.randomness}%
+
+Saved to: ${result.outputFolder}/RANDOM/Randomized Preset/
+
+Generated files:
+${result.writtenFiles.map((f) => `- ${f}`).join('\n')}`,
         },
       ],
     };
@@ -1190,6 +1298,8 @@ function handleRandomizePresets(args: {
 function handleMergePresets(args: {
   preset_names?: string[];
   pattern?: string;
+  author?: string;
+  category?: string;
   amount?: number;
   randomness?: number;
   stable?: boolean;
@@ -1198,15 +1308,41 @@ function handleMergePresets(args: {
 
   // Determine which preset(s) to merge
   let merge: string | string[];
+  let sourceDescription: string;
+  let libraryToUse = library;
 
   if (args.preset_names && args.preset_names.length > 0) {
     merge = args.preset_names;
+    sourceDescription = `Specified presets with wildcards: ${merge.join(', ')}`;
+  } else if (args.author) {
+    const filteredPresets = narrowDownByAuthor(library, args.author);
+    if (filteredPresets.length === 0) {
+      throw new Error(`No presets found by author: ${args.author}`);
+    }
+    // Use wildcards to randomly select from author's presets for each merge
+    merge = ['*', '*', '*', '*']; // Random selection from filtered set
+    sourceDescription = `Random presets from ${filteredPresets.length} preset(s) by ${args.author}`;
+
+    // Create a filtered library
+    libraryToUse = { ...library, presets: filteredPresets };
+    state.presetLibrary = libraryToUse;
+  } else if (args.category) {
+    const filteredPresets = narrowDownByCategory(library, args.category);
+    if (filteredPresets.length === 0) {
+      throw new Error(`No presets found in category: ${args.category}`);
+    }
+    merge = ['*', '*', '*', '*'];
+    sourceDescription = `Random presets from ${filteredPresets.length} preset(s) in category ${args.category}`;
+
+    libraryToUse = { ...library, presets: filteredPresets };
+    state.presetLibrary = libraryToUse;
   } else if (args.pattern) {
     // Use pattern as merge selector
     merge = args.pattern;
+    sourceDescription = `Pattern: ${args.pattern}`;
   } else {
     throw new Error(
-      'Either preset_names or pattern must be specified for merging',
+      'Either preset_names, pattern, author, or category must be specified for merging',
     );
   }
 
@@ -1220,19 +1356,35 @@ function handleMergePresets(args: {
   };
 
   try {
-    const result: GenerationResult = generatePresets(config, library);
+    const result: GenerationResult = generatePresets(config, libraryToUse);
 
-    const mergeDesc = Array.isArray(merge) ? merge.join(', ') : merge;
+    // Restore original library if we filtered it
+    if (args.author || args.category) {
+      state.presetLibrary = library;
+    }
 
     return {
       content: [
         {
           type: 'text',
-          text: `Successfully generated ${result.presetCount} merged preset(s)!\n\nMerge sources: ${mergeDesc}\nAdditional randomness: ${config.randomness}%\n\nSaved to: ${result.outputFolder}/RANDOM/Merged Preset/\n\nGenerated files:\n${result.writtenFiles.map((f) => `- ${f}`).join('\n')}`,
+          text: `Successfully generated ${result.presetCount} merged preset(s)!
+
+Source: ${sourceDescription}
+Total files: ${result.presetCount}
+Additional randomness: ${config.randomness}%
+
+Saved to: ${result.outputFolder}/RANDOM/Merged Preset/
+
+Generated files:
+${result.writtenFiles.map((f) => `- ${f}`).join('\n')}`,
         },
       ],
     };
   } catch (error) {
+    // Restore original library in case of error
+    if (args.author || args.category) {
+      state.presetLibrary = library;
+    }
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to merge presets: ${errorMessage}`);
   }
