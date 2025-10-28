@@ -63,18 +63,7 @@ Add the following to your Claude Desktop configuration file:
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-```json
-{
-  "mcpServers": {
-    "u-he-preset-randomizer": {
-      "command": "u-he-mcp-server",
-      "args": []
-    }
-  }
-}
-```
-
-Or use the local development version:
+Local development version:
 
 ```json
 {
@@ -97,15 +86,18 @@ Local development version:
 claude mcp add u-he-preset-randomizer node ~/dev/u-he-preset-randomizer/dist/mcp-server.js
 ```
 
-
 ### Codex and Other MCP Clients
 
-The server uses stdio transport and can be integrated with any MCP-compatible client. Refer to your client's documentation for configuration instructions.
+Local development version:
 
-**General configuration pattern:**
-- **Command**: `u-he-mcp-server` (or `node /path/to/dist/mcp-server.js`)
-- **Transport**: stdio
-- **Arguments**: None required (optional environment variables for custom paths)
+```bash
+codex mcp add u-he-preset-randomizer node ~/dev/u-he-preset-randomizer/dist/mcp-server.js
+```
+
+This registers the local build with the Codex CLI. Replace the `~/dev/...` portion with the absolute path to your repository if it lives elsewhere. After adding the server you can verify the registration with `codex mcp list`, and remove it again via `codex mcp remove u-he-preset-randomizer` when you're done testing.
+
+For other MCP-compatible clients, follow their documentation for registering a custom stdio server. The command to launch remains `node <path-to-repo>/dist/mcp-server.js`.
+
 
 ## Available Tools
 
