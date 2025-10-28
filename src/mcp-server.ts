@@ -23,6 +23,7 @@ import {
   type DetectedPresetLibrary,
   detectPresetLibraryLocations,
   type SynthNames,
+  uheSynthNames,
 } from './utils/detector.js';
 
 // Load package.json
@@ -33,12 +34,15 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
   version: string;
 };
 
+const DEFAULT_PRESET_AMOUNT = 16;
+
 // Server state
 interface ServerState {
   availableSynths: DetectedPresetLibrary[];
   currentSynth: SynthNames | null;
   presetLibrary: PresetLibrary | null;
   config: Config;
+  detectionWarningLogged: boolean;
 }
 
 const state: ServerState = {
@@ -46,18 +50,72 @@ const state: ServerState = {
   currentSynth: null,
   presetLibrary: null,
   config: getDefaultConfig(),
+  detectionWarningLogged: false,
 };
+
+function ensureSynthDetection() {
+  if (state.availableSynths.length > 0) {
+    return;
+  }
+
+  try {
+    state.availableSynths = detectPresetLibraryLocations(state.config);
+  } catch (error) {
+    if (!state.detectionWarningLogged) {
+      console.error(
+        chalk.yellow('Warning: Synth detection failed when listing tools.'),
+        error,
+      );
+      state.detectionWarningLogged = true;
+    }
+  }
+}
+
+function getSynthOptions(): string[] {
+  ensureSynthDetection();
+
+  if (state.availableSynths.length > 0) {
+    const uniqueSynths = Array.from(
+      new Set(state.availableSynths.map((s) => s.synthName)),
+    ).sort((a, b) => a.localeCompare(b));
+    return uniqueSynths;
+  }
+
+  return [...uheSynthNames];
+}
+
+function resolveAmount(requestedAmount: number | undefined): number {
+  if (
+    typeof requestedAmount === 'number' &&
+    Number.isFinite(requestedAmount) &&
+    requestedAmount > 0
+  ) {
+    return Math.floor(requestedAmount);
+  }
+  return DEFAULT_PRESET_AMOUNT;
+}
+
+const serverInstructions = [
+  '1. Use list_synths to discover installed u-he synths.',
+  '2. Call select_synth {"synth":"Diva"} to load a library (supported names include: ' +
+    Array.from(uheSynthNames).join(', ') +
+    ').',
+  `3. Generate new sounds / presets / patches with generate_random_presets (omit "amount" to create ${DEFAULT_PRESET_AMOUNT} presets by default).`,
+  '4. Explore variations via randomize_presets or blend sources with merge_presets.',
+].join('\n');
 
 // Initialize MCP server
 const server = new Server(
   {
     name: 'u-he-preset-randomizer',
     version: packageJson.version,
+    description: 'u-he Synth Preset Library Randomizer and Explorer',
   },
   {
     capabilities: {
       tools: {},
     },
+    instructions: serverInstructions,
   },
 );
 
@@ -228,14 +286,14 @@ const tools: Tool[] = [
   },
   {
     name: 'generate_random_presets',
-    description:
-      'Generate fully random presets based on parameter statistics from the loaded preset library. Creates new sounds by randomizing all parameters within their typical ranges. Files are saved to the RANDOM folder. Requires a synth to be selected first.',
+    description: `Generate fully random presets based on parameter statistics from the loaded preset library. Creates new sounds by randomizing all parameters within their typical ranges. Files are saved to the RANDOM folder. Requires a synth to be selected first. If you omit "amount", the server will create ${DEFAULT_PRESET_AMOUNT} presets.`,
     inputSchema: {
       type: 'object',
       properties: {
         amount: {
           type: 'number',
-          description: 'Number of random presets to generate. Defaults to 10.',
+          description: `Number of random presets to generate. Defaults to ${DEFAULT_PRESET_AMOUNT}.`,
+          default: DEFAULT_PRESET_AMOUNT,
         },
         stable: {
           type: 'boolean',
@@ -253,8 +311,7 @@ const tools: Tool[] = [
   },
   {
     name: 'randomize_presets',
-    description:
-      'Create variations of existing presets by randomly modifying their parameters. You can control how much randomness to apply (0-100%). Useful for creating variations of presets you like. Files are saved to the RANDOM folder. Requires a synth to be selected first.',
+    description: `Create variations of existing presets by randomly modifying their parameters. You can control how much randomness to apply (0-100%). Useful for creating variations of presets you like. Files are saved to the RANDOM folder. Requires a synth to be selected first. Leaving "amount" empty generates ${DEFAULT_PRESET_AMOUNT} variations per source preset.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -271,8 +328,8 @@ const tools: Tool[] = [
         },
         amount: {
           type: 'number',
-          description:
-            'Number of variations to generate per base preset. Defaults to 10.',
+          description: `Number of variations to generate per base preset. Defaults to ${DEFAULT_PRESET_AMOUNT}.`,
+          default: DEFAULT_PRESET_AMOUNT,
         },
         randomness: {
           type: 'number',
@@ -290,8 +347,7 @@ const tools: Tool[] = [
   },
   {
     name: 'merge_presets',
-    description:
-      'Merge multiple presets together to create hybrid sounds. Parameters are blended using weighted random ratios. Supports wildcards (*) and random selection (?). Files are saved to the RANDOM folder. Requires a synth to be selected first.',
+    description: `Merge multiple presets together to create hybrid sounds. Parameters are blended using weighted random ratios. Supports wildcards (*) and random selection (?). Files are saved to the RANDOM folder. Requires a synth to be selected first. If "amount" is omitted, ${DEFAULT_PRESET_AMOUNT} merged presets will be produced.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -308,7 +364,8 @@ const tools: Tool[] = [
         },
         amount: {
           type: 'number',
-          description: 'Number of merged presets to generate. Defaults to 10.',
+          description: `Number of merged presets to generate. Defaults to ${DEFAULT_PRESET_AMOUNT}.`,
+          default: DEFAULT_PRESET_AMOUNT,
         },
         randomness: {
           type: 'number',
@@ -328,7 +385,37 @@ const tools: Tool[] = [
 
 // List tools handler
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return { tools };
+  const synthOptions = getSynthOptions();
+
+  const toolsWithHints = tools.map((tool) => {
+    if (tool.name === 'select_synth') {
+      const properties = {
+        ...(tool.inputSchema?.properties ?? {}),
+      } as Record<string, unknown>;
+      const synthProperty = {
+        ...((properties.synth as Record<string, unknown> | undefined) ?? {}),
+      };
+
+      return {
+        ...tool,
+        description: `${tool.description} Known synth options include: ${synthOptions.join(', ')}.`,
+        inputSchema: {
+          ...tool.inputSchema,
+          properties: {
+            ...properties,
+            synth: {
+              ...synthProperty,
+              enum: synthOptions,
+            },
+          },
+        },
+      };
+    }
+
+    return tool;
+  });
+
+  return { tools: toolsWithHints };
 });
 
 // Call tool handler
@@ -409,17 +496,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // Tool implementation functions
 
 function handleListSynths() {
-  // Detect synths if not already done
-  if (state.availableSynths.length === 0) {
-    state.availableSynths = detectPresetLibraryLocations(state.config);
-  }
+  ensureSynthDetection();
 
   if (state.availableSynths.length === 0) {
     return {
       content: [
         {
           type: 'text',
-          text: 'No u-he synths detected on this system. Please ensure u-he synths are installed.',
+          text: `No u-he synths detected on this system. Please ensure u-he synths are installed. Known u-he products include: ${Array.from(uheSynthNames).join(', ')}.`,
         },
       ],
     };
@@ -437,7 +521,7 @@ function handleListSynths() {
     content: [
       {
         type: 'text',
-        text: `Found ${state.availableSynths.length} u-he synth(s):\n\n${synthsList}\n\nUse select_synth to choose one and load its presets.`,
+        text: `Found ${state.availableSynths.length} u-he synth(s):\n\n${synthsList}\n\nUse select_synth to choose one and load its presets, then call generate_random_presets to create new sounds (defaults to ${DEFAULT_PRESET_AMOUNT} presets when amount is omitted).`,
       },
     ],
   };
@@ -446,10 +530,7 @@ function handleListSynths() {
 function handleSelectSynth(args: { synth: string; pattern?: string }) {
   const { synth, pattern } = args;
 
-  // Detect synths if not already done
-  if (state.availableSynths.length === 0) {
-    state.availableSynths = detectPresetLibraryLocations(state.config);
-  }
+  ensureSynthDetection();
 
   // Find the synth
   const synthInfo = state.availableSynths.find(
@@ -457,11 +538,12 @@ function handleSelectSynth(args: { synth: string; pattern?: string }) {
   );
 
   if (!synthInfo) {
+    const synthOptions = getSynthOptions();
     return {
       content: [
         {
           type: 'text',
-          text: `Synth "${synth}" not found. Available synths: ${state.availableSynths.map((s) => s.synthName).join(', ')}`,
+          text: `Synth "${synth}" not found. Available synths: ${synthOptions.join(', ')}`,
         },
       ],
     };
@@ -505,7 +587,7 @@ function handleSelectSynth(args: { synth: string; pattern?: string }) {
       content: [
         {
           type: 'text',
-          text: `Successfully selected ${synthInfo.synthName} and loaded ${state.presetLibrary.presets.length} presets in ${loadTime}ms.\n\nYou can now use other tools to browse, search, filter, and generate presets.`,
+          text: `Successfully selected ${synthInfo.synthName} and loaded ${state.presetLibrary.presets.length} presets in ${loadTime}ms.\n\nYou can now use other tools to browse, search, filter, and generate presets. Call generate_random_presets without arguments to create ${DEFAULT_PRESET_AMOUNT} fresh patches immediately.`,
         },
       ],
     };
@@ -945,7 +1027,7 @@ function handleGenerateRandomPresets(args: {
   const config: Config = {
     ...state.config,
     synth: state.currentSynth!,
-    amount: args.amount ?? 10,
+    amount: resolveAmount(args.amount),
     stable: args.stable ?? false,
     dictionary: args.dictionary ?? true,
   };
@@ -1000,7 +1082,7 @@ function handleRandomizePresets(args: {
     ...state.config,
     synth: state.currentSynth!,
     preset: preset,
-    amount: args.amount ?? 10,
+    amount: resolveAmount(args.amount),
     randomness: args.randomness ?? 50,
     stable: args.stable ?? true,
   };
@@ -1049,7 +1131,7 @@ function handleMergePresets(args: {
     ...state.config,
     synth: state.currentSynth!,
     merge: merge,
-    amount: args.amount ?? 10,
+    amount: resolveAmount(args.amount),
     randomness: args.randomness ?? 0,
     stable: args.stable ?? true,
   };
@@ -1087,6 +1169,7 @@ async function main() {
       ),
     );
   } catch (error) {
+    state.detectionWarningLogged = true;
     console.error(
       chalk.yellow('Warning: Could not detect synths on startup:', error),
     );

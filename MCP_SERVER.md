@@ -63,41 +63,46 @@ Add the following to your Claude Desktop configuration file:
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-Local development version:
+#### Windows Setup
+
+1. Open Notepad as Administrator
+2. Create/edit the file at `%APPDATA%\Claude\claude_desktop_config.json`
+3. Add the configuration below (adjust the path to match your actual project location)
+
+Local development version (no compilation needed):
 
 ```json
 {
   "mcpServers": {
     "u-he-preset-randomizer": {
-      "command": "node",
-      // TODO: Replace this with your own custom path. 
-      // In future let's use npx and published NPM name 
-      "args": ["~/dev/u-he-preset-randomizer/dist/mcp-server.js"]
+      "command": "npx",
+      "args": ["tsx", "C:\\Development\\u-he-synth-preset-randomizer\\src\\mcp-server.ts"]
     }
   }
 }
 ```
 
+**Note**: Use forward slashes (`/`) or escaped backslashes (`\\`) in the path. Windows-style paths with single backslashes may not work correctly. 
+
 ### Claude Code (CLI)
 
-Local development version:
+Local development version (no compilation needed):
 
 ```bash
-claude mcp add u-he-preset-randomizer node ~/dev/u-he-preset-randomizer/dist/mcp-server.js
+claude mcp add u-he-preset-randomizer npx tsx ~/dev/u-he-preset-randomizer/src/mcp-server.ts
 ```
 
 ### Codex and Other MCP Clients
 
-Local development version:
+Local development version (no compilation needed):
 
 ```bash
-codex mcp add u-he-preset-randomizer node ~/dev/u-he-preset-randomizer/dist/mcp-server.js
+codex mcp add u-he-preset-randomizer npx tsx ~/dev/u-he-preset-randomizer/src/mcp-server.ts
 ```
 
 This registers the local build with the Codex CLI. Replace the `~/dev/...` portion with the absolute path to your repository if it lives elsewhere. After adding the server you can verify the registration with `codex mcp list`, and remove it again via `codex mcp remove u-he-preset-randomizer` when you're done testing.
 
-For other MCP-compatible clients, follow their documentation for registering a custom stdio server. The command to launch remains `node <path-to-repo>/dist/mcp-server.js`.
-
+For other MCP-compatible clients, follow their documentation for registering a custom stdio server. The command to launch remains `npx tsx <path-to-repo>/src/mcp-server.ts`.
 
 ## Available Tools
 
