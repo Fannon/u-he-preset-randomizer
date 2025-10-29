@@ -149,6 +149,15 @@ Four identical digital oscillators, the primary sound source.
     *   `VMSc`: (Modulation Source Index) Source for amplitude modulation.
     *   `VMDpt`: (-100 to 100) Depth of amplitude modulation.
 
+#### Oscillator Analysis Notes
+
+*   **Coarse tuning is usually conservative.** In the sampled library (`tmp/paramsModel.json`), `Osc1/Tune` averages ≈4.3 semitones with the dataset dominated by octave steps (0, 12, 24). Treat large offsets or non-semitone values as intentional special cases; they often indicate layered transpositions or clocked modes.
+*   **Fine detune centers on zero.** `Osc1/Fine` averages effectively 0, but excursions reach ±50. Any big deviation signals deliberate beating or audio-rate modulation—double-check `FineTy` to understand the scale.
+*   **Phase distortion is a primary tone control.** `Osc1/PDVal` averages ≈42 with `PDDpt` around 13, so most presets lean on PD for overtone shaping. Large modulation depths usually come from low-index sources (`PDSrc` avg ≈8), i.e., envelopes, velocity, or KeyFollow.
+*   **FM depth swings widely.** Although `Osc1/PMDpt` averages ≈12, it spans the full ±100 range. With `PMRes` averaging just over 2 (coarser PM tables), expect audible timbre shifts whenever `PMSrc` ≠ `0`. Watch the sign of `PMDpt` to understand whether the filter is being driven brighter or darker over time.
+*   **Fractal resonance is rare.** `FType` averages under 1 and `FVal` ≈0.3, so most patches leave it off. Any non-zero fractal settings deserve extra scrutiny—they often explain metallic or noisy content.
+*   **Mixer levels reveal importance.** `Osc1/Vol` averages ≈48 (with similar values on other oscillators), while `VMSc`/`VMDpt` sit near 12. If an oscillator sounds missing, confirm the volume isn’t near zero and that amplitude modulation isn’t muting it.
+
 ### `#cm=Filt1` - `#cm=Filt4` (Filters)
 
 Four analog-modeled resonant filters.
@@ -170,6 +179,7 @@ Four analog-modeled resonant filters.
 *   **Resonance is dynamic.** The static `Res` value for `Filt1` averages ≈21, but `ResDpt` swings across the full ±100 range. High `ResDpt` with a low base `Res` signals that an envelope or LFO is responsible for peaks or squelches—inspect `ResSrc` to understand when resonance spikes.
 *   **Audio routing clarifies polarity.** `FMSrc`/`FBSrc` tell you which oscillator or utility feeds each filter input. When a filter sounds inactive, confirm it still receives audio; `FMSrc=0` means nothing is patched into Input 1.
 *   **DC blocking hints at coloration.** `DCBlk` toggled to `1` (≈23% of the time) removes low-end bias after heavy resonance. If a preset feels thin despite high cutoff, check for `DCBlk=1`.
+*   **Secondary filters stay brighter.** `Filt2/Cutoff` averages ≈26 with `Res` ≈12, while `Filt3` and `Filt4` average cutoffs above 137 but resonances below 4. Use this split to reason about serial vs. parallel routing: Filt1 often shapes the main tone, and downstream filters add subtle coloration unless their modulation depths are extreme.
 
 ### `#cm=ENV1` - `#cm=ENV4` (Envelopes)
 
@@ -184,6 +194,14 @@ Four identical ADSR envelope generators.
 *   `Snappy`: (0 or 1) If `1`, makes Decay and Release more exponential.
 *   `Trig`: (0-5) Trigger source. `0`=Gate, `1`=Loop, `2`=LFO1, `3`=LFO2, `4`=ModSeq1, `5`=ModSeq2.
 
+#### Envelope Analysis Notes
+
+*   **ENV1 is brisk but sustained.** In the sampled data (`tmp/paramsModel.json`), `ENV1/Atk` averages ≈11, `Dec` ≈48, `Sus` ≈63, and `Rel` ≈30. Expect a quick attack with a noticeable sustain tail—perfect for filter sweeps or the main VCA. When those numbers drop near zero, the preset is intentionally percussive.
+*   **Velocity sensitivity is moderate.** `ENV1/Vel` averages ≈24, while `ENV3`/`ENV4` fall closer to 10 and 5. Strong velocity response therefore usually targets ENV1; if brightness or loudness ignores touch, confirm `Vel` is non-zero.
+*   **Aux envelopes are snappier.** `ENV3/Atk` averages ≈6.5 with `Sus` ≈53, and `ENV2/Sus` averages ≈36. Designers typically repurpose these for modulation bursts—look for them driving oscillator FM or filter resonance.
+*   **Rate modulation is rare.** `ENV1/RMod` and `ENV1/RMSrc` hover near zero/low indices, so any non-zero setting is a deliberate tempo-dependent tweak worth noting.
+*   **Snappy mode is the exception.** With `ENV1/Snappy` averaging ≈0.13, most presets leave it off. If you need punchier transients, enabling it is an intentional design decision.
+
 ### `#cm=LFO1`, `#cm=LFO2` (Low-Frequency Oscillators)
 
 Two dedicated LFOs for cyclic modulation.
@@ -196,6 +214,14 @@ Two dedicated LFOs for cyclic modulation.
 *   `DMS1`, `DMD1`: Amp Mod source and depth. Modulates the LFO output level.
 *   `Dly`: (0-100) Fades the LFO in from zero.
 
+#### LFO Analysis Notes
+
+*   **Rates skew slow.** In `tmp/paramsModel.json`, `LFO1/Rate` averages ≈0.49 (on the -5 to +5 scale), so most patches use gentle modulation. Values beyond ±3 usually indicate audio-rate or tremolo effects.
+*   **Free-running dominates.** `LFO1/Sync` averages ≈1.2 with many negative entries, meaning unsynced or slow absolute times are the norm. When synced values (≥8) appear, expect tempo-locked movement.
+*   **Wave shaping stays centered.** `LFO1/Sym` averages ≈49, so designers rarely bias the waveform strongly. Extreme symmetry settings are intentional (e.g., for pulse-width wobble).
+*   **Depth modulation outweighs rate modulation.** `LFO1/DMD1` averages ≈28 while `FMD1` sits near 0.4. If you hear evolving amplitude changes, inspect `DMD1`/`DMS1` to understand the modulation source.
+*   **Phase and delay are typically zeroed.** `Phse` and `Dly` both average around 3–4, meaning any large values were chosen for deliberate fade-ins or phase offsets.
+
 ### `#cm=Multi1` - `#cm=Multi4` (Multiplex)
 
 Four flexible utility modules that can act as mixers, ring modulators, or AM processors.
@@ -204,6 +230,12 @@ Four flexible utility modules that can act as mixers, ring modulators, or AM pro
 *   `InRM`: (Signal Source Index) The modulation input (`Mod`).
 *   `Gain12`: (-100 to 100) The left knob. Without a `Mod` input, it's a level control for inputs 1 & 2. With a `Mod` input, it crossfades between the dry sum of 1+2 and the Ring Modulated signal (Input 1 * Mod).
 *   `Gain34`: (-100 to 100) The right knob. Similar to `Gain12` but for inputs 3 & 4. Crossfades between the dry sum of 3+4 and the Amplitude Modulated signal (Input 3 * (1 - Mod)).
+
+#### Multiplex Analysis Notes
+
+*   **Most patches use the Multi modules as mixers.** In `tmp/paramsModel.json`, `Gain12` and `Gain34` both average ≈90, well into the positive range. Values near 0 or negative stand out as deliberate ring/AM configurations.
+*   **Mod inputs favor core controllers.** `InRM` averages ≈8 on the modulation index scale, pointing to frequent use of KeyFollow, envelopes, or velocity. If you need to trace complex AM, start with those low-index sources.
+*   **Dry inputs matter.** Because `Gain` values sit high, the dry path dominates unless `InRM` is active. If a modulation effect seems missing, confirm the relevant `Gain` isn't pinned to 100 with an inactive mod source.
 
 ### `#cm=Seq1` (Modulation Sequencer)
 
@@ -226,3 +258,9 @@ The final stereo output stage.
 *   `VCA`: (0-4) Selects the default envelope. `0`=Gate, `1`=Env1, `2`=Env2, `3`=Env3, `4`=Env4.
 *   `PanSrc`: (Modulation Source Index) Source for pan modulation.
 *   `PanDpt`: (-100 to 100) Pan position or modulation depth.
+
+#### VCA Analysis Notes
+
+*   **Output levels are moderately conservative.** In `tmp/paramsModel.json`, `VCA1/Vol` averages ≈41 and `VCA2/Vol` ≈34, so patches rely on filter drive or external gain for loudness. If a preset feels quiet, raising VCA volume is usually safe.
+*   **ENV1 drives most amplitude.** `VCA1/VCA` averages just above 1, confirming Env1 as the default envelope. Any other value signals custom routings—important when diagnosing gate or pad behaviour.
+*   **Pan modulation is uncommon.** `PanDpt` averages around -0.5 with `PanSrc` near index 5; significant stereo motion only happens when you see larger absolute depths or non-zero mod sources.

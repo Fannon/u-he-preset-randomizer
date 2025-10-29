@@ -37,6 +37,14 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
 
 const DEFAULT_PRESET_AMOUNT = 16;
 const SKILLS_DIR = join(__dirname, '..', 'src', 'skills');
+const synthContextFileOverrides: Partial<Record<SynthNames, string>> = {
+  ZebraHZ: 'Zebra2',
+};
+
+function resolveContextFilePath(synthName: SynthNames): string {
+  const contextFileName = synthContextFileOverrides[synthName] ?? synthName;
+  return join(SKILLS_DIR, `${contextFileName}.md`);
+}
 
 // Server state
 interface ServerState {
@@ -80,7 +88,7 @@ function ensureSynthDetection() {
  */
 function loadSynthContext(synthName: SynthNames): string | null {
   try {
-    const contextFilePath = join(SKILLS_DIR, `${synthName}.md`);
+    const contextFilePath = resolveContextFilePath(synthName);
 
     if (!existsSync(contextFilePath)) {
       return null;
@@ -99,7 +107,7 @@ function loadSynthContext(synthName: SynthNames): string | null {
  * @returns True if context documentation exists
  */
 function hasContextAvailable(synthName: SynthNames): boolean {
-  const contextFilePath = join(SKILLS_DIR, `${synthName}.md`);
+  const contextFilePath = resolveContextFilePath(synthName);
   return existsSync(contextFilePath);
 }
 
