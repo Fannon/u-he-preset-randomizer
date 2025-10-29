@@ -32,13 +32,21 @@ The MCP server provides an alternative interface to the CLI for interacting with
 
 ### Installation
 
+You can run the MCP server from the published package or directly from source:
+
 ```bash
-# Install the package
+
+# Run the published MCP server via npx (production build, no global install)
+npx --yes u-he-preset-randomizer@latest u-he-mcp-server
+
+# Install the package globally (production build)
 npm install -g u-he-preset-randomizer
 
-# Or use locally without installing
+# Or use the local source without installing (development build)
 npm run mcp
 ```
+
+The `--yes` flag tells `npx` to automatically install the package the first time it runs.
 
 ### Testing the Server
 
@@ -69,6 +77,19 @@ Add the following to your Claude Desktop configuration file:
 2. Create/edit the file at `%APPDATA%\Claude\claude_desktop_config.json`
 3. Add the configuration below (adjust the path to match your actual project location)
 
+Production version (published build):
+
+```json
+{
+  "mcpServers": {
+    "u-he-preset-randomizer": {
+      "command": "npx",
+      "args": ["--yes", "u-he-preset-randomizer@latest", "u-he-mcp-server"]
+    }
+  }
+}
+```
+
 Local development version (no compilation needed):
 
 ```json
@@ -82,9 +103,18 @@ Local development version (no compilation needed):
 }
 ```
 
-**Note**: Use forward slashes (`/`) or escaped backslashes (`\\`) in the path. Windows-style paths with single backslashes may not work correctly. 
+**Notes:**
+- Update path to where you checked out the code
+- Use forward slashes (`/`) or escaped backslashes (`\\`) in the path. Windows-style paths with single backslashes may not work correctly.
+- `--yes` tells `npx` to automatically install the published package the first time it runs.
 
 ### Claude Code (CLI)
+
+Production version (published build):
+
+```bash
+claude mcp add u-he-preset-randomizer npx --yes u-he-preset-randomizer@latest u-he-mcp-server
+```
 
 Local development version (no compilation needed):
 
@@ -94,6 +124,12 @@ claude mcp add u-he-preset-randomizer npx tsx ~/dev/u-he-preset-randomizer/src/m
 
 ### Codex and Other MCP Clients
 
+Production version (published build):
+
+```bash
+codex mcp add u-he-preset-randomizer npx --yes u-he-preset-randomizer@latest u-he-mcp-server
+```
+
 Local development version (no compilation needed):
 
 ```bash
@@ -102,7 +138,7 @@ codex mcp add u-he-preset-randomizer npx tsx ~/dev/u-he-preset-randomizer/src/mc
 
 This registers the local build with the Codex CLI. Replace the `~/dev/...` portion with the absolute path to your repository if it lives elsewhere. After adding the server you can verify the registration with `codex mcp list`, and remove it again via `codex mcp remove u-he-preset-randomizer` when you're done testing.
 
-For other MCP-compatible clients, follow their documentation for registering a custom stdio server. The command to launch remains `npx tsx <path-to-repo>/src/mcp-server.ts`.
+For other MCP-compatible clients, follow their documentation for registering a custom stdio server. You can launch the published build with `npx --yes u-he-preset-randomizer@latest u-he-mcp-server`, or point to your local source with `npx tsx <path-to-repo>/src/mcp-server.ts`.
 
 ## Available Tools
 
