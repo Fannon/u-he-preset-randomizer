@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "u-he-preset-randomizer",
-  "version": "1.0.10",
+  "version": "1.1.0",
   "description": "Create random u-he synth presets through randomization and merging of your existing presets.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,6 +9,7 @@
     "u-he-preset-randomizer": "./dist/cli.js",
     "u-he-mcp-server": "./dist/mcp-server.js"
   },
+  "mcpName": "io.github.fannon/u-he-preset-randomizer",
   "type": "module",
   "scripts": {
     "start": "tsx src/cli.ts",
@@ -30,7 +31,8 @@
     "test:unit": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --testPathIgnorePatterns=e2e",
     "test:ci": "npm run lint && npm run typecheck && npm run test:unit",
     "postinstall": "simple-git-hooks",
-    "prepublishOnly": "npm run clean && npm run build:dist"
+    "prepublishOnly": "node scripts/sync-mcp-version.mjs && npm run clean && npm run build:dist",
+    "sync:mcp-version": "node scripts/sync-mcp-version.mjs"
   },
   "repository": {
     "type": "git",
@@ -61,7 +63,7 @@
     "node": ">=20.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.0",
+    "@biomejs/biome": "^2.3.2",
     "@jest/globals": "^30.2.0",
     "@swc/core": "^1.13.5",
     "@swc/jest": "^0.2.39",
@@ -69,9 +71,9 @@
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.9",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.9.1",
+    "@types/node": "^24.9.2",
     "@types/yargs": "^17.0.34",
-    "@typescript/native-preview": "^7.0.0-dev.20251026.1",
+    "@typescript/native-preview": "^7.0.0-dev.20251027.1",
     "jest": "^30.2.0",
     "lint-staged": "^16.2.6",
     "simple-git-hooks": "^2.13.1",
