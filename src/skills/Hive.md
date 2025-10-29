@@ -397,63 +397,6 @@ This section provides actionable guidance for LLMs working with Hive presets.
 
 5.  **Effects Last**: Effects add polish but don't define core timbre
 
-### 5.2. When Generating/Modifying Presets
-
-**Critical rules based on statistical analysis:**
-
-1.  **Always Consider Filter Impact**:
-    *   A preset with Cutoff=80, Res=30, Env=40 will sound VERY different from Cutoff=120, Res=5, Env=0
-    *   Small filter changes = big sonic differences
-
-2.  **Don't Create Static Sounds**:
-    *   Avoid Filter Env=0 unless specifically creating static tones
-    *   Use modulation matrix for movement (MM1-MM3 should usually be active)
-    *   Target filter parameters in modulation routing
-
-3.  **Typical Parameter Ranges for Common Sounds**:
-    *   **Bass**: Filter1 Cutoff=50-80, Res=20-40, Env=30-60 (positive)
-    *   **Lead**: Filter1 Cutoff=70-100, Res=25-50, Env=40-80 (positive), often with LFO → Cutoff
-    *   **Pad**: Filter1 Cutoff=60-90, Res=10-30, Env=20-40, slow attack on AmpEnv
-    *   **Pluck**: Filter1 Cutoff=60-100, Res=20-50, Env=60-100 (positive), fast decay on ModEnv
-
-4.  **Modulation Best Practices**:
-    *   MM1: Often envelope → filter cutoff (most expressive)
-    *   MM2: Often LFO → filter or pitch (adds movement)
-    *   MM3: Often velocity → filter or volume (performance responsiveness)
-
-5.  **Filter Cutoff-Envelope Interaction**:
-    *   High Env amount requires lower starting Cutoff (so there's room to sweep up)
-    *   Example: Env=80, Cutoff=50 = dramatic sweep from dark to bright
-    *   Example: Env=80, Cutoff=120 = already bright, sweep goes beyond useful range
-
-### 5.3. Common Preset Archetypes
-
-**Understanding these patterns helps generate musically useful presets:**
-
-1.  **Classic Analog Bass**:
-    *   Filter1: Type=1 (LP24), Cutoff=60-75, Res=25-35, Env=40-60
-    *   ModEnv1: Fast attack (0-5), Medium decay (30-50), Low sustain (10-30)
-    *   OSC1: Sawtooth (Wave=1), Unison=2-4 for thickness
-    *   Engine: Normal (for analog character)
-
-2.  **Sweeping Lead**:
-    *   Filter1: Type=1 (LP24), Cutoff=70-90, Res=30-50, Env=50-80
-    *   MM1: ModEnv1 → Filter1:Cutoff, Depth=60-100
-    *   MM2: LFO1 → Filter1:Cutoff, Depth=20-40 (wobble)
-    *   ModEnv1: Medium attack (20-40), Medium decay (40-60)
-
-3.  **Evolving Pad**:
-    *   Filter1: Type=1 (LP24), Cutoff=65-85, Res=15-25, Env=30-50
-    *   AmpEnv1: Slow attack (50-80), Long release (60-90)
-    *   MM1: LFO1 → Filter1:Cutoff, Depth=15-30 (slow rate)
-    *   Effects: Reverb, Chorus
-
-4.  **Aggressive Wobble Bass**:
-    *   Filter1: Type=1 (LP24), Cutoff=40-60, Res=60-90 (high!)
-    *   MM1: LFO1 → Filter1:Cutoff, Depth=80-100
-    *   LFO1: Sync to tempo, moderate rate (1/8 or 1/16)
-    *   Engine: Dirty (for aggressive character)
-
 ### 5.4. Key Takeaways
 
 **If you remember only three things about Hive presets:**
@@ -461,7 +404,3 @@ This section provides actionable guidance for LLMs working with Hive presets.
 1.  **Filters define timbre** - Cutoff, Resonance, and Envelope modulation are the most sonically significant parameters
 2.  **Movement is essential** - Static filter = lifeless sound; use envelopes and modulation matrix
 3.  **Filter parameters are the primary modulation targets** - Most expressive presets route modulation sources to filter cutoff and resonance
-
----
-
-**Document Version**: Enhanced with statistical analysis of 4,400+ Hive factory presets (January 2025)
