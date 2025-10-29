@@ -23,15 +23,7 @@
         },
         {
           "type": "positional",
-          "value": "--package"
-        },
-        {
-          "type": "positional",
           "value": "u-he-preset-randomizer@1.1.0"
-        },
-        {
-          "type": "positional",
-          "value": "--"
         },
         {
           "type": "positional",
