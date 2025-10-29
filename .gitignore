@@ -135,3 +135,5 @@ reports/
 
 # Generated analysis files
 CODEBASE_ANALYSIS.md
+
+.mcpregistry*
