@@ -4,7 +4,7 @@
 
 This document provides a comprehensive guide for understanding the structure and parameters of preset files for the u-he Zebra 2 software synthesizer. Zebra 2 is a powerful semi-modular synthesizer known for its flexibility and sound quality. Its presets are stored in a human-readable text format with the extension `.h2p`.
 
-This guide maps the parameters found in the `.h2p` files to their functions as described in the Zebra 2 user manual, enabling a Large Language Model to interpret, generate, and modify these presets effectively.
+This guide maps the parameters found in the `.h2p` files to their functions as described in the Zebra 2 user manual, enabling a Large Language Model to interpret, generate, and modify these presets effectively. Observed value ranges and averages mentioned below come from the aggregated statistics in `tmp/paramsModel.compact.json`, providing practical context for how factory and third-party presets typically deploy each control.
 
 ## 2. The .h2p Preset File Structure
 
@@ -22,6 +22,7 @@ A Zebra 2 `.h2p` file is organized into several distinct sections:
 4.  **Modulation Matrix**: There are two types of modulation routing definitions:
     *   **XY Pad Matrix (`MT/ML/MR`)**: Defines the targets for the four XY pads. `MT` specifies the target, `ML` the value at the minimum position of the controller, and `MR` the value at the maximum position.
     *   **Main Modulation Matrix (`MMT/MMS/MMD`)**: Defines general-purpose modulation routings. `MMT` is the target, `MMS` is the source index (referencing the `#ms` list), and `MMD` is the modulation depth/amount.
+    *   In practice, the majority of routings target filter cutoff or resonance. When you see `VCF#:Cut` or `VCF#:Res` listed in `MMT`, inspect the matching `MMS` index in `#ms` to identify whether velocity, envelopes, LFOs, or performance controls are driving the movement.
 
 5.  **Compressed Binary Data (`$$$$...`)**: An encoded block of data at the end of the file. **This section must not be altered or interpreted**. It contains information about user-drawn waveforms and other complex data. When modifying a file, this block should be preserved exactly as it is.
 
@@ -70,6 +71,8 @@ These are the primary sound sources.
 | `FX1Dt`/`FX2Dt`| Amount of the corresponding Spectral Effect. | `-200.00` to `200.00`. |
 | `TMSrc`/`TMDpt`| Tune Modulation Source and Depth. `TMSrc` is a modulator index. | `TMSrc`: Index, `TMDpt`: Amount. |
 
+`OSC1/Tune` averages about **-4** semitones in the dataset, pointing to frequent octave-down layering, while `OSC1/Vol` averages near **89** (on a 0-200 scale). If you find an oscillator block but the associated mixer (`Mix#`, `VMix`, or `MMix#`) holds the level at zero, that source is disabled despite the parameter values.
+
 #### **Frequency Modulation Oscillators (`#cm=FMO1` - `FMO4`)**
 Used for classic FM synthesis.
 | Parameter | Description | Value Range / Notes |
@@ -113,6 +116,12 @@ These are the main filters. XMFs (`#cm=XMF1`, `XMF2`) are more complex and CPU-i
 | `KeyScl` | Key Follow. How much the cutoff tracks the keyboard. | `0.00` (off) to `100.00` (full). |
 | `FM1`/`FS1` | FM Amount and Source for modulating the cutoff at audio rates. | `FM1`: Amount, `FS1`: Modulator Index. |
 
+**Filter focus tips**
+- `VCF1/Cut` tends to sit around **85** (mid brightness) while `XMF1/Cut` averages **121**. Values below 40 usually rely on envelopes or modulation to open the filter; values above 110 indicate intentionally bright or aggressive patches.
+- `VCF1/Res` averages about **15**, so higher settings are deliberate accent choices. `XMF` resonance averages closer to **5**, meaning peaks on XMFs often come from modulation rather than the base value.
+- Check `KeyScl` (average ~20 on VCF1, ~9 on VCF2) to see whether brightness tracks the keyboard. Values above 60 suggest the designer wanted consistent brightness across octaves.
+- `FM#` depths average roughly **27** with a +/-150 range. Resolve `FS#` through the `#ms` list to learn which envelopes, LFOs, or XY pads are animating cutoff or resonance; this modulation often defines the preset's movement more than the static value.
+
 ### 3.4. Modulators
 
 These modules create control signals to animate parameters.
@@ -127,6 +136,8 @@ These modules create control signals to animate parameters.
 | `Vel` | Velocity sensitivity. Modulates the envelope's overall output level. | `0.00` (none) to `100.00` (full). |
 | `Slope` | Curve of the envelope segments (linear to exponential). | `-100.00` to `100.00`. |
 
+`ENV1` statistics cluster around `Atk` at roughly **16**, `Dec` near **47**, `Sus` close to **51**, `Rel` about **34**, and `Vel` around **27**. Short attacks with medium decays dominate factory content, so noticeably longer times usually signal pads or evolving textures. Check whether `ENV1` is routed to `VCF#:Cut` (via `MMS`/`MMD`) because that pairing is the primary driver of dynamic brightness.
+
 #### **Low-Frequency Oscillators (`#cm=LFO1` - `LFO4` and `LFOG`, `LFOG2`)**
 LFOs are per-voice, while LFOGs are global.
 | Parameter | Description | Value Range / Notes |
@@ -136,6 +147,8 @@ LFOs are per-voice, while LFOGs are global.
 | `Rate` | LFO speed. | Depends on `Sync`. |
 | `Amp` | LFO amplitude/depth. | `0.00` to `100.00`. |
 | `Phse` | Phase offset. The starting point of the waveform. | `0.00` to `100.00`. |
+
+`LFO1` typically runs around `Rate` **107** with `Sync` near **2** (light tempo sync) and `Amp` around **87**. Expect clearly audible movement unless the depth is attenuated in the modulation matrix. Always verify whether the destination is `VCF#:Cut` or `VCF#:Res`, because low-rate sweeps paired with high resonance are a common design strategy.
 
 #### **Multi-Stage Envelope Generators (`#cm=MSEG1` - `MSEG8`)**
 Complex, user-drawable envelopes/LFOs. Their shape is stored in the binary data section.
@@ -168,7 +181,7 @@ Modules found in the FX grid section, which are typically global effects.
 
 ## 4. How an LLM Should Use This Guide
 
-*   **To understand a preset**: Read the `.h2p` file section by section. For each `#cm` block, use the tables above to understand what each parameter (`Cut`, `Res`, `Atk`, etc.) does. To understand the modulation, first find the `#ms` list to identify the sources, then look at the `MT`/`MMT` entries to see what is being modulated by what.
+*   **To understand a preset**: Read the `.h2p` file section by section. Start with the filter blocks - note `Cut`, `Res`, `KeyScl`, and any modulation targeting them - then move on to oscillators, envelopes, and FX. Use the tables above to translate each parameter value. To resolve modulation, find the `#ms` list to identify sources and examine the corresponding `MT`/`MMT` entries.
 *   **To modify a preset**: To change the filter cutoff, locate the `#cm=VCF1` block and change the value of the `Cut` parameter. To make an envelope's attack longer, find the corresponding `#cm=ENV...` block and increase the `Atk` value.
 *   **To create a preset**: Start with a simple `.h2p` file (like an `init` preset). Add `#cm` blocks for the modules you want to use (e.g., `#cm=OSC1`, `#cm=OSC2`, `#cm=VCF1`, `#cm=ENV1`). Set their parameters according to the desired sound. Add modulation by creating `MMT`/`MMS`/`MMD` entries.
 *   **Important Constraint**: **NEVER modify, delete, or generate the content in the `$$$$...` binary data block.** If you are creating a preset from scratch that requires custom MSEG or Oscillator waveforms, it's best to omit this section and let the synthesizer generate a default one. If modifying a file, leave this section untouched at the end of the file.
