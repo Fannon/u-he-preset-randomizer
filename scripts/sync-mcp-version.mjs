@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { access, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,16 +9,36 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(__dirname, '..');
 
 const packageJsonPath = resolve(rootDir, 'package.json');
-const mcpServerPath = resolve(rootDir, 'mcp-server.json');
 
 function formatJson(data) {
   return `${JSON.stringify(data, null, 2)}\n`;
 }
 
 async function main() {
+  const candidateFiles = ['server.json', 'mcp-server.json'];
+  let serverJsonFilename = null;
+  for (const filename of candidateFiles) {
+    const fullPath = resolve(rootDir, filename);
+    try {
+      await access(fullPath, constants.F_OK);
+      serverJsonFilename = filename;
+      break;
+    } catch {
+      // Try next candidate
+    }
+  }
+
+  if (!serverJsonFilename) {
+    throw new Error(
+      `Could not find ${candidateFiles.join(' or ')} in project root.`,
+    );
+  }
+
+  const serverJsonPath = resolve(rootDir, serverJsonFilename);
+
   const [packageRaw, mcpRaw] = await Promise.all([
     readFile(packageJsonPath, 'utf8'),
-    readFile(mcpServerPath, 'utf8'),
+    readFile(serverJsonPath, 'utf8'),
   ]);
 
   const packageJson = JSON.parse(packageRaw);
@@ -68,12 +89,10 @@ async function main() {
   }
 
   if (updated) {
-    await writeFile(mcpServerPath, formatJson(mcpServer), 'utf8');
-    console.log(
-      `Updated mcp-server.json to version ${packageVersion}.`,
-    );
+    await writeFile(serverJsonPath, formatJson(mcpServer), 'utf8');
+    console.log(`Updated ${serverJsonFilename} to version ${packageVersion}.`);
   } else {
-    console.log('mcp-server.json already matches package.json version.');
+    console.log(`${serverJsonFilename} already matches package.json version.`);
   }
 }
 

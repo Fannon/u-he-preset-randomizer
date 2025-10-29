@@ -3,7 +3,7 @@
   "name": "io.github.fannon/u-he-preset-randomizer",
   "title": "u-he Preset Randomizer",
   "description": "Generate, randomize, explain, and manage u-he synthesizer presets via the Model Context Protocol.",
-  "websiteUrl": "https://github.com/Fannon/u-he-preset-randomizer",
+  "websiteUrl": "https://github.com/Fannon/u-he-preset-randomizer/blob/main/MCP_SERVER.md",
   "repository": {
     "url": "https://github.com/Fannon/u-he-preset-randomizer",
     "source": "github"

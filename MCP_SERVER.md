@@ -1,6 +1,6 @@
 # u-he Preset Randomizer MCP Server
 
-The u-he Preset Randomizer exposes a [Model Context Protocol](https://modelcontextprotocol.io/) server so AI assistants can browse, search, analyze, and generate presets for u-he synths. 
+The u-he Preset Randomizer exposes a [Model Context Protocol](https://modelcontextprotocol.io/) server so AI assistants can browse, search, analyze, and generate presets for u-he synths. See [README.md](./README.md) for more general documentation.
 
 This document explains how to run the production build, register it with popular MCP clients, and make the most of the available tools.
 
