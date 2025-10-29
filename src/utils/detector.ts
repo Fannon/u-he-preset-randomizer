@@ -11,7 +11,7 @@ export interface DetectedPresetLibrary {
   userPresets: string;
 }
 
-const uheSynthNames = [
+export const uheSynthNames = [
   'ACE',
   'Bazille',
   'Diva',

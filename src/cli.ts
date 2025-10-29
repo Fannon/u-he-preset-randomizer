@@ -686,7 +686,7 @@ function logGenerationSuccess(result: GenerationResult) {
   }
 
   console.log(chalk.bold('Output folder:'));
-  console.log(chalk.cyan('  ' + result.outputFolder));
+  console.log(chalk.cyan(`  ${result.outputFolder}`));
   console.log('');
   console.log(
     chalk.dim(
