@@ -162,6 +162,15 @@ Four analog-modeled resonant filters.
 *   `ResDpt`: (-100 to 100) Modulation amount for resonance.
 *   `FMSrc`/`FBSrc`: (Signal Source Index) These are the two audio inputs for the filter. `FBSrc` is Input 2, `FMSrc` is Input 1.
 
+#### Filter Analysis Notes
+
+*   **Cutoff ranges drive the timbre.** In the sampled library (`tmp/paramsModel.json`), `Filt1/Cutoff` averages around 72 (mid range) while `Filt3`/`Filt4` sit wide open (≈138–144). Treat high static cutoffs as “always open” and look for negative `FMDpt` values that sweep them down; low cutoffs paired with large positive `FMDpt` values are almost always envelope-driven sweeps.
+*   **Modulation depth matters more than the static value.** `FMDpt1` on `Filt1` averages ≈31 with frequent excursions up to ±150. Large depths indicate that the audible cutoff position is defined by `FMSrc1/2`, not the base knob. Track the sign: positive depths push the cutoff higher when the source rises; negative depths invert the motion.
+*   **Key tracking is usually partial.** `KeyFol` averages ≈27, so most patches only follow the keyboard partially. A `KeyFol` near 0 with low cutoff will sound muted on higher notes unless modulation opens it; values >60 imply near-full tracking and more consistent brightness.
+*   **Resonance is dynamic.** The static `Res` value for `Filt1` averages ≈21, but `ResDpt` swings across the full ±100 range. High `ResDpt` with a low base `Res` signals that an envelope or LFO is responsible for peaks or squelches—inspect `ResSrc` to understand when resonance spikes.
+*   **Audio routing clarifies polarity.** `FMSrc`/`FBSrc` tell you which oscillator or utility feeds each filter input. When a filter sounds inactive, confirm it still receives audio; `FMSrc=0` means nothing is patched into Input 1.
+*   **DC blocking hints at coloration.** `DCBlk` toggled to `1` (≈23% of the time) removes low-end bias after heavy resonance. If a preset feels thin despite high cutoff, check for `DCBlk=1`.
+
 ### `#cm=ENV1` - `#cm=ENV4` (Envelopes)
 
 Four identical ADSR envelope generators.

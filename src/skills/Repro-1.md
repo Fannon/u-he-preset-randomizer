@@ -1,207 +1,240 @@
-# Repro-1 Preset Format Reference Guide
+# Repro-1 Preset Analysis Guide
 
-## Overview
+## Purpose
 
-Repro-1 is a software synthesizer that emulates a classic monophonic analog synthesizer from the early 1980s. It features component-level modeling of Curtis chips (3340 oscillator, 3320 filter, and 3310 envelope). Presets are stored in `.h2p` format as human-readable text files.
+This guide helps you analyze Repro-1 presets by understanding how parameters shape the sound. Use this to identify the sonic character of presets and understand design choices.
+
+## Critical Sound-Shaping Elements
+
+### 1. FILTER - The Primary Tone Shaper (★★★★★ MOST IMPORTANT)
+
+The filter is THE defining element of most Repro-1 sounds. Pay special attention to these parameters:
+
+**Filter/Cutoff** (avg: 24, range: 0-100)
+- **Low (0-30)**: Dark, warm, muffled tones - MOST COMMON in factory presets
+- **Medium (30-60)**: Balanced, present sounds
+- **High (60-100)**: Bright, aggressive, cutting tones
+- Impact: Completely transforms the tonal balance
+
+**Filter/Reso** (avg: 22, range: 0-100)
+- **Low (0-20)**: Smooth, natural filtering - MOST COMMON
+- **Medium (20-50)**: Adds character and emphasis at cutoff frequency
+- **High (50-100)**: Strong resonant peak, self-oscillation possible, aggressive character
+- Impact: Defines sharpness and emphasis of the filter character
+
+**Filter/EnvAmt** (avg: 35, range: 0-100) ★ CRITICAL FOR DYNAMICS
+- Controls how much the Filter Envelope modulates the cutoff frequency
+- **0**: Static filter (no movement)
+- **30-60**: Moderate filter sweep - MOST COMMON for dynamic sounds
+- **60-100**: Dramatic filter sweeps, evolving timbres
+- Impact: Creates the sense of movement and articulation in the sound
+
+**Filter/KeyAmt** (avg: 34, range: 0-100)
+- Controls keyboard tracking (note: 75 = perfect tracking)
+- **0**: No tracking - same brightness across keyboard
+- **30-40**: Subtle brightness variation - COMMON in factory presets
+- **75**: Perfect tracking - filter follows keyboard pitch
+- Impact: Affects how brightness changes across the keyboard
+
+### 2. MODULATION MATRIX - Where the Magic Happens (★★★★)
+
+**Most Common Modulation Destinations (from 1227 presets):**
+1. **Filter:Cutoff** - THE #1 modulation target
+2. **Filter:Reso** - Second most common
+3. **Filter:EnvAmt** - Adds dynamic control to filter movement
+4. **Filter:KeyAmt** - Less common but powerful
+
+**When analyzing modulations, look for:**
+- Velocity → Filter:Cutoff (brightness responds to playing dynamics)
+- LFO → Filter:Cutoff (vibrato/wobble effects)
+- ModWheel → Filter:Cutoff/Reso (expressive control)
+- Filter Envelope → Filter:Cutoff (via Filter/EnvAmt, this is the standard path)
+
+The modulation depth (MM1/Depth1, MM2/Depth1) ranges -100 to +100:
+- Small depths (±1 to ±20): Subtle modulation, adds life
+- Medium depths (±20 to ±60): Noticeable movement
+- Large depths (±60 to ±100): Dramatic, obvious modulation
 
 ## Preset File Structure
 
-Presets are stored in a simple key-value format:
+Presets use simple key-value format:
 ```
 Repro-1 {
   parameter_name: value
-  // comments can appear with //
 }
 ```
 
-## Core Synthesis Parameters
+### 3. ENVELOPES - Shaping the Sound Over Time (★★★★)
+
+**Filter Envelope (FEnv)** - Controls filter movement
+- Works with Filter/EnvAmt to create dynamic timbral changes
+- `FEnv_Attack`: How quickly brightness increases after note-on
+- `FEnv_Decay`: How quickly brightness drops to sustain level
+- `FEnv_Sustain`: Brightness level while key is held
+- `FEnv_Release`: How long brightness takes to fade after note-off
+
+**Common Filter Envelope Patterns:**
+- **Pluck/Percussive**: Fast attack, medium decay, low sustain (brightness fades quickly)
+- **Pad/Sustained**: Slow attack, long decay, high sustain (slowly evolving brightness)
+- **Classic Synth Bass**: Fast attack, medium-long decay, medium sustain
+
+**Amplifier Envelope (AEnv)** - Controls volume over time
+- `AEnv_Attack`: How quickly volume rises
+- `AEnv_Decay`: How quickly volume drops to sustain
+- `AEnv_Sustain`: Volume level while key is held
+- `AEnv_Release`: How long sound continues after key release
+
+### 4. OSCILLATORS - The Raw Sound Source (★★★)
+
+**Shape Selection Impact:**
+- `VCO1_Shape`, `VCO2_Shape`:
+  - **0**: Off
+  - **1**: Sawtooth (bright, buzzy, rich harmonics)
+  - **2**: Pulse (hollow, nasal at 50% width)
+  - **3**: Saw + Pulse (thick, rich)
+  - **4**: Triangle (soft, mellow - VCO2 only)
+
+**Detuning for Width:**
+- `VCO2_Tune`: Detune by ±7 to ±12 semitones for thick, chorused sounds
+- `VCO2_Fine`: Small detune (±0.05 to ±0.15) creates subtle beating/movement
+
+**Sync for Harmonics:**
+- `VCO1_Sync`: When enabled, creates complex, aggressive harmonics (great for leads)
+
+### 5. LFO - Periodic Modulation (★★★)
+
+**LFO/Freq** (avg: 54, range: 0-100)
+- Low speeds (0-30): Slow sweeps, evolving textures
+- Medium (30-70): Vibrato, moderate wobble - MOST COMMON
+- High (70-100): Fast tremolo/aggressive modulation
+
+**Waveforms:**
+- `LFO/Triang`: 1 = enabled (smooth, rounded modulation - VERY COMMON, 85% of presets)
+- `LFO/Saw`: 1 = enabled (ramp modulation - 13% of presets)
+- `LFO/Sqre`: 1 = enabled (stepped modulation - 10% of presets)
+
+**LFO/Mode**:
+- 0 = free-running rate (80% of presets)
+- 1 = tempo-synced (20% of presets)
+
+## Quick Reference: Parameter Impact Ratings
+
+**★★★★★ CRITICAL** - These define the core sound:
+- Filter/Cutoff, Filter/Reso, Filter/EnvAmt
+- Filter Envelope (when EnvAmt > 0)
+
+**★★★★ VERY IMPORTANT** - Shape the character:
+- Modulation Matrix destinations
+- Amplifier Envelope
+- Filter/KeyAmt
+
+**★★★ IMPORTANT** - Color and variation:
+- Oscillator shapes and tuning
+- LFO speed and routing
+- Effects (Jaws, Lyrebird, Drench)
+
+**★★ MODERATE** - Refinement:
+- Mixer levels
+- Glide settings
+- Velocity sensitivity
+
+**★ SUBTLE** - Fine-tuning:
+- Microtuning
+- MIDI controls
+- Advanced tweaks
+
+## Analysis Workflow
+
+When analyzing a Repro-1 preset:
+
+1. **Start with the FILTER** - Check cutoff, resonance, envelope amount
+2. **Check MODULATION** - What's modulating the filter? How much?
+3. **Examine ENVELOPES** - Filter and amp envelope shapes
+4. **Review OSCILLATORS** - Waveforms, tuning, sync
+5. **Check LFO** - Speed, waveform, what it's modulating
+6. **Effects** - Which are enabled, how heavily used
+
+## Complete Parameter Reference
 
 ### Oscillators
-
-#### Oscillator A
-- `VCO1_Octave`: Octave setting (0-3, representing 4 octave range)
-- `VCO1_Tune`: Frequency/pitch adjustment (-12.00 to +12.00 semitones)
-- `VCO1_Fine`: Fine tuning trimmer (-20 to +20 cents, stored as -0.20 to +0.20)
-- `VCO1_Shape`: Wave shape switches (0=off, 1=saw, 2=pulse, 3=both)
-- `VCO1_PW`: Pulse width (0.00 to 100.00)
-- `VCO1_Sync`: Sync switch (0=off, 1=on)
-
-#### Oscillator B  
-- `VCO2_Octave`: Octave setting (0-3)
-- `VCO2_Tune`: Frequency adjustment (-12.00 to +12.00)
-- `VCO2_Fine`: Fine tuning (-0.20 to +0.20)
-- `VCO2_Shape`: Wave shape (0=off, 1=saw, 2=pulse, 3=both, 4=triangle)
-- `VCO2_PW`: Pulse width (0.00 to 100.00)
+- `VCO1_Shape`, `VCO2_Shape`: Waveform (0=off, 1=saw, 2=pulse, 3=both, 4=triangle for VCO2)
+- `VCO1_Octave`, `VCO2_Octave`: Octave range (0-3)
+- `VCO1_Tune`, `VCO2_Tune`: Pitch in semitones (-12 to +12)
+- `VCO1_Fine`, `VCO2_Fine`: Fine tune in cents (-0.20 to +0.20)
+- `VCO1_PW`, `VCO2_PW`: Pulse width (0-100)
+- `VCO1_Sync`: Oscillator sync (0=off, 1=on)
+- `VCO2_Range`: Frequency range (0=normal, 1=lo-freq/LFO mode)
 - `VCO2_KbdMode`: Keyboard tracking (0=on, 1=off)
-- `VCO2_Range`: Frequency range (0=normal, 1=lo freq for LFO use)
 
 ### Mixer
-- `Mix_OscA`: Oscillator A level (0.00 to 100.00)
-- `Mix_OscB`: Oscillator B level (0.00 to 100.00) 
-- `Mix_Noise`: Noise/feedback level (0.00 to 100.00)
-- `Mix_Feedback`: Feedback switch (0=noise, 1=feedback)
+- `Mix_OscA`, `Mix_OscB`, `Mix_Noise`: Level for each source (0-100)
+- `Mix_Feedback`: Source select (0=noise, 1=feedback)
 
-### Filter
-- `VCF_Cutoff`: Filter cutoff frequency (0.00 to 100.00)
-- `VCF_Resonance`: Filter resonance (0.00 to 100.00)
-- `VCF_EnvAmount`: Envelope modulation amount (0.00 to 100.00)
-- `VCF_KbdAmount`: Keyboard tracking amount (0.00 to 100.00, 75.00 = perfect tracking)
-- `VCF_Tweak`: Filter model (0=Crispy, 1=Rounded, 2=Driven, 3=Poly)
+### Filter (See Section 1 for detailed analysis guidance)
+- `Filter/Cutoff`: Cutoff frequency (0-100)
+- `Filter/Reso`: Resonance (0-100)
+- `Filter/EnvAmt`: Filter envelope modulation depth (0-100)
+- `Filter/KeyAmt`: Keyboard tracking amount (0-100, 75=perfect tracking)
+- `Filter/ModDW`: Modulation destination wheel (0=direct, 1=off, 2=wheel)
 
-### Envelopes
+### Envelopes (See Section 3 for patterns)
+**Filter Envelope:**
+- `FEnv_Attack`, `FEnv_Decay`, `FEnv_Sustain`, `FEnv_Release` (0-100)
+- `FEnv_Vel`: Velocity sensitivity (0-100)
 
-#### Filter Envelope
-- `FEnv_Attack`: Attack time (0.00 to 100.00)
-- `FEnv_Decay`: Decay time (0.00 to 100.00)
-- `FEnv_Sustain`: Sustain level (0.00 to 100.00)
-- `FEnv_Release`: Release time (0.00 to 100.00)
-- `FEnv_Vel`: Velocity sensitivity trimmer (0.00 to 100.00)
-- `FEnv_Tweak`: Envelope mode (0-4: Normal, High Sustain, One Shot, Piano 1, Piano 2)
+**Amp Envelope:**
+- `AEnv_Attack`, `AEnv_Decay`, `AEnv_Sustain`, `AEnv_Release` (0-100)
+- `AEnv_Vel`: Velocity sensitivity (0-100)
 
-#### Amplifier Envelope
-- `AEnv_Attack`: Attack time (0.00 to 100.00)
-- `AEnv_Decay`: Decay time (0.00 to 100.00)
-- `AEnv_Sustain`: Sustain level (0.00 to 100.00)
-- `AEnv_Release`: Release time (0.00 to 100.00)
-- `AEnv_Vel`: Velocity sensitivity (0.00 to 100.00)
-- `Curve`: Volume curve trimmer (0.00 to 100.00)
-- `AEnv_Tweak`: Envelope mode (0-4)
+### LFO (See Section 5 for details)
+- `LFO/Freq`: Rate (0-100)
+- `LFO/Mode`: 0=rate, 1=tempo-sync
+- `LFO/Triang`, `LFO/Saw`, `LFO/Sqre`, `LFO/InvSaw`: Waveform enables (0/1)
 
-### LFO
-- `LFO_Wave`: LFO waveform (0=off, 1=saw, 2=square, 3=triangle, combinations possible)
-- `LFO_Sync`: Sync mode (0=rate, 1=clock)
-- `LFO_Phase`: Phase/polarity (0.00 to 100.00)
-- `LFO_Delay`: LFO delay (not visible in main UI)
+### Modulation Matrix (MM1-MM8)
+- `MM#/Source`: Modulation source (0-15, see modulation sources)
+- `MM#/Dest1`: Destination parameter (string identifier, e.g., "Filter:Cutoff")
+- `MM#/Depth1`: Modulation amount (-100 to +100)
+- `MM#/Curve1`: Response curve (0-4)
 
-### Modulation
-- `ModWheel`: Mod wheel position (0.00 to 100.00)
-- `MW_LfoDepth`: LFO to mod wheel depth (0.00 to 100.00)
-- `MW_OscBDepth`: Osc B to mod wheel depth (0.00 to 100.00)
-- `MW_FEnvDepth`: Filter env to mod wheel depth (0.00 to 100.00)
+**Key Modulation Sources:**
+- 0=none, 1=ModWheel, 2=PitchBend, 5=LFO, 11=Velocity, 12=Aftertouch, 14=Filter Envelope, 15=Amp Envelope
 
-#### Modulation Routing
-Format: `Mod_Source_Dest: value` where value is routing switch position
-- Values: 0=direct, 1=off, 2=wheel
-- Sources: Lfo, OscB, FEnv
-- Destinations: OscAFreq, OscAPW, OscBFreq, OscBPW, Cutoff
+### Performance Controls
+- `MIDI/Glide`: Portamento rate (0-100)
+- `MIDI/Tune`: Master tuning in semitones (-12 to +12)
+- `MIDI/PWRng+`, `MIDI/PWRng-`: Pitch bend range up/down (0-48 semitones)
+- `MIDI/Trigger`: Retrigger mode (0=normal, 1=retrigger)
 
-Examples:
-- `Mod_Lfo_OscAFreq`: LFO to Osc A frequency routing
-- `Mod_OscB_Cutoff`: Osc B to filter cutoff routing
+### Effects (Brief Reference)
+- **Jaws (Wavefolder)**: `FX_Jaws_On`, `FX_Jaws_Folds`, `FX_Jaws_Teeth`
+- **Lyrebird (Delay)**: `FX_Lyrebird_On`, `FX_Lyrebird_Mix`, `FX_Lyrebird_Time`, `FX_Lyrebird_Feedback`
+- **Drench (Reverb)**: `FX_Drench_On`, `FX_Drench_Mix`, `FX_Drench_Decay`
+- **Sonic Conditioner**: `FX_SoCo_On`, `FX_SoCo_Gain`, `FX_SoCo_Width`
 
-### Mode/Glide
-- `Mode_Glide`: Glide rate (0.00 to 100.00)
-- `Mode_Legato`: Legato mode (0=normal, 1=auto)
-- `Mode_Retrigger`: Retrigger mode (0=normal, 1=retrig)  
-- `Mode_Repeat`: Repeat switch (0=off, 1=on)
-- `Mode_Drone`: Drone mode (0=off, 1=on)
+### Arpeggiator/Sequencer
+- `Arp/Status`: Mode (0=off, 1=up, 2=up/down)
+- `Seq/Status`: Sequencer on/off
+- `Seq1/NumStps`: Pattern length (1-32)
 
-### Clock/Arpeggiator/Sequencer
-- `Clock`: Clock division (see table below)
-- `Arp_Mode`: Arpeggiator mode (0=off, 1=up, 2=up/down)
-- `Arp_Latch`: Latch switch (0=off, 1=on)
-- `Arp_Sync`: Sync source (0=lfo, 1=key, 2=clock)
+## Key Insights from Factory Preset Analysis (1227 presets)
 
-#### Clock Values
-```
-0: 8/1      8: 1/3      16: 1/12     24: 1/32 trip
-1: 6/1      9: 1/4 dot   17: 1/16     25: 1/48
-2: 4/1      10: 1/4      18: 1/16 trip 26: 1/48 trip
-3: 3/1      11: 1/4 trip 19: 1/16 dot 27: 1/64
-4: 2/1      12: 1/6      20: 1/24     28: 1/64 trip
-5: 2/1 trip 13: 1/8      21: 1/24 trip
-6: 2/1 dot  14: 1/8 trip 22: 1/32
-7: 1/1      15: 1/8 dot  23: 1/32 dot
-```
+**Filter is King:**
+- Average cutoff: 24 (most sounds are darker/warmer than you might expect)
+- Average resonance: 22 (moderate resonance is common)
+- Average envelope amount: 35 (moderate filter movement)
+- Filter:Cutoff is THE most common modulation destination
 
-### Sequencer
-- `Seq_Mode`: Sequencer mode (0=off, 1=play pattern 1, 2=play pattern 2, 3=play 1+2)
-- `Seq_Host`: Host sync (0=off, 1=on)
-- `Seq_Length1`: Pattern 1 length (1-32)
-- `Seq_Length2`: Pattern 2 length (1-32)
+**Common Modulation Strategies:**
+- Velocity → Filter:Cutoff (dynamic response)
+- LFO → Filter:Cutoff (movement/vibrato)
+- Filter Envelope shapes the brightness envelope (via Filter/EnvAmt)
 
-#### Pattern Data Format
-- `Seq1_Step##_Mode`: Step type (0=note, 1=tie, 2=rest)
-- `Seq1_Step##_Note`: Note offset (-36 to +36)
-- `Seq1_Step##_Vel`: Velocity (1-127)
-- `Seq1_Step##_Glide`: Glide on/off (0=off, 1=on)
+**LFO Usage:**
+- 85% use triangle wave (smooth modulation)
+- 80% use free-running (not tempo-synced)
+- Average speed around 54 (moderate rates)
 
-### Effects
-
-#### JAWS Wavefolder
-- `FX_Jaws_On`: Effect on/off
-- `FX_Jaws_Folds`: Fold amount (0.00 to 100.00)
-- `FX_Jaws_Teeth`: Number of folds (0, 2, 4, 6)
-- `FX_Jaws_Bias`: Bias amount (0.00 to 100.00)
-- `FX_Jaws_FMod`: Fold modulation depth (0.00 to 100.00)
-- `FX_Jaws_BMod`: Bias modulation rate (0=off, 1=min, 2=med, 3=max)
-- `FX_Jaws_Attack`: Envelope attack (0.00 to 100.00)
-- `FX_Jaws_Release`: Envelope release (0.00 to 100.00)
-- `FX_Jaws_EnvMode`: Envelope mode (0=ASR, 1=AR, 2=LFO)
-
-#### Lyrebird Delay
-- `FX_Lyrebird_On`: Effect on/off
-- `FX_Lyrebird_Mix`: Wet/dry mix (0.00 to 100.00)
-- `FX_Lyrebird_Sync1/2`: Sync modes (various options)
-- `FX_Lyrebird_Time`: Delay time multiplier (0.00 to 100.00)
-- `FX_Lyrebird_Feedback`: Regeneration (0.00 to 100.00)
-- `FX_Lyrebird_Mode`: Delay mode (0=echo, 1=pingpong, 2=swing, 3=groove)
-- `FX_Lyrebird_LfoRate`: Modulation rate (0=off, 1-3=min/med/max)
-
-#### ResQ Resonator/EQ
-- `FX_Resq_On`: Effect on/off
-- `FX_Resq_Mode`: Mode (0=EQ, 1=Resonator)
-- `FX_Resq_LowFreq/MidFreq/HighFreq`: Band frequencies
-- `FX_Resq_LowGain/MidGain/HighGain`: Band gains (EQ mode)
-- `FX_Resq_Quality`: Q/resonance (0.00 to 100.00)
-
-#### Drench Reverb
-- `FX_Drench_On`: Effect on/off
-- `FX_Drench_Mix`: Wet/dry mix (0.00 to 100.00)
-- `FX_Drench_PreDelay`: Pre-delay (0.00 to 100.00)
-- `FX_Drench_Decay`: Decay time (0.00 to 100.00)
-- `FX_Drench_Tone`: Tone control (-100.00 to 100.00)
-
-#### Sonic Conditioner
-- `FX_SoCo_On`: Effect on/off
-- `FX_SoCo_Gain`: Output gain (-100.00 to 100.00)
-- `FX_SoCo_Width`: Stereo width (0.00 to 100.00)
-- `FX_SoCo_Transient`: Transient control (-100.00 to 100.00)
-
-### Modulation Matrix (MM)
-Format: `MM#_Source_Target: depth` where # is slot number (1-8)
-- Sources: Velocity, Aftertouch, ModWheel, PitchBend, etc.
-- Targets: Various synth parameters
-- `MM#_Curve`: Response curve
-- `MM#_Rectify`: Rectification mode
-- `MM#_Quantise`: Quantization mode
-- `MM#_SH`: Sample & hold settings
-- `MM#_Slew`: Slew rate
-
-### Global/Performance
-- `BaseFreq`: Base frequency/master tuning
-- `PitchBend_Up`: Pitch bend up range (0-48 semitones)
-- `PitchBend_Down`: Pitch bend down range (0-48 semitones)
-- `Voice_Polyphony`: Always 1 for this monophonic synth
-- `Voice_StackMode`: Voice stack mode
-- `Voice_Panning`: Pan position (-100.00 to 100.00)
-
-### Tweaks Panel
-- `Tweak_VCO1/VCO2_Model`: Oscillator model (0=Ideal, 1=P1, 2=P5)
-- `Tweak_LFO_Invert`: LFO inversion (0=normal, 1=inverted)
-- `Tweak_LFO_DC`: DC offset (0=no DC, 1=DC)
-- `Tweak_VCO2_Saw`: Saw wave polarity (0=normal, 1=inverted)
-- `Tweak_KeyPriority`: Note priority (0=low, 1=high, 2=last)
-- `Tweak_MicroTuning`: Microtuning on/off
-- `Tweak_MicroTuning_Name`: Microtuning table name
-
-## Usage Notes
-
-1. Values are typically stored as floating point numbers with 2 decimal places
-2. Switch positions are stored as integers (0, 1, 2, etc.)
-3. Percentages are stored as 0.00 to 100.00
-4. Bipolar values (like tuning) use negative and positive ranges
-5. Some parameters may not be visible in the main UI but exist in tweaks or are internal
-6. Comments in presets start with // and are ignored by the parser
-
-This reference allows for programmatic creation, modification, and analysis of Repro-1 presets by understanding the parameter mappings between the UI and the stored preset format.
+**Envelope Shapes:**
+- Most presets use moderate attack/decay times
+- Percussive vs sustained sounds primarily determined by amp envelope sustain level

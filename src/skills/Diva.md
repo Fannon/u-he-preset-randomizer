@@ -4,6 +4,8 @@
 
 This document provides a detailed breakdown of the `.h2p` preset file format for the u-he Diva software synthesizer. Its purpose is to serve as a technical reference for an LLM to understand, analyze, generate, and modify Diva presets. The information is compiled by mapping the parameters and values in the text-based preset files to the features and controls described in the Diva User Guide (v1.4.8).
 
+**CRITICAL INSIGHT:** When analyzing Diva presets, the filter parameters (VCF1) are THE most important sound-shaping elements. Filter cutoff, resonance, and their modulation sources/depths determine the fundamental character of the sound more than any other module. Always examine these parameters first when analyzing a preset.
+
 ## 2. Preset File Structure
 
 A `.h2p` file is a text file containing key-value pairs that define every parameter of a synth patch. It is structured into several distinct sections.
@@ -91,11 +93,87 @@ Parameters that select a modulation source (e.g., `FMSrc`, `ModSrc`, `DMS1`) use
 
 ---
 
-## 4. Detailed Parameter Reference
+## 4. Filter Analysis: The Most Critical Module
+
+**The VCF1 (Main Filter) module is THE primary sound-shaping element in Diva presets.** When analyzing a preset, always examine the filter parameters first, as they have more impact on the final sound than oscillators, envelopes, or effects.
+
+### 4.1. Filter Parameter Importance Hierarchy
+
+1. **VCF1/Freq (Cutoff Frequency)** - The single most important parameter
+   - Range: 30-150, Typical average: ~74
+   - Determines the fundamental brightness/darkness of the sound
+   - MUST be analyzed in combination with modulation to understand the actual frequency sweep range
+
+2. **VCF1/Res (Resonance/Emphasis)** - Second most critical parameter
+   - Range: 0-100, Typical average: ~29 (but highly variable!)
+   - Dramatically affects timbre: 0 = smooth, >50 = aggressive/metallic, >80 = self-oscillation territory
+   - Low resonance (~0-20): Clean, transparent filtering
+   - Medium resonance (~20-50): Classic analog character
+   - High resonance (~50-100): Aggressive, pronounced peak, potential screaming/whistling
+
+3. **VCF1/FMDpt (Primary Modulation Depth)** - Critical for sound movement
+   - Range: -120 to +120, Typical average: ~40
+   - **Nearly all presets use significant filter modulation** - this is not optional!
+   - Positive values: Modulation opens the filter (typically from envelope)
+   - Negative values: Modulation closes the filter (rare, special effects)
+   - The ACTUAL filter frequency range = Static Freq ± (FMDpt * modulation source level)
+
+4. **VCF1/FMSrc (Primary Modulation Source)** - Defines filter movement character
+   - Most common: Index 15 (ENV2) - creates classic attack/decay filter sweeps
+   - Also common: Index 17 (LFO2) - creates cyclic filter movement
+   - Index 0 (none) - static filter, no movement (rare in musical presets)
+
+5. **VCF1/FM2Dpt & VCF1/FM2Src (Secondary Modulation)** - Adds complexity
+   - Average depth: ~15 (about half of primary modulation)
+   - Often uses velocity (index 6), mod wheel (index 1), or LFO1 (index 16)
+   - Creates dynamic, performance-controllable filter behavior
+
+### 4.2. Analyzing Filter Settings in Practice
+
+When you see a preset with:
+- `VCF1/Freq = 68`, `VCF1/Res = 45`, `VCF1/FMSrc = 15` (ENV2), `VCF1/FMDpt = 60`
+
+**Interpret as:**
+- **Base cutoff**: 68 (medium-bright static frequency)
+- **Resonance**: 45 (moderate-to-strong emphasis, classic analog character)
+- **Filter sweep**: Envelope 2 will sweep the filter from ~8 (68-60) to ~128 (68+60)
+  - This is a WIDE sweep from very dark to very bright
+  - The envelope's attack/decay/sustain determines the speed and shape of this sweep
+- **Result**: This preset will have a strong "wah" filter opening characteristic typical of analog bass/lead sounds
+
+### 4.3. Common Filter Patterns
+
+**Classic Bass Sound:**
+- Low static Freq (40-60), High FMDpt (60-100), ENV2 as source
+- The filter starts closed and sweeps open with the envelope
+
+**Pad/String Sound:**
+- Medium-high Freq (80-100), Low-medium FMDpt (10-40), Slow ENV2
+- Gentle, slow filter movement for evolving textures
+
+**Pluck Sound:**
+- Medium Freq (60-80), Medium-high FMDpt (40-70), Fast ENV2 attack/decay
+- Quick filter snap that decays rapidly
+
+**Static/Organ Sound:**
+- Any Freq, FMDpt = 0 or very low (<10), Res often 0
+- Minimal or no filter movement
+
+### 4.4. HPF (High-Pass Filter) Role
+
+The HPF is secondary to VCF1 but important for:
+- Removing low-end rumble (typical Freq: 40-60, Res: 0-20)
+- Creating thin, aggressive tones (Freq: 80-120, Res: 20-60)
+- Average HPF Res is much lower (~11) than VCF1 Res (~29)
+- Often used subtly; many presets use HPF Model 0 (no HPF, just feedback)
+
+---
+
+## 5. Detailed Parameter Reference
 
 This section maps the parameters within each `#cm` module block to their functions.
 
-### 4.1. Main Output & Voice Control
+### 5.1. Main Output & Voice Control
 
 #### `#cm=main`
 | Parameter | UI Name | Description |
@@ -116,7 +194,7 @@ This section maps the parameters within each `#cm` module block to their functio
 | `PB` | PitchBend Up | Pitch bend up range in semitones (e.g., `2` = 2 semitones). |
 | `PBD` | PitchBend Down | Pitch bend down range in semitones. |
 
-### 4.2. Oscillators (`#cm=OSC`)
+### 5.2. Oscillators (`#cm=OSC`)
 
 This is the main sound generation module. The available parameters change significantly based on the selected `Model`.
 
@@ -160,7 +238,9 @@ This is the main sound generation module. The available parameters change signif
 
 *(Note: Parameters for other oscillator models like Dual VCO, ECO, and Digital follow a similar logic, mapping controls from the UI to named parameters.)*
 
-### 4.3. Filters (`#cm=HPF` & `#cm=VCF1`)
+### 5.3. Filters (`#cm=HPF` & `#cm=VCF1`)
+
+**CRITICAL: See Section 4 for comprehensive filter analysis guidance. This section provides technical parameter mappings; Section 4 explains how to interpret them for sound analysis.**
 
 Diva has two filter stages: a pre-filter (HPF or Feedback) and the main filter (VCF).
 
@@ -174,22 +254,35 @@ Diva has two filter stages: a pre-filter (HPF or Feedback) and the main filter (
 | `FMDpt` | Mod Amount | Modulation depth for cutoff/feedback. |
 
 #### `#cm=VCF1` (Main Voltage Controlled Filter)
-| Parameter | UI Name | Description & Value Mapping |
-| :--- | :--- | :--- |
-| `Model` | Filter Model | Selects the main filter type. `1`: Ladder, `2`: Cascade, `3`: Multimode, `4`: Bite, `5`: Uhbie. |
-| `Freq` | Cutoff | The filter's cutoff frequency. |
-| `Res` | Resonance / Emphasis / Peak | The filter's resonance amount. |
-| `FMSrc` | Mod Source 1 | The first modulation source for cutoff (ENV 2 by default). |
-| `FMDpt` | Mod Amount 1 | The amount of modulation from source 1. |
-| `FM2Src` | Mod Source 2 | The second modulation source for cutoff (LFO 2 by default). |
-| `FM2Dpt` | Mod Amount 2 | The amount of modulation from source 2. |
-| `KeyScl` | KYBD | Key-tracking amount for the cutoff frequency. |
-| `FFM` | Filter FM | Bipolar filter FM amount from Oscillator 1 (Ladder, Cascade, Multimode models). |
-| `LMode` | Filter Slope | Sets the filter slope. `0`: 24dB, `1`: 12dB (Ladder/Cascade models). |
-| `SkRev` | Filter Type/Revision | Selects mode for Multimode (LP4/LP2/HP/BP) or revision for Bite filters. |
-| `Fback` | Feedback | Amount of post-filter signal feedback (used with Triple VCO oscillator). |
 
-### 4.4. Envelopes & Amplifier
+**This is THE most important module in the preset. Always analyze these parameters first.**
+
+| Parameter | UI Name | Description & Value Mapping | Typical Values |
+| :--- | :--- | :--- | :--- |
+| `Model` | Filter Model | Selects the main filter type. `1`: Ladder, `2`: Cascade, `3`: Multimode, `4`: Bite, `5`: Uhbie. | Varies by sound design choice |
+| `Freq` | Cutoff | **[CRITICAL]** The filter's static cutoff frequency. Range: 30-150. | Avg: ~74. See Section 4.2 for interpretation. |
+| `Res` | Resonance / Emphasis / Peak | **[CRITICAL]** The filter's resonance amount. Range: 0-100. | Avg: ~29. <20=clean, 20-50=analog, >50=aggressive |
+| `FMSrc` | Mod Source 1 | **[CRITICAL]** The primary modulation source for cutoff. Index from `#ms` list. | Most common: 15 (ENV2) |
+| `FMDpt` | Mod Amount 1 | **[CRITICAL]** The primary modulation depth. Range: -120 to +120. | Avg: ~40. Defines filter sweep range. |
+| `FM2Src` | Mod Source 2 | Secondary modulation source for cutoff. Index from `#ms` list. | Common: 1 (ModWhl), 6 (Velocity), 16/17 (LFOs) |
+| `FM2Dpt` | Mod Amount 2 | Secondary modulation depth. Range: -120 to +120. | Avg: ~15. Adds dynamic control. |
+| `KeyScl` | KYBD | Key-tracking: how much cutoff follows MIDI note number. Higher notes = brighter. | 0-100, often 0 or 20-40 |
+| `FFM` | Filter FM | Bipolar filter FM amount from Oscillator 1 (Ladder, Cascade, Multimode models). | Usually 0 or low values |
+| `LMode` | Filter Slope | Sets the filter slope. `0`: 24dB (steep), `1`: 12dB (gentle). | Varies by design |
+| `SkRev` | Filter Type/Revision | Selects mode for Multimode (LP4/LP2/HP/BP) or revision for Bite filters. | Model-dependent |
+| `Fback` | Feedback | Amount of post-filter signal feedback (used with Triple VCO oscillator). | 0-100, use sparingly |
+
+**Analysis Workflow:** Always examine VCF1 in this order:
+1. Check `Freq` (base cutoff)
+2. Check `Res` (resonance character)
+3. Check `FMSrc` and `FMDpt` (primary modulation - defines the sweep)
+4. Calculate effective frequency range: Freq ± FMDpt
+5. Check `FM2Src` and `FM2Dpt` (secondary modulation - adds expression)
+6. Cross-reference `FMSrc`/`FM2Src` with their respective envelope/LFO settings
+
+### 5.4. Envelopes & Amplifier
+
+**Important:** Envelope 2 (ENV2) is typically the primary filter modulation source. When analyzing a preset with filter modulation, always examine ENV2's ADSR settings to understand the filter's temporal behavior.
 
 #### `#cm=ENV1` & `#cm=ENV2`
 | Parameter | UI Name | Description & Value Mapping |
@@ -215,7 +308,9 @@ Diva has two filter stages: a pre-filter (HPF or Feedback) and the main filter (
 | `PanSrc` | Pan Mod Source | Modulation source for panning. |
 | `PanDpt` | Pan Mod Amount | Modulation depth for panning. |
 
-### 4.5. LFOs (`#cm=LFO1` & `#cm=LFO2`)
+### 5.5. LFOs (`#cm=LFO1` & `#cm=LFO2`)
+
+**Note:** LFO2 (index 17) is commonly used as a secondary filter modulation source for vibrato/wobble effects.
 
 | Parameter | UI Name | Description & Value Mapping |
 | :--- | :--- | :--- |
@@ -230,7 +325,7 @@ Diva has two filter stages: a pre-filter (HPF or Feedback) and the main filter (
 | `FMS1` | Rate Mod Source | Modulation source for the LFO's rate (frequency). |
 | `FMD1` | Rate Mod Amount | The amount of LFO rate modulation. |
 
-### 4.6. Effects (`#cm=FX1` & `#cm=FX2`)
+### 5.6. Effects (`#cm=FX1` & `#cm=FX2`)
 
 Diva has two serial effects slots. The configuration for both is stored in the preset, even if they are turned off.
 
@@ -251,6 +346,29 @@ Each effect type has its own set of parameters stored in a corresponding block (
 | `Dry` | Dry | The level of the unprocessed signal. |
 
 ---
-## 5. Conclusion
+## 6. Conclusion & Analysis Priority
 
-This guide provides a foundational context for an LLM to interpret Diva's `.h2p` preset format. By cross-referencing the parameter names in the preset files with the descriptions of the synthesizer's modules, it is possible to understand the function of each value and how it contributes to the final sound. This enables advanced tasks such as patch analysis, targeted sound modification, and novel preset generation.
+This guide provides a foundational context for an LLM to interpret Diva's `.h2p` preset format.
+
+**When analyzing ANY Diva preset, follow this priority order:**
+
+1. **VCF1 Filter (Section 4)** - Start here ALWAYS
+   - Freq, Res, FMSrc, FMDpt - these define 70% of the sound character
+   - Calculate the effective filter frequency range
+
+2. **ENV2 (if used for filter mod)** - Second priority
+   - Attack, Decay, Sustain, Release - defines filter movement timing
+   - This envelope shapes the filter sweep from step 1
+
+3. **Oscillators (Section 5.2)** - Third priority
+   - Waveforms, detune, FM, sync - defines the raw harmonic content
+   - Remember: filters shape this content dramatically
+
+4. **ENV1 & VCA (Section 5.4)** - Fourth priority
+   - Amplitude envelope shapes overall volume
+   - Usually simpler and less impactful than filter envelope
+
+5. **Everything else** - Final considerations
+   - LFOs, effects, HPF, etc. - add polish and movement
+
+**Key Insight:** A preset with simple oscillators and sophisticated filter settings will sound far more interesting than one with complex oscillators and static filtering. The filter IS the sound.
