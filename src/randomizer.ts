@@ -35,9 +35,7 @@ export function generateFullyRandomPresets(
       );
       continue;
     }
-    const randomPreset: Preset = JSON.parse(
-      JSON.stringify(basePreset),
-    ) as Preset;
+    const randomPreset: Preset = structuredClone(basePreset);
 
     if (config.stable) {
       const presetPerSectionMap: Record<string, Preset> = {};
@@ -84,7 +82,7 @@ export function generateFullyRandomPresets(
           param.value = randomNewParam.value;
         } else {
           // If the preset doesn't have the particular param, fall back to a fully random value
-          const randomValue = getRandomArrayItem(paramModelEntry.values);
+          const randomValue = getRandomValue(paramModelEntry, !config.creative);
           if (randomValue !== undefined) {
             param.value = randomValue;
           }
@@ -104,7 +102,7 @@ export function generateFullyRandomPresets(
         if (paramModelEntry.keepStable === 'always') {
           continue;
         }
-        const randomValue = getRandomArrayItem(paramModelEntry.values);
+        const randomValue = getRandomValue(paramModelEntry, !config.creative);
         if (randomValue !== undefined) {
           param.value = randomValue;
         }
@@ -327,6 +325,9 @@ export function generateMergedPresets(
     );
   }
 
+  // Validate preset compatibility
+  validateMergeCompatibility(mergePresets);
+
   for (let i = 0; i < (config.amount ?? 8); i++) {
     const basePreset = getRandomArrayItem<Preset>(mergePresets);
     if (!basePreset) {
@@ -335,7 +336,7 @@ export function generateMergedPresets(
       );
       continue;
     }
-    let newPreset: Preset = JSON.parse(JSON.stringify(basePreset)) as Preset;
+    let newPreset: Preset = structuredClone(basePreset);
 
     // Create random ratios, that still add up to 1 total
     const mergeRatios = calculateRandomMergeRatios(mergePresets.length);
@@ -368,9 +369,7 @@ export function generateMergedPresets(
         continue;
       }
 
-      const oldParamValue = JSON.parse(JSON.stringify(param.value)) as
-        | string
-        | number;
+      const oldParamValue = param.value as string | number;
       let newParamValue = oldParamValue;
       if (param.type === 'string') {
         // Randomly pick a string enum value from one of the merge patches
@@ -458,6 +457,112 @@ export function getRandomArrayItem<T>(list: T[]): T | undefined {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+/**
+ * Validates that presets are compatible for merging by checking parameter structure
+ * @param presets Array of presets to validate for merge compatibility
+ * @throws Error if presets are incompatible
+ */
+export function validateMergeCompatibility(presets: Preset[]): void {
+  if (presets.length < 2) return;
+
+  const basePreset = presets[0];
+  if (!basePreset) return;
+
+  // Build a set of parameter IDs from the base preset
+  const baseParamIds = new Set(basePreset.params.map((p) => p.id));
+  const baseParamCount = basePreset.params.length;
+
+  // Check each preset for compatibility
+  for (let i = 1; i < presets.length; i++) {
+    const preset = presets[i];
+    if (!preset) continue;
+
+    const presetParamIds = new Set(preset.params.map((p) => p.id));
+    const presetParamCount = preset.params.length;
+
+    // Calculate overlap
+    const intersection = new Set(
+      [...baseParamIds].filter((id) => presetParamIds.has(id)),
+    );
+    const overlapPercent = (intersection.size / baseParamCount) * 100;
+
+    // Warn if low overlap (< 80%)
+    if (overlapPercent < 80) {
+      console.warn(
+        chalk.yellow(
+          `Warning: Presets may be incompatible for merging.\n` +
+            `  Base: "${basePreset.presetName}" (${baseParamCount} params)\n` +
+            `  Comparing: "${preset.presetName}" (${presetParamCount} params)\n` +
+            `  Overlap: ${intersection.size} parameters (${overlapPercent.toFixed(1)}%)\n` +
+            `  This may produce unexpected results. Consider using presets from the same synth/version.`,
+        ),
+      );
+    }
+
+    // Error if very low overlap (< 50%)
+    if (overlapPercent < 50) {
+      console.error(
+        chalk.red(
+          `Error: Presets are incompatible for merging (< 50% parameter overlap).\n` +
+            `  "${basePreset.presetName}" vs "${preset.presetName}"\n` +
+            `  These presets appear to be from different synths or versions.`,
+        ),
+      );
+      process.exit(1);
+    }
+  }
+}
+
+/**
+ * Get a random value from the parameter model, with optional frequency weighting
+ * @param paramModelEntry The parameter model entry containing values and frequencies
+ * @param useFrequencyWeighting If true, values that appear more often in presets are more likely to be selected
+ * @returns A random value, or undefined if no values available
+ */
+export function getRandomValue(
+  paramModelEntry: ParamsModel[string],
+  useFrequencyWeighting: boolean,
+): string | number | undefined {
+  if (!paramModelEntry || paramModelEntry.values.length === 0) {
+    return undefined;
+  }
+
+  // Creative mode: uniform distribution (all distinct values equally likely)
+  if (!useFrequencyWeighting) {
+    return getRandomArrayItem(paramModelEntry.values);
+  }
+
+  // Non-creative mode: frequency-weighted distribution
+  // Values that appear more often in the library are more likely to be selected
+  if (!paramModelEntry.frequencies) {
+    // Fallback to uniform if frequencies not available
+    return getRandomArrayItem(paramModelEntry.values);
+  }
+
+  // Build cumulative frequency array for weighted selection
+  const values = paramModelEntry.values;
+  const frequencies = paramModelEntry.frequencies;
+  let totalFrequency = 0;
+  const cumulativeFrequencies: number[] = [];
+
+  for (const value of values) {
+    const freq = frequencies[String(value)] ?? 1;
+    totalFrequency += freq;
+    cumulativeFrequencies.push(totalFrequency);
+  }
+
+  // Select based on weighted random
+  const random = Math.random() * totalFrequency;
+  for (let i = 0; i < cumulativeFrequencies.length; i++) {
+    if (random < cumulativeFrequencies[i]!) {
+      return values[i];
+    }
+  }
+
+  // Fallback (shouldn't happen)
+  return values[values.length - 1];
+}
+
 export function calculateRandomMergeRatios(amount: number) {
   const randomNumbers: number[] = [];
   let randomTotal = 0;
@@ -482,7 +587,7 @@ export function randomizePreset(
   const randomRatio = Math.min(Math.max(0, randomness / 100), 100);
   const stableRatio = 1 - randomRatio;
 
-  const randomPreset: Preset = JSON.parse(JSON.stringify(basePreset)) as Preset;
+  const randomPreset: Preset = structuredClone(basePreset);
 
   for (const param of randomPreset.params) {
     const paramModelEntry = paramModel[param.id];
@@ -512,7 +617,7 @@ export function randomizePreset(
       continue;
     }
 
-    const randomParamValue = getRandomArrayItem(paramModelEntry.values);
+    const randomParamValue = getRandomValue(paramModelEntry, !config.creative);
     if (randomParamValue === undefined) {
       continue;
     }

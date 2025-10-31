@@ -14,6 +14,8 @@ export interface Config {
   /** Binary part of the preset, if enabled that its read and written back again */
   binary?: boolean;
   stable?: boolean;
+  /** Creative mode: use uniform distribution instead of frequency-weighted sampling */
+  creative?: boolean;
   category?: boolean | string;
   dictionary?: boolean;
   author?: boolean | string;
@@ -68,6 +70,9 @@ export function getConfigFromParameters(
   }
   if (argv.stable) {
     newConfig.stable = argv.stable as boolean;
+  }
+  if (argv.creative) {
+    newConfig.creative = argv.creative as boolean;
   }
   if (argv.category) {
     newConfig.category = argv.category as boolean | string;
