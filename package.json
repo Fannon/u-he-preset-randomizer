@@ -12,7 +12,7 @@
   "mcpName": "io.github.Fannon/u-he-preset-randomizer",
   "type": "module",
   "scripts": {
-    "start": "tsx src/cli.ts",
+    "start": "NODE_OPTIONS=--max-old-space-size=8192 tsx src/cli.ts",
     "mcp": "tsx src/mcp-server.ts",
     "detect": "tsx src/detect-synths.ts",
     "benchmark": "hyperfine --warmup 2 --runs 5 --export-markdown tmp/hyperfine.md --export-json tmp/hyperfine.json --ignore-failure 'npm run clean' 'npm run build' 'npm run typecheck' 'npm run lint' 'npm run format' 'npm run test'",
@@ -32,7 +32,8 @@
     "test:ci": "npm run lint && npm run typecheck && npm run test:unit",
     "postinstall": "simple-git-hooks",
     "prepublishOnly": "node scripts/sync-mcp-version.mjs && npm run clean && npm run build:dist",
-    "sync:mcp-version": "node scripts/sync-mcp-version.mjs"
+    "sync:mcp-version": "node scripts/sync-mcp-version.mjs",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -74,6 +75,7 @@
     "@types/node": "^24.9.2",
     "@types/yargs": "^17.0.34",
     "@typescript/native-preview": "^7.0.0-dev.20251027.1",
+    "husky": "^9.1.7",
     "jest": "^30.2.0",
     "lint-staged": "^16.2.6",
     "simple-git-hooks": "^2.13.1",
