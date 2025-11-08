@@ -3,6 +3,9 @@ import chalk from 'chalk';
 import fg from 'fast-glob';
 import fs from 'fs-extra';
 import type { Config } from './config.js';
+
+const userThirdParty = true
+
 import {
   isValidPreset,
   type Preset,
@@ -119,6 +122,55 @@ export function loadPresetLibrary(
           `Could not find presets with glob pattern: ${pattern}.h2p in library: ${presetLibrary.presetsFolder}`,
         ),
       );
+    }
+  }
+
+  if (userThirdParty) {
+    // Load user third party preset library
+    const thirdPartyPresets = fg
+      .sync([`${pattern}.h2p`], {
+        cwd: path.resolve(presetLibrary.userPresetsFolder,'../..'),
+        ignore: ['UserPresets/**/*'],
+      })
+      .map((el) => {
+        return `/UserThirdParty/${el}`;
+      });
+
+    // console.log('user third party presets: ', thirdPartyPresets)
+    if (librarySelector !== 'Local') {
+      if (thirdPartyPresets.length > 0) {
+        for (const presetPath of thirdPartyPresets) {
+          try {
+            const presetString = fs
+              .readFileSync(
+                path.join(
+                  path.resolve(presetLibrary.userPresetsFolder,'../..'),
+                  presetPath.replace('/UserThirdParty/', ''),
+                ),
+              )
+              .toString();
+            const parsedPreset = parseUhePreset(
+              presetString,
+              presetPath,
+              config.binary ?? false,
+            );
+            if (isValidPreset(parsedPreset)) {
+              presetLibrary.presets.push(parsedPreset);
+            }
+          } catch (err) {
+            console.warn(
+              chalk.yellow(`Could not load and parse preset: ${presetPath}`),
+              err,
+            );
+          }
+        }
+      } else {
+        console.warn(
+          chalk.yellow(
+            `Could not find presets with glob pattern: ${pattern}.h2p in user library: ${path.resolve(presetLibrary.userPresetsFolder,'../..')}`,
+          ),
+        );
+      }
     }
   }
 
