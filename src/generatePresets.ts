@@ -53,7 +53,7 @@ export function generatePresets(
     inputPresetLibrary ?? loadPresetLibrary(config.synth, config);
   const filteredLibrary = applyPresetFilters(presetLibrary, config);
 
-  const paramsModel = analyzeParamsTypeAndRange(filteredLibrary);
+  const paramsModel = analyzeParamsTypeAndRange(filteredLibrary, config);
 
   if (config.debug) {
     dumpParamsModel(paramsModel);

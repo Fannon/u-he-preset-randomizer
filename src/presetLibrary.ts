@@ -252,6 +252,32 @@ export function loadPresetLibrary(
     }
   }
 
+  // Debug: Log memory usage after loading all presets
+  if (config.debug) {
+    const memUsage = process.memoryUsage();
+    console.log(chalk.gray('━'.repeat(60)));
+    console.log(chalk.cyan('Memory Usage After Loading Presets:'));
+    console.log(
+      chalk.gray(
+        `  Heap Used: ${(memUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`,
+      ),
+    );
+    console.log(
+      chalk.gray(
+        `  Heap Total: ${(memUsage.heapTotal / 1024 / 1024).toFixed(2)} MB`,
+      ),
+    );
+    console.log(
+      chalk.gray(`  RSS: ${(memUsage.rss / 1024 / 1024).toFixed(2)} MB`),
+    );
+    console.log(
+      chalk.gray(
+        `  Presets Loaded: ${presetLibrary.presets.length.toLocaleString()}`,
+      ),
+    );
+    console.log(chalk.gray('━'.repeat(60)));
+  }
+
   return presetLibrary;
 }
 

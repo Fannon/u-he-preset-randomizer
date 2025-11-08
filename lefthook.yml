@@ -1,0 +1,13 @@
+# Lefthook configuration
+# https://github.com/evilmartians/lefthook
+
+pre-commit:
+  commands:
+    biome:
+      glob: "*.{ts,js,json,md}"
+      run: npx biome check --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+
+    sync-mcp-version:
+      glob: "package.json"
+      run: npm run sync:mcp-version && git add package.json server.json
