@@ -31,8 +31,7 @@
     "test:unit": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --testPathIgnorePatterns=e2e",
     "test:ci": "npm run lint && npm run typecheck && npm run test:unit",
     "prepublishOnly": "node scripts/sync-mcp-version.mjs && npm run clean && npm run build:dist",
-    "sync:mcp-version": "node scripts/sync-mcp-version.mjs",
-    "prepare": "husky"
+    "sync:mcp-version": "node scripts/sync-mcp-version.mjs"
   },
   "repository": {
     "type": "git",
