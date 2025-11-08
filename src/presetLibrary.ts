@@ -127,7 +127,7 @@ export function loadPresetLibrary(
   const thirdPartyPresets = fg
     .sync([`${pattern}.h2p`], {
       cwd: path.resolve(presetLibrary.userPresetsFolder, '../..'),
-      ignore: ['UserPresets/**/*'],
+      ignore: ['UserPresets/**/*', 'Presets/**/*'],
     })
     .map((el) => {
       return `/UserThirdParty/${el}`;

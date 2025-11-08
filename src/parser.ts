@@ -232,7 +232,17 @@ export function serializePresetToFile(preset: Preset): string {
 }
 
 export function isValidPreset(preset: Preset) {
-  if (!preset.params.length || !preset.meta.length) {
+  if (
+    !preset.params ||
+    !preset.meta ||
+    preset.params.length === 0 ||
+    preset.meta.length === 0
+  ) {
+    console.warn(
+      chalk.yellow(
+        `Warning: Ignoring preset ${preset.filePath} due to empty params or meta (params: ${preset.params?.length || 0}, meta: ${preset.meta?.length || 0})`,
+      ),
+    );
     return false;
   }
   for (const param of preset.params) {
