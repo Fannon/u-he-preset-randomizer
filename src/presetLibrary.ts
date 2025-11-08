@@ -1,3 +1,8 @@
+/**
+ * @file Preset library management and loading.
+ * Handles discovery, loading, filtering, and writing of u-he preset libraries.
+ */
+
 import path from 'node:path';
 import chalk from 'chalk';
 import fg from 'fast-glob';

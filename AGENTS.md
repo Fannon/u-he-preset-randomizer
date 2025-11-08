@@ -92,10 +92,13 @@ npm run test:ci         # Full CI check (lint + build + test)
 
 **Important:** Jest is configured for ESM modules with `NODE_OPTIONS="--experimental-vm-modules --no-warnings"`.
 
-### Linting
+### Linting and Formatting
 
 ```bash
-npm run lint            # Run ESLint
+npm run lint            # Run Biome linting (CI mode)
+npm run lint:fix        # Run Biome linting with auto-fix
+npm run format          # Format code with Biome
+npm run format:check    # Check formatting without changes
 ```
 
 ## Key Patterns and Conventions

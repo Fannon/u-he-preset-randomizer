@@ -1,3 +1,9 @@
+/**
+ * @file Core randomization logic for preset generation.
+ * Provides functions to generate fully random presets, randomize existing presets,
+ * and merge multiple presets with statistical weighting.
+ */
+
 import chalk from 'chalk';
 import {
   adjectives,
@@ -11,7 +17,7 @@ import type { Preset } from './parser.js';
 import type { PresetLibrary } from './presetLibrary.js';
 
 /**
- * Fully randomized presets, with real values from library
+ * Generates fully randomized presets based on statistical distributions from the preset library.
  */
 export function generateFullyRandomPresets(
   presetLibrary: PresetLibrary,

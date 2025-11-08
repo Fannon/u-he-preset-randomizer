@@ -1,3 +1,8 @@
+/**
+ * @file Main preset generation orchestration module.
+ * Coordinates loading, filtering, analysis, and generation of presets.
+ */
+
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import {

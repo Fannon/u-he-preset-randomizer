@@ -1,10 +1,16 @@
 #!/usr/bin/env node
+
+/**
+ * @file Utility script to detect installed u-he synthesizers.
+ * Can be run separately with `npm run detect` to show detected synths and their paths.
+ */
+
 import chalk from 'chalk';
 import { getDefaultConfig } from './config.js';
 import { detectPresetLibraryLocations } from './utils/detector.js';
 
 /**
- * Simple script to detect installed u-he synthesizers
+ * Detects and displays installed u-he synthesizers on the current system.
  */
 function detectSynths() {
   console.log(

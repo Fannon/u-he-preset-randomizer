@@ -1,3 +1,8 @@
+/**
+ * @file Preset library analyzer for statistical parameter analysis.
+ * Analyzes preset libraries to extract parameter distributions and statistics for randomization.
+ */
+
 import chalk from 'chalk';
 import type { Config } from './config.js';
 import type { PresetLibrary } from './presetLibrary.js';

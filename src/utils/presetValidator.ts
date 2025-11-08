@@ -1,6 +1,5 @@
 /**
- * Preset Validation Utilities
- *
+ * @file Preset validation utilities.
  * Provides utilities for validating u-he preset files (.h2p format).
  * Useful for tests and general preset validation.
  */
