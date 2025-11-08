@@ -4,7 +4,7 @@
 pre-commit:
   commands:
     biome:
-      glob: "*.{ts,js,json,md}"
+      glob: "**/*.{ts,js,json,md}"
       run: npx biome check --write --no-errors-on-unmatched {staged_files}
       stage_fixed: true
 
