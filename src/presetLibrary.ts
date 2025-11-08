@@ -133,7 +133,6 @@ export function loadPresetLibrary(
       return `/UserThirdParty/${el}`;
     });
 
-  // console.log('user third party presets: ', thirdPartyPresets)
   if (librarySelector !== 'Local') {
     if (thirdPartyPresets.length > 0) {
       for (const presetPath of thirdPartyPresets) {
