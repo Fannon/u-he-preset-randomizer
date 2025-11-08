@@ -1,3 +1,5 @@
+import chalk from 'chalk';
+import type { Config } from './config.js';
 import type { PresetLibrary } from './presetLibrary.js';
 import type { SynthNames } from './utils/detector.js';
 
@@ -30,7 +32,10 @@ export type ParamsModelBySection = Record<
   >
 >;
 
-export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
+export function analyzeParamsTypeAndRange(
+  presetLibrary: PresetLibrary,
+  config?: Config,
+) {
   const paramsModel: ParamsModel = {};
   for (const preset of presetLibrary.presets) {
     for (const param of preset.params) {
@@ -89,6 +94,48 @@ export function analyzeParamsTypeAndRange(presetLibrary: PresetLibrary) {
       param.minValue = Math.min(...values);
       param.avgValue = average(values);
     }
+  }
+
+  // Debug: Log memory usage after computing analytics
+  if (config?.debug) {
+    const memUsage = process.memoryUsage();
+    const paramCount = Object.keys(paramsModel).length;
+    let totalDistinctValues = 0;
+    let totalFrequencyEntries = 0;
+    for (const param of Object.values(paramsModel)) {
+      totalDistinctValues += param.distinctValues.length;
+      totalFrequencyEntries += Object.keys(param.frequencies ?? {}).length;
+    }
+
+    console.log(chalk.gray('━'.repeat(60)));
+    console.log(chalk.cyan('Memory Usage After Computing Analytics:'));
+    console.log(
+      chalk.gray(
+        `  Heap Used: ${(memUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`,
+      ),
+    );
+    console.log(
+      chalk.gray(
+        `  Heap Total: ${(memUsage.heapTotal / 1024 / 1024).toFixed(2)} MB`,
+      ),
+    );
+    console.log(
+      chalk.gray(`  RSS: ${(memUsage.rss / 1024 / 1024).toFixed(2)} MB`),
+    );
+    console.log(
+      chalk.gray(`  Parameters Analyzed: ${paramCount.toLocaleString()}`),
+    );
+    console.log(
+      chalk.gray(
+        `  Total Distinct Values: ${totalDistinctValues.toLocaleString()}`,
+      ),
+    );
+    console.log(
+      chalk.gray(
+        `  Total Frequency Entries: ${totalFrequencyEntries.toLocaleString()}`,
+      ),
+    );
+    console.log(chalk.gray('━'.repeat(60)));
   }
 
   return paramsModel;
