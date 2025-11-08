@@ -19,8 +19,7 @@ export function generateFullyRandomPresets(
   config: Config,
 ): PresetLibrary {
   if (presetLibrary.presets.length === 0) {
-    console.error(chalk.red('Error: No presets available for randomization.'));
-    process.exit(1);
+    throw new Error('No presets available for randomization.');
   }
 
   const newPresetLibrary: PresetLibrary = {
@@ -169,10 +168,7 @@ export function generateRandomizedPresets(
     for (const presetString of config.preset) {
       const basePreset = findBasePreset(presetLibrary, presetString);
       if (!basePreset) {
-        console.error(
-          chalk.red(`Error: No preset with name ${presetString} found!`),
-        );
-        process.exit(1);
+        throw new Error(`No preset with name ${presetString} found!`);
       }
 
       generateVariationsForPreset(
@@ -193,10 +189,7 @@ export function generateRandomizedPresets(
     // Handle single preset (existing behavior)
     const basePreset = findBasePreset(presetLibrary, config.preset);
     if (!basePreset) {
-      console.error(
-        chalk.red(`Error: No preset with name ${config.preset ?? ''} found!`),
-      );
-      process.exit(1);
+      throw new Error(`No preset with name ${config.preset ?? ''} found!`);
     }
 
     generateVariationsForPreset(
@@ -320,22 +313,16 @@ export function generateMergedPresets(
         return el.filePath.includes(presetTitle);
       });
       if (!mergePreset) {
-        console.error(
-          chalk.red(`Error: No preset with name "${presetTitle}" found!`),
-        );
-        process.exit(1);
+        throw new Error(`No preset with name "${presetTitle}" found!`);
       }
       mergePresets.push(mergePreset);
     }
   }
 
   if (mergePresets.length < 2) {
-    console.error(
-      chalk.red(
-        'Error: Merge presets only works when at least two presets have been chosen',
-      ),
+    throw new Error(
+      'Merge presets only works when at least two presets have been chosen',
     );
-    process.exit(1);
   }
 
   // Validate preset compatibility

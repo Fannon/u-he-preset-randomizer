@@ -168,13 +168,9 @@ export function loadPresetLibrary(
   }
 
   if (presetLibrary.presets.length === 0) {
-    console.error(
-      chalk.red(
-        `Error: No presets found with glob pattern: ${pattern}.h2p in ` +
-          presetLibrary.presetsFolder,
-      ),
+    throw new Error(
+      `No presets found with glob pattern: ${pattern}.h2p in ${presetLibrary.presetsFolder}`,
     );
-    process.exit(1);
   }
 
   // Search and load .uhe-fav files

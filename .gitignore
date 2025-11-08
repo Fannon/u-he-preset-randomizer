@@ -132,3 +132,8 @@ dist
 # Project debug dumps
 tmp/
 reports/
+
+# Generated analysis files
+CODEBASE_ANALYSIS.md
+
+.mcpregistry*
