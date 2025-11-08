@@ -30,7 +30,6 @@
     "test:e2e": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --testPathPatterns=e2e --testPathIgnorePatterns=/node_modules/",
     "test:unit": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" jest --testPathIgnorePatterns=e2e",
     "test:ci": "npm run lint && npm run typecheck && npm run test:unit",
-    "postinstall": "simple-git-hooks",
     "prepublishOnly": "node scripts/sync-mcp-version.mjs && npm run clean && npm run build:dist",
     "sync:mcp-version": "node scripts/sync-mcp-version.mjs"
   },
@@ -63,26 +62,25 @@
     "node": ">=20.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.2",
+    "@biomejs/biome": "^2.3.4",
     "@jest/globals": "^30.2.0",
-    "@swc/core": "^1.13.5",
+    "@swc/core": "^1.15.0",
     "@swc/jest": "^0.2.39",
     "@tsconfig/node20": "^20.1.6",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.9",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.9.2",
+    "@types/node": "^24.10.0",
     "@types/yargs": "^17.0.34",
-    "@typescript/native-preview": "^7.0.0-dev.20251027.1",
+    "@typescript/native-preview": "^7.0.0-dev.20251108.1",
     "jest": "^30.2.0",
-    "lint-staged": "^16.2.6",
-    "simple-git-hooks": "^2.13.1",
+    "lefthook": "^2.0.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@inquirer/search": "^3.2.0",
-    "@modelcontextprotocol/sdk": "^1.20.2",
+    "@modelcontextprotocol/sdk": "^1.21.1",
     "boxen": "^8.0.1",
     "chalk": "^5.6.2",
     "cli-table3": "^0.6.5",
@@ -92,17 +90,5 @@
     "ora": "^9.0.0",
     "unique-names-generator": "^4.7.1",
     "yargs": "^18.0.0"
-  },
-  "lint-staged": {
-    "*.{ts,js,json,md}": [
-      "biome check --write --no-errors-on-unmatched"
-    ],
-    "package.json": [
-      "npm run sync:mcp-version",
-      "git add package.json server.json"
-    ]
-  },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged"
   }
 }
