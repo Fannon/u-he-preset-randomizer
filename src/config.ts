@@ -1,3 +1,8 @@
+/**
+ * @file Configuration management and CLI argument parsing.
+ * Handles CLI argument parsing with yargs and provides configuration defaults.
+ */
+
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import type { SynthNames } from './utils/detector.js';

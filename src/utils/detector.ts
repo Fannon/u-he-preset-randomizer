@@ -1,3 +1,8 @@
+/**
+ * @file u-he synth detection utilities.
+ * Provides functions to detect installed u-he synths and their preset library locations.
+ */
+
 import os from 'node:os';
 import path from 'node:path';
 import chalk from 'chalk';

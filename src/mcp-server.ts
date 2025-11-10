@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 
+/**
+ * @file Model Context Protocol (MCP) server for u-he preset randomizer.
+ * Provides AI assistants with tools to browse, search, analyze, and generate u-he synth presets.
+ */
+
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, normalize, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';

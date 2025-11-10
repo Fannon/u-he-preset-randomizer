@@ -1,3 +1,8 @@
+/**
+ * @file Preset library filtering utilities.
+ * Provides functions to filter presets by category, author, and favorites.
+ */
+
 import chalk from 'chalk';
 import type { Preset } from './parser.js';
 import type { PresetLibrary } from './presetLibrary.js';

@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+
+/**
+ * @file CLI entry point for u-he preset randomizer tool.
+ * Handles argument parsing, interactive mode, and preset generation orchestration.
+ */
+
 import { dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import searchPrompt from '@inquirer/search';

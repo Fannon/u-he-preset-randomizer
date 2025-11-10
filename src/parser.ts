@@ -1,3 +1,8 @@
+/**
+ * @file Preset parser and serializer for u-he preset files.
+ * Provides functions to read, parse, modify, and write .h2p preset files.
+ */
+
 import * as path from 'node:path';
 import chalk from 'chalk';
 
@@ -99,6 +104,13 @@ export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
   return metadata;
 }
 
+/**
+ * Extracts and parses parameter data from a u-he preset file string.
+ *
+ * @param fileString - The content of the preset file as a string.
+ * @param presetPath - The path to the preset file (used for warnings).
+ * @returns An array of PresetParam objects representing all parameters.
+ */
 export function getPresetParams(
   fileString: string,
   presetPath: string,
@@ -181,6 +193,13 @@ export function getPresetParams(
   return params;
 }
 
+/**
+ * Extracts the binary section from a u-he preset file.
+ * The binary section contains advanced settings like MSEG curves.
+ *
+ * @param fileString - The content of the preset file as a string.
+ * @returns The binary section as a string, or empty string if not present.
+ */
 export function getPresetBinarySection(fileString: string): string {
   const split = fileString.split(
     "// Section for ugly compressed binary Data\n// DON'T TOUCH THIS\n",
@@ -196,6 +215,12 @@ export function getPresetBinarySection(fileString: string): string {
 // SERIALIZER FUNCTIONS                 //
 //////////////////////////////////////////
 
+/**
+ * Serializes a Preset object back to u-he preset file format (.h2p).
+ *
+ * @param preset - The Preset object to serialize.
+ * @returns The serialized preset as a string in .h2p format.
+ */
 export function serializePresetToFile(preset: Preset): string {
   let file = '';
 
@@ -231,6 +256,13 @@ export function serializePresetToFile(preset: Preset): string {
   return file;
 }
 
+/**
+ * Validates that a preset has required data and no corrupted values.
+ * Logs warnings for invalid presets.
+ *
+ * @param preset - The Preset object to validate.
+ * @returns True if the preset is valid, false otherwise.
+ */
 export function isValidPreset(preset: Preset) {
   if (
     !preset.params ||
