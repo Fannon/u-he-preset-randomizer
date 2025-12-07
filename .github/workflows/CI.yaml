@@ -20,6 +20,9 @@ jobs:
       - run: bun run lint
       - run: bun run typecheck
       - run: bun test
+      # Verify the built CLI can run with Bun
+      - name: Verify CLI runs
+        run: bun dist/cli.js --help
 
   # Verify build works with Node.js (production target)
   build-node:
