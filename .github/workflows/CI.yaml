@@ -22,7 +22,7 @@ jobs:
       - run: bun test
       # Verify the built CLI can run with Bun
       - name: Verify CLI runs
-        run: bun dist/cli.js --help
+        run: bun src/cli.ts --help
 
   # Verify build works with Node.js (production target)
   build-node:
