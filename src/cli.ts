@@ -12,12 +12,11 @@ import confirm from '@inquirer/confirm';
 import number from '@inquirer/number';
 import searchPrompt from '@inquirer/search';
 import select from '@inquirer/select';
-import boxen from 'boxen';
+
 import chalk from 'chalk';
-import Table from 'cli-table3';
 import fg from 'fast-glob';
 import fs from 'fs-extra';
-import ora from 'ora';
+
 import { type Config, getConfigFromParameters } from './config.js';
 import { type GenerationResult, generatePresets } from './generatePresets.js';
 import {
@@ -46,27 +45,17 @@ interface ChoiceOptions {
 const config = getConfigFromParameters();
 
 function logCliBanner() {
-  const title = chalk.cyan.bold(
-    `u-he Preset Randomizer v${packageJson.version}`,
+  console.log('');
+  console.log(
+    chalk.cyan.bold(`u-he Preset Randomizer v${packageJson.version}`),
   );
-
-  const welcomeMessage = boxen(
-    `${title}\n\n` +
-      `Create new synth presets through:\n` +
-      `  ${chalk.dim('•')} Fully random generation\n` +
-      `  ${chalk.dim('•')} Variations of existing presets\n` +
-      `  ${chalk.dim('•')} Merging multiple presets\n\n` +
-      `${chalk.dim('https://github.com/Fannon/u-he-preset-randomizer')}`,
-    {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'round',
-      borderColor: 'cyan',
-      textAlignment: 'left',
-    },
-  );
-
-  console.log(welcomeMessage);
+  console.log('');
+  console.log('Create new synth presets through:');
+  console.log(`${chalk.dim('  •')} Fully random generation`);
+  console.log(`${chalk.dim('  •')} Variations of existing presets`);
+  console.log(`${chalk.dim('  •')} Merging multiple presets`);
+  console.log('');
+  console.log(chalk.dim('https://github.com/Fannon/u-he-preset-randomizer'));
   console.log('');
   console.log(
     chalk.dim('Tip: Use ↑↓ to navigate, Space to select, Enter to confirm'),
@@ -117,24 +106,24 @@ async function runInteractiveMode() {
     };
   });
   if (!synthChoices.length) {
-    const errorMessage = boxen(
-      `${chalk.red.bold('⚠ No u-he synths found on your system')}\n\n` +
-        `${chalk.bold('Please make sure:')}\n` +
-        `  ${chalk.dim('•')} You have at least one u-he synth installed\n` +
-        `  ${chalk.dim('•')} The synth is installed in the standard location\n` +
-        `  ${chalk.dim('•')} You have created or loaded some presets\n\n` +
-        `${chalk.dim('If your u-he folder is in a custom location, use:')}\n` +
-        `  ${chalk.cyan('npx u-he-preset-randomizer --custom-folder "path/to/u-he"')}`,
-      {
-        padding: 1,
-        margin: 1,
-        borderStyle: 'round',
-        borderColor: 'red',
-        textAlignment: 'left',
-      },
+    console.log('');
+    console.log(chalk.red.bold('⚠ No u-he synths found on your system'));
+    console.log('');
+    console.log(chalk.bold('Please make sure:'));
+    console.log(
+      `${chalk.dim('  •')} You have at least one u-he synth installed`,
     );
-
-    console.log(errorMessage);
+    console.log(
+      `${chalk.dim('  •')} The synth is installed in the standard location`,
+    );
+    console.log(`${chalk.dim('  •')} You have created or loaded some presets`);
+    console.log('');
+    console.log(chalk.dim('If your u-he folder is in a custom location, use:'));
+    console.log(
+      '  ' +
+        chalk.cyan('npx u-he-preset-randomizer --custom-folder "path/to/u-he"'),
+    );
+    console.log('');
     process.exit(1);
   }
   const synth = await searchPrompt<SynthNames>({
@@ -153,6 +142,9 @@ async function runInteractiveMode() {
     },
   });
   config.synth = synth;
+  if (config.synth === 'Zebralette3' && config.binaryTemplate === undefined) {
+    config.binaryTemplate = true;
+  }
   const detectedLocation = locations.find((el) => el.synthName === synth);
 
   // 2) Choose random generation mode
@@ -268,6 +260,11 @@ async function runInteractiveMode() {
             checked: binaryEnabled,
           },
           {
+            value: 'binaryTemplate',
+            name: '[Binary Templates] Use safe binary templates (Recommended for Z3)',
+            checked: config.binaryTemplate,
+          },
+          {
             value: 'dictionary',
             name: '[Dictionary] Generate realistic preset names',
           },
@@ -276,6 +273,9 @@ async function runInteractiveMode() {
 
       if (advancedOptions.includes('binary')) {
         config.binary = true;
+      }
+      if (advancedOptions.includes('binaryTemplate')) {
+        config.binaryTemplate = true;
       }
       if (advancedOptions.includes('dictionary')) {
         config.dictionary = true;
@@ -353,10 +353,7 @@ async function runInteractiveMode() {
     throw new Error('Synth not specified in config');
   }
 
-  const spinner = ora({
-    text: 'Loading your preset library...',
-    color: 'cyan',
-  }).start();
+  console.log(chalk.dim('Loading preset library...'));
 
   const presetLibrary = loadPresetLibrary(
     config.synth,
@@ -364,9 +361,7 @@ async function runInteractiveMode() {
     detectedLocation,
   );
 
-  spinner.succeed(
-    chalk.green(`Loaded ${presetLibrary.presets.length} presets`),
-  );
+  console.log(chalk.green(`✓ Loaded ${presetLibrary.presets.length} presets`));
 
   // Optionally: Narrow down by u-he favorites
   if (config.favorites === true && presetLibrary.favorites.length) {
@@ -585,76 +580,77 @@ async function runInteractiveMode() {
 
   // Show summary before generating
   console.log('');
-  const table = new Table({
-    head: [chalk.bold.gray('Setting'), chalk.bold.gray('Value')],
-    colWidths: [20, 50],
-    style: {
-      head: [],
-      border: ['gray'],
-    },
-  });
-
-  table.push(
-    [chalk.bold('Synth'), config.synth],
-    [chalk.bold('Mode'), mode],
-    [chalk.bold('Amount'), `${config.amount} presets`],
+  console.log(chalk.bold('Summary:'));
+  console.log(`${chalk.dim('  • ')}Synth: ${chalk.cyan(config.synth)}`);
+  console.log(`${chalk.dim('  • ')}Mode: ${chalk.cyan(mode)}`);
+  console.log(
+    `${chalk.dim('  • ')}Amount: ${chalk.cyan(`${config.amount} presets`)}`,
   );
 
   if (config.randomness) {
-    table.push([chalk.bold('Randomness'), `${config.randomness}%`]);
+    console.log(
+      `${chalk.dim('  • ')}Randomness: ${chalk.cyan(`${config.randomness}%`)}`,
+    );
   }
   if (config.preset) {
     if (Array.isArray(config.preset)) {
-      table.push([
-        chalk.bold('Base Presets'),
-        `${config.preset.length} selected`,
-      ]);
+      console.log(
+        chalk.dim('  • ') +
+          `Base Presets: ${chalk.cyan(`${config.preset.length} selected`)}`,
+      );
     } else {
-      table.push([chalk.bold('Base Preset'), config.preset]);
+      console.log(
+        `${chalk.dim('  • ')}Base Preset: ${chalk.cyan(config.preset)}`,
+      );
     }
   }
   if (config.category && typeof config.category === 'string') {
-    table.push([chalk.bold('Category'), config.category]);
+    console.log(`${chalk.dim('  • ')}Category: ${chalk.cyan(config.category)}`);
   }
   if (config.author && typeof config.author === 'string') {
-    table.push([chalk.bold('Author'), config.author]);
+    console.log(`${chalk.dim('  • ')}Author: ${chalk.cyan(config.author)}`);
   }
   if (config.folder && typeof config.folder === 'string') {
-    table.push([chalk.bold('Folder'), config.folder]);
+    console.log(`${chalk.dim('  • ')}Folder: ${chalk.cyan(config.folder)}`);
   }
 
   // Show randomization mode
   if (config.stable) {
-    table.push([
-      chalk.bold('Randomization'),
-      chalk.green('Stable') + chalk.dim(' (safer, stays close to library)'),
-    ]);
+    console.log(
+      chalk.dim('  • ') +
+        `Randomization: ${chalk.green('Stable')} ${chalk.dim('(safer, stays close to library)')}`,
+    );
   } else if (config.creative) {
-    table.push([
-      chalk.bold('Randomization'),
-      chalk.yellow('Creative') + chalk.dim(' (experimental, explores edges)'),
-    ]);
+    console.log(
+      chalk.dim('  • ') +
+        `Randomization: ${chalk.yellow('Creative')} ${chalk.dim('(experimental, explores edges)')}`,
+    );
   } else {
-    table.push([
-      chalk.bold('Randomization'),
-      chalk.blue('Balanced') + chalk.dim(' (default behavior)'),
-    ]);
+    console.log(
+      chalk.dim('  • ') +
+        `Randomization: ${chalk.blue('Balanced')} ${chalk.dim('(default behavior)')}`,
+    );
   }
 
   if (config.binary) {
-    table.push([
-      chalk.bold('Binary Mode'),
-      chalk.yellow('Enabled') + chalk.dim(' (may cause issues)'),
-    ]);
+    console.log(
+      chalk.dim('  • ') +
+        `Binary Mode: ${chalk.yellow('Enabled')} ${chalk.dim('(may cause issues)')}`,
+    );
+  }
+  if (config.binaryTemplate) {
+    console.log(
+      chalk.dim('  • ') +
+        `Binary Templates: ${chalk.green('Enabled')} ${chalk.dim('(weighted random selection)')}`,
+    );
   }
   if (config.dictionary) {
-    table.push([
-      chalk.bold('Dictionary'),
-      chalk.green('Enabled') + chalk.dim(' (realistic names)'),
-    ]);
+    console.log(
+      chalk.dim('  • ') +
+        `Dictionary: ${chalk.green('Enabled')} ${chalk.dim('(realistic names)')}`,
+    );
   }
 
-  console.log(table.toString());
   console.log('');
 
   const proceed = await confirm({
@@ -670,10 +666,7 @@ async function runInteractiveMode() {
   }
 
   console.log('');
-  const generationSpinner = ora({
-    text: 'Generating your presets...',
-    color: 'cyan',
-  }).start();
+  console.log(chalk.dim('Generating presets...'));
 
   let result: GenerationResult;
   try {
@@ -685,9 +678,8 @@ async function runInteractiveMode() {
       presetLibrary.presets[0]?.binary === undefined;
 
     result = generatePresets(config, needsReload ? undefined : presetLibrary);
-    generationSpinner.stop();
   } catch (error) {
-    generationSpinner.fail('Failed to generate presets');
+    console.error(chalk.red('✗ Failed to generate presets'));
     console.error(
       chalk.red(
         `Error: ${error instanceof Error ? error.message : String(error)}`,
@@ -882,6 +874,9 @@ function logRepeatCommand(config: Config) {
   }
   if (config.binary) {
     cliCommand += ` --binary`;
+  }
+  if (config.binaryTemplate) {
+    cliCommand += ` --binary-template`;
   }
 
   console.log(chalk.dim('To repeat with same settings:'));

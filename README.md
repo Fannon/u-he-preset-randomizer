@@ -145,6 +145,9 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 - `--binary`: Keep the binary part of the u-he presets. They will not be changed, but randomly generated presets will now include the binary section of either a random preset or the base preset that is randomized.
   * This contains advanced settings like MSEG curves, but this tool cannot really parse or modify it. Not every binary section seems to be compatible with other parameter adjustment, leading to invalid presets.
   * ⚠ Using binary mode may lead to broken presets that may crash your synth plugin when loading. Use with care. For some synths this works better (Repro, Diva, Zebralette 3) and for some it frequently leads to invalid presets.
+- `--binary-template`: Uses curated binary section templates instead of random library presets. This is **enabled by default for Zebralette 3**.
+  * Templates are stored in `src/templates/{synthName}/` and are prefixed with a weight (e.g., `15-Basic Shapes.h2p` has weight 15, making it 15x more likely to be selected than a `01-` prefixed template).
+  * This approach is safer than `--binary` as the templates are tested to work well with randomized parameters.
 * `--dictionary`: Creates random names from a dictionary of names used in the preset library
 * `--custom-folder`: In case the installation folder is custom, it can be given here
   * E.g. `--custom-folder "C:/Audio/Plugin Installationen/u-he/"`
