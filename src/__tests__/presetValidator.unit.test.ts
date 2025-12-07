@@ -3,7 +3,7 @@
  * Tests the pure validation functions that don't require filesystem access.
  */
 
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it } from 'bun:test';
 import { validatePresetExtension } from '../utils/presetValidator.js';
 
 describe('presetValidator helpers', () => {

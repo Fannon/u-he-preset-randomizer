@@ -14,10 +14,11 @@ This is a CLI tool that generates random u-he synthesizer presets through random
 **Key Technologies:**
 
 - TypeScript (target: Node 20+)
-- Node.js CLI application
+- Node.js CLI application (production target)
+- Bun for development and testing
 - Uses ESM modules (`"type": "module"` in package.json)
-- Built with `tsc` (TypeScript compiler)
-- Testing with Jest (configured for ESM)
+- Built with `tsgo` (TypeScript Go compiler)
+- Testing with Bun's built-in test runner
 
 ## Architecture
 
@@ -60,6 +61,11 @@ This is a CLI tool that generates random u-he synthesizer presets through random
 
 ## Development Workflow
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) 20+ (for npm and production builds)
+- [Bun](https://bun.sh/) (for development and testing)
+
 ### Setup
 
 ```bash
@@ -70,27 +76,27 @@ npm run build
 ### Running Locally
 
 ```bash
-# Run with tsx (no build needed)
-tsx src/cli.ts --synth Diva --amount 3
+# Run with Bun (recommended for development)
+bun run dev --synth Diva --amount 3
 
 # Run with node (requires build)
 npm run build
 node dist/cli.js --synth Diva --amount 3
-
-# Or use npm start
-npm run start -- --synth Diva --amount 3
 ```
 
 ### Testing
 
 ```bash
-npm test                # Run tests once
-npm test parser.test.ts # Run tests for a single file, e.g. here parser.test.ts
-npm run test:coverage   # Run tests with coverage
-npm run test:ci         # Full CI check (lint + build + test)
+bun test               # Run all tests
+npm run test:unit      # Run unit tests only (*.unit.test.ts)
+npm run test:e2e       # Run e2e tests only (*.e2e.test.ts)
+npm run test:coverage  # Run tests with coverage
+npm run test:ci        # Full CI check (lint + typecheck + test:unit)
 ```
 
-**Important:** Jest is configured for ESM modules with `NODE_OPTIONS="--experimental-vm-modules --no-warnings"`.
+**Test naming conventions:**
+- `*.unit.test.ts` - Unit tests (fast, isolated)
+- `*.e2e.test.ts` - End-to-end tests (require real synths installed)
 
 ### Linting and Formatting
 
@@ -144,7 +150,7 @@ npm run format:check    # Check formatting without changes
 1. Changes to `parser.ts` affect both reading and writing presets
 2. Test with multiple synths (Diva, Repro-1, Repro-5, Hive, Zebra, etc.)
 3. Be careful with binary sections - they're opaque and synth-specific
-4. Add tests to `__tests__/parser.test.ts`
+4. Add tests to `__tests__/parser.unit.test.ts`
 
 ### Adjusting Randomization Algorithm
 
@@ -152,7 +158,7 @@ npm run format:check    # Check formatting without changes
 2. Statistical analysis is in `analyzer.ts`
 3. Consider both "stable" and normal modes
 4. Test with various synths (simpler ones like Diva/Repro vs complex ones like Bazille/Zebra)
-5. Add tests to `__tests__/randomizer.test.ts`
+5. Add tests to `__tests__/randomizer.unit.test.ts`
 
 ### Supporting New Synths
 
@@ -164,11 +170,9 @@ npm run format:check    # Check formatting without changes
 ## Testing Notes
 
 - Tests are in `src/__tests__/` directory
-- Use `.test.ts` extension
-- Jest configured with SWC for fast transpilation
-- Tests must handle ESM modules
-- Mock file system operations where appropriate
-- Test files are excluded from npm package (`!dist/**/__tests__`)
+- Unit tests use `.unit.test.ts` extension
+- E2E tests use `.e2e.test.ts` extension
+- Tests use Bun's built-in test runner (`bun:test`)
 - Avoid overly mocking, import and use dependencies directly if they are side-effect free
 
 ## Build and Distribution

@@ -86,7 +86,7 @@ export async function startCli() {
   } catch (error) {
     console.error(
       chalk.red(
-        'Error: ' + (error instanceof Error ? error.message : String(error)),
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
       ),
     );
     process.exit(1);
@@ -153,6 +153,7 @@ async function runInteractiveMode() {
     },
   });
   config.synth = synth;
+  const detectedLocation = locations.find((el) => el.synthName === synth);
 
   // 2) Choose random generation mode
   // 2) Choose random generation mode
@@ -181,12 +182,14 @@ async function runInteractiveMode() {
 
     // First: Basic filtering options
     // First: Basic filtering options
+    // First: Options & Filters
     const basicOptions = await checkbox({
-      message: 'Narrow down which presets to use as inspiration (optional):',
+      message:
+        'Select filters and configuration (optional, press ENTER to continue, select with SPACE):',
       choices: [
         {
           value: 'folder',
-          name: 'Select a specific folder',
+          name: 'Filter by specific folder',
         },
         {
           value: 'category',
@@ -198,7 +201,11 @@ async function runInteractiveMode() {
         },
         {
           value: 'favorites',
-          name: 'Use only your favorited presets',
+          name: 'Filter by favorited presets',
+        },
+        {
+          value: 'advanced',
+          name: 'Customize randomization (Style, Binary support, Naming)',
         },
       ],
     });
@@ -217,13 +224,7 @@ async function runInteractiveMode() {
       config.favorites = true;
     }
 
-    // Then: Ask if they want advanced options
-    const wantsAdvanced = await confirm({
-      message: 'Show advanced options?',
-      default: false,
-    });
-
-    if (wantsAdvanced) {
+    if (basicOptions.includes('advanced')) {
       // First: Choose randomization mode
       const randomizationMode = await select({
         message: 'Randomization approach:',
@@ -234,7 +235,7 @@ async function runInteractiveMode() {
           },
           {
             value: 'balanced',
-            name: '[Balanced] Default randomization',
+            name: '[Balanced] More randomization, balance between stability and creativity',
           },
           {
             value: 'creative',
@@ -263,7 +264,7 @@ async function runInteractiveMode() {
         choices: [
           {
             value: 'binary',
-            name: '[Binary] Include advanced modulation data (may cause crashes)',
+            name: '[Binary] Include binary encoded preset data like curves (may cause crashes)',
             checked: binaryEnabled,
           },
           {
@@ -289,9 +290,12 @@ async function runInteractiveMode() {
   // Narrow down by folder selection
   if (config.folder === true) {
     // Detect correct Preset Library Location
-    const location = detectPresetLibraryLocations(config).find(
-      (el) => el.synthName.toLowerCase() === (config.synth ?? '').toLowerCase(),
-    );
+    const location =
+      detectedLocation ??
+      detectPresetLibraryLocations(config).find(
+        (el) =>
+          el.synthName.toLowerCase() === (config.synth ?? '').toLowerCase(),
+      );
 
     if (!location) {
       throw new Error(
@@ -354,7 +358,11 @@ async function runInteractiveMode() {
     color: 'cyan',
   }).start();
 
-  const presetLibrary = loadPresetLibrary(config.synth, config);
+  const presetLibrary = loadPresetLibrary(
+    config.synth,
+    config,
+    detectedLocation,
+  );
 
   spinner.succeed(
     chalk.green(`Loaded ${presetLibrary.presets.length} presets`),
@@ -571,7 +579,7 @@ async function runInteractiveMode() {
     console.log('');
 
     // Choose amount of randomness
-    config.randomness ??= await chooseRandomness(0);
+    config.randomness ??= await chooseRandomness(10);
     config.amount ??= await chooseAmountOfPresets(16);
   }
 
@@ -669,13 +677,20 @@ async function runInteractiveMode() {
 
   let result: GenerationResult;
   try {
-    result = generatePresets(config, presetLibrary);
+    // If binary mode is enabled but the current library lacks binary data,
+    // force a reload by passing undefined.
+    const needsReload =
+      config.binary &&
+      presetLibrary.presets.length > 0 &&
+      presetLibrary.presets[0]?.binary === undefined;
+
+    result = generatePresets(config, needsReload ? undefined : presetLibrary);
     generationSpinner.stop();
   } catch (error) {
     generationSpinner.fail('Failed to generate presets');
     console.error(
       chalk.red(
-        'Error: ' + (error instanceof Error ? error.message : String(error)),
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
       ),
     );
     process.exit(1);
@@ -726,11 +741,6 @@ function logGenerationSuccess(result: GenerationResult) {
 /** Choose number of presets to generate */
 async function chooseAmountOfPresets(initial = 8): Promise<number> {
   console.log('');
-  console.log(
-    chalk.dim(
-      'Tip: Start with 8-16 presets to review. You can always generate more!',
-    ),
-  );
   const amount = await number({
     message: 'How many presets would you like to generate?',
     default: initial,
@@ -869,6 +879,9 @@ function logRepeatCommand(config: Config) {
   }
   if (config.debug) {
     cliCommand += ` --debug`;
+  }
+  if (config.binary) {
+    cliCommand += ` --binary`;
   }
 
   console.log(chalk.dim('To repeat with same settings:'));

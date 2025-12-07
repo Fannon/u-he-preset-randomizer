@@ -7,7 +7,7 @@
  * These tests CAN run in CI/CD environments.
  */
 
-import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import fs from 'fs-extra';
 import os from 'node:os';
 import path from 'node:path';

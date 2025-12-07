@@ -7,17 +7,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  # Test with Bun (primary development/test runner)
+  test-bun:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun test
+
+  # Verify build works with Node.js (production target)
+  build-node:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['22.x', '24.x']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - run: npm ci # Implies npm run build already
-      - run: npm run lint
+      - run: npm ci
       - run: npm run build
-      - run: npm run test
+      # Verify the built CLI can run with Node.js
+      - name: Verify CLI runs
+        run: node dist/cli.js --help
+      # Verify the built MCP server can be imported
+      - name: Verify MCP server imports
+        run: node -e "import('./dist/mcp-server.js')"

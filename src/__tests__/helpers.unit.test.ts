@@ -3,7 +3,7 @@
  * These tests cover small utility functions that are side-effect free.
  */
 
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it } from 'bun:test';
 import { isInt, isNumeric, getPresetBinarySection } from '../parser.js';
 import { average } from '../analyzer.js';
 import { getRandomArrayItem, getRandomValue, calculateRandomMergeRatios } from '../randomizer.js';
@@ -177,7 +177,7 @@ describe('randomizer helpers', () => {
       // Run multiple times to ensure we get valid results
       for (let i = 0; i < 20; i++) {
         const result = getRandomArrayItem(items);
-        expect(items).toContain(result);
+        expect(items).toContain(result!);
       }
     });
 
@@ -191,9 +191,9 @@ describe('randomizer helpers', () => {
     });
 
     it('should work with different types', () => {
-      expect([1, 2, 3]).toContain(getRandomArrayItem([1, 2, 3]));
-      expect([true, false]).toContain(getRandomArrayItem([true, false]));
-      expect([null]).toContain(getRandomArrayItem([null]));
+      expect([1, 2, 3]).toContain(getRandomArrayItem([1, 2, 3])!);
+      expect([true, false]).toContain(getRandomArrayItem([true, false])!);
+      expect([null]).toContain(getRandomArrayItem([null])!);
     });
   });
 
@@ -207,7 +207,7 @@ describe('randomizer helpers', () => {
 
       for (let i = 0; i < 20; i++) {
         const result = getRandomValue(paramEntry, false);
-        expect(paramEntry.values).toContain(result);
+        expect(paramEntry.values).toContain(result!);
       }
     });
 
@@ -240,7 +240,7 @@ describe('randomizer helpers', () => {
 
       for (let i = 0; i < 10; i++) {
         const result = getRandomValue(paramEntry, false);
-        expect(['Saw', 'Square', 'Sine']).toContain(result);
+        expect(['Saw', 'Square', 'Sine']).toContain(result as string);
       }
     });
   });
@@ -280,7 +280,7 @@ describe('randomizer helpers', () => {
 
       for (let i = 0; i < 10; i++) {
         const result = getRandomValue(paramEntry, true);
-        expect([1, 2, 3]).toContain(result);
+        expect([1, 2, 3]).toContain(result as number);
       }
     });
   });

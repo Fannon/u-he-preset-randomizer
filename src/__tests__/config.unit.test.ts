@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it } from 'bun:test';
 import {
   getConfig,
   getConfigFromParameters,
@@ -80,7 +80,7 @@ describe('config utilities', () => {
 
     // Create second config - should not be affected by first config
     const config2 = getConfigFromParameters({
-      synth: 'Repro',
+      synth: 'Repro-1',
       randomness: '80',
     });
 
@@ -89,7 +89,7 @@ describe('config utilities', () => {
     expect(config1.amount).toBe(5);
     expect(config1.randomness).toBeUndefined();
 
-    expect(config2.synth).toBe('Repro');
+    expect(config2.synth).toBe('Repro-1');
     expect(config2.randomness).toBe(80);
     // amount should not be inherited from config1
     expect(config2.amount).toBeUndefined();

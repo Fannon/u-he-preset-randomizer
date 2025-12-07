@@ -11,7 +11,11 @@
  * - Generated presets are valid .h2p format
  */
 
-import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, setDefaultTimeout } from 'bun:test';
+
+// E2E tests involve file I/O and synth detection, so they need a longer timeout
+// Some tests scan large preset libraries which can be slow on network drives
+setDefaultTimeout(120_000);
 import fs from 'fs-extra';
 import path from 'node:path';
 import { generatePresets } from '../../index.js';
