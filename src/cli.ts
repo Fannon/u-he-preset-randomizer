@@ -153,6 +153,9 @@ async function runInteractiveMode() {
     },
   });
   config.synth = synth;
+  if (config.synth === 'Zebralette3' && config.binaryTemplate === undefined) {
+    config.binaryTemplate = true;
+  }
   const detectedLocation = locations.find((el) => el.synthName === synth);
 
   // 2) Choose random generation mode
@@ -268,6 +271,11 @@ async function runInteractiveMode() {
             checked: binaryEnabled,
           },
           {
+            value: 'binaryTemplate',
+            name: '[Binary Templates] Use safe binary templates (Recommended for Z3)',
+            checked: config.binaryTemplate,
+          },
+          {
             value: 'dictionary',
             name: '[Dictionary] Generate realistic preset names',
           },
@@ -276,6 +284,9 @@ async function runInteractiveMode() {
 
       if (advancedOptions.includes('binary')) {
         config.binary = true;
+      }
+      if (advancedOptions.includes('binaryTemplate')) {
+        config.binaryTemplate = true;
       }
       if (advancedOptions.includes('dictionary')) {
         config.dictionary = true;
@@ -647,6 +658,12 @@ async function runInteractiveMode() {
       chalk.yellow('Enabled') + chalk.dim(' (may cause issues)'),
     ]);
   }
+  if (config.binaryTemplate) {
+    table.push([
+      chalk.bold('Binary Templates'),
+      chalk.green('Enabled') + chalk.dim(' (weighted random selection)'),
+    ]);
+  }
   if (config.dictionary) {
     table.push([
       chalk.bold('Dictionary'),
@@ -882,6 +899,9 @@ function logRepeatCommand(config: Config) {
   }
   if (config.binary) {
     cliCommand += ` --binary`;
+  }
+  if (config.binaryTemplate) {
+    cliCommand += ` --binary-template`;
   }
 
   console.log(chalk.dim('To repeat with same settings:'));

@@ -15,6 +15,11 @@ import { getDictionaryOfNames, type ParamsModel } from './analyzer.js';
 import type { Config } from './config.js';
 import type { Preset } from './parser.js';
 import type { PresetLibrary } from './presetLibrary.js';
+import {
+  getBinaryTemplates,
+  getTemplateBinary,
+  pickWeightedTemplate,
+} from './utils/binaryTemplates.js';
 
 /**
  * Generates fully randomized presets based on statistical distributions from the preset library.
@@ -33,6 +38,11 @@ export function generateFullyRandomPresets(
     userPresetsFolder: `${presetLibrary.userPresetsFolder}/RANDOM`,
     presets: [],
   };
+  const templates =
+    config.binaryTemplate && config.synth
+      ? getBinaryTemplates(config.synth)
+      : [];
+
   for (let i = 0; i < (config.amount ?? 16); i++) {
     const basePreset = getRandomArrayItem(presetLibrary.presets);
     if (!basePreset) {
@@ -44,7 +54,15 @@ export function generateFullyRandomPresets(
     const randomPreset: Preset = structuredClone(basePreset);
 
     // Randomize binary section if enabled (e.g. for Zebralette 3)
-    if (config.binary) {
+    if (config.binaryTemplate && templates.length > 0) {
+      const template = pickWeightedTemplate(templates);
+      if (template) {
+        const binary = getTemplateBinary(template.path);
+        if (binary) {
+          randomPreset.binary = binary;
+        }
+      }
+    } else if (config.binary) {
       const presetsWithBinary = presetLibrary.presets.filter(
         (p) => p.binary && p.binary.length > 0,
       );

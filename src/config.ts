@@ -27,6 +27,8 @@ export interface Config {
   folder?: boolean | string;
   favorites?: boolean | string | string[];
   customFolder?: string;
+  /** Use a weighted random binary template for the binary section */
+  binaryTemplate?: boolean;
 }
 
 export function getDefaultConfig(): Config {
@@ -96,6 +98,18 @@ export function getConfigFromParameters(
   }
   if (argv['custom-folder']) {
     newConfig.customFolder = argv['custom-folder'] as string;
+  }
+
+  if (argv['binary-template']) {
+    newConfig.binaryTemplate = argv['binary-template'] as boolean;
+  }
+
+  // Default binaryTemplate to true for Zebralette3 if not specified
+  if (
+    newConfig.synth === 'Zebralette3' &&
+    newConfig.binaryTemplate === undefined
+  ) {
+    newConfig.binaryTemplate = true;
   }
 
   // Update module-level config for backward compatibility with getConfig/setConfig
