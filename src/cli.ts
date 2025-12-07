@@ -181,12 +181,14 @@ async function runInteractiveMode() {
 
     // First: Basic filtering options
     // First: Basic filtering options
+    // First: Options & Filters
     const basicOptions = await checkbox({
-      message: 'Narrow down which presets to use as inspiration (optional):',
+      message:
+        'Select filters and configuration (optional, press ENTER to continue, select with SPACE):',
       choices: [
         {
           value: 'folder',
-          name: 'Select a specific folder',
+          name: 'Filter by specific folder',
         },
         {
           value: 'category',
@@ -198,7 +200,11 @@ async function runInteractiveMode() {
         },
         {
           value: 'favorites',
-          name: 'Use only your favorited presets',
+          name: 'Filter by favorited presets',
+        },
+        {
+          value: 'advanced',
+          name: 'Customize randomization (Style, Binary support, Naming)',
         },
       ],
     });
@@ -217,13 +223,7 @@ async function runInteractiveMode() {
       config.favorites = true;
     }
 
-    // Then: Ask if they want advanced options
-    const wantsAdvanced = await confirm({
-      message: 'Show advanced options?',
-      default: false,
-    });
-
-    if (wantsAdvanced) {
+    if (basicOptions.includes('advanced')) {
       // First: Choose randomization mode
       const randomizationMode = await select({
         message: 'Randomization approach:',
@@ -571,7 +571,7 @@ async function runInteractiveMode() {
     console.log('');
 
     // Choose amount of randomness
-    config.randomness ??= await chooseRandomness(0);
+    config.randomness ??= await chooseRandomness(10);
     config.amount ??= await chooseAmountOfPresets(16);
   }
 
@@ -733,11 +733,6 @@ function logGenerationSuccess(result: GenerationResult) {
 /** Choose number of presets to generate */
 async function chooseAmountOfPresets(initial = 8): Promise<number> {
   console.log('');
-  console.log(
-    chalk.dim(
-      'Tip: Start with 8-16 presets to review. You can always generate more!',
-    ),
-  );
   const amount = await number({
     message: 'How many presets would you like to generate?',
     default: initial,

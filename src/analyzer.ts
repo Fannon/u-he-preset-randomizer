@@ -112,7 +112,7 @@ export function analyzeParamsTypeAndRange(
       totalFrequencyEntries += Object.keys(param.frequencies ?? {}).length;
     }
 
-    console.log(chalk.gray('━'.repeat(60)));
+    console.log(' ');
     console.log(chalk.cyan('Memory Usage After Computing Analytics:'));
     console.log(
       chalk.gray(
@@ -140,7 +140,7 @@ export function analyzeParamsTypeAndRange(
         `  Total Frequency Entries: ${totalFrequencyEntries.toLocaleString()}`,
       ),
     );
-    console.log(chalk.gray('━'.repeat(60)));
+    console.log(' ');
   }
 
   return paramsModel;
