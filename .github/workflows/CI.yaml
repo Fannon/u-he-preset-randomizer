@@ -16,15 +16,9 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - name: Setup Node.js (for npm commands)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24.x'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run typecheck
       - run: bun test
 
   # Verify build works with Node.js (production target)
