@@ -16,7 +16,7 @@ import select from '@inquirer/select';
 import chalk from 'chalk';
 import fg from 'fast-glob';
 import fs from 'fs-extra';
-import ora from 'ora';
+
 import { type Config, getConfigFromParameters } from './config.js';
 import { type GenerationResult, generatePresets } from './generatePresets.js';
 import {
@@ -353,10 +353,7 @@ async function runInteractiveMode() {
     throw new Error('Synth not specified in config');
   }
 
-  const spinner = ora({
-    text: 'Loading your preset library...',
-    color: 'cyan',
-  }).start();
+  console.log(chalk.dim('Loading preset library...'));
 
   const presetLibrary = loadPresetLibrary(
     config.synth,
@@ -364,9 +361,7 @@ async function runInteractiveMode() {
     detectedLocation,
   );
 
-  spinner.succeed(
-    chalk.green(`Loaded ${presetLibrary.presets.length} presets`),
-  );
+  console.log(chalk.green(`✓ Loaded ${presetLibrary.presets.length} presets`));
 
   // Optionally: Narrow down by u-he favorites
   if (config.favorites === true && presetLibrary.favorites.length) {
@@ -671,10 +666,7 @@ async function runInteractiveMode() {
   }
 
   console.log('');
-  const generationSpinner = ora({
-    text: 'Generating your presets...',
-    color: 'cyan',
-  }).start();
+  console.log(chalk.dim('Generating presets...'));
 
   let result: GenerationResult;
   try {
@@ -686,9 +678,8 @@ async function runInteractiveMode() {
       presetLibrary.presets[0]?.binary === undefined;
 
     result = generatePresets(config, needsReload ? undefined : presetLibrary);
-    generationSpinner.stop();
   } catch (error) {
-    generationSpinner.fail('Failed to generate presets');
+    console.error(chalk.red('✗ Failed to generate presets'));
     console.error(
       chalk.red(
         `Error: ${error instanceof Error ? error.message : String(error)}`,
