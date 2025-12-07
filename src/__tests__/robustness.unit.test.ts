@@ -3,7 +3,7 @@
  * Verifies that functions handle invalid inputs, edge cases, and incompatibilities gracefully.
  */
 
-import { describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it, jest, afterAll } from 'bun:test';
 import { validateMergeCompatibility } from '../randomizer.js';
 import { getPresetMetadata, parseUhePreset } from '../parser.js';
 import type { Preset } from '../parser.js';

@@ -11,7 +11,7 @@
  * - Generated presets are valid .h2p format
  */
 
-import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import fs from 'fs-extra';
 import path from 'node:path';
 import { generatePresets } from '../../index.js';

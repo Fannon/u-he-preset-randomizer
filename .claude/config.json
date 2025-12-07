@@ -1,5 +1,5 @@
 {
-  "systemPrompt": "You are working on u-he-preset-randomizer, a TypeScript CLI tool for generating random synthesizer presets. Key points:\n\n- This is an ESM project (\"type\": \"module\" in package.json)\n- Use tsx for development, tsc for building\n- Jest tests require NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\"\n- Never modify binary sections of presets without deep understanding\n- Test changes across multiple synth types (Diva, Repro, Hive, Zebra)\n- Follow existing code patterns and conventions\n- Keep code focused on cross-platform compatibility (Windows, macOS, Linux, WSL2)\n\nWhen making changes, consider reading AGENTS.md first using the /context command.",
+  "systemPrompt": "You are working on u-he-preset-randomizer, a TypeScript CLI tool for generating random synthesizer presets. Key points:\n\n- This is an ESM project (\"type\": \"module\" in package.json)\n- Uses Bun for development and testing, Node.js as production target\n- Tests use Bun's built-in test runner (bun:test)\n- Never modify binary sections of presets without deep understanding\n- Test changes across multiple synth types (Diva, Repro, Hive, Zebra)\n- Follow existing code patterns and conventions\n- Keep code focused on cross-platform compatibility (Windows, macOS, Linux, WSL2)\n\nWhen making changes, consider reading AGENTS.md first using the /context command.",
   "preferredTools": {
     "fileSearch": "Glob",
     "codeSearch": "Grep",
@@ -8,8 +8,10 @@
     "fileWrite": "Write"
   },
   "testing": {
-    "framework": "jest",
-    "command": "npm test",
+    "framework": "bun",
+    "command": "bun test",
+    "unitCommand": "npm run test:unit",
+    "e2eCommand": "npm run test:e2e",
     "watchCommand": "npm run test:watch",
     "beforeCommit": "npm run test:ci"
   },
@@ -30,7 +32,7 @@
     "Consider cross-platform compatibility (Windows/macOS/Linux/WSL2)",
     "Never modify preset binary sections without explicit user request",
     "Run 'npm run test:ci' before suggesting completion of significant changes",
-    "Use Prettier for formatting, ESLint for code quality",
+    "Use Biome for formatting and linting",
     "Pre-commit hooks will automatically format and lint staged files"
   ]
 }

@@ -160,15 +160,17 @@ npx u-he-preset-randomizer@latest --synth Diva --amount 5 --merge "HS Greek Horn
 
 ## Developer Guide
 
-To run this tool locally in developer mode, check out the repo and:
+To run this tool locally in developer mode, you need [Node.js](https://nodejs.org/) and [Bun](https://bun.sh/) installed. Check out the repo and:
 
 ```sh
 npm i
 npm run build
-npm run start -- --synth Diva --amount 3
 
-# or use tsx if you wan't to avoid running npm run build (install via npm i -g tsx):
-npx tsx src/cli.ts --synth Diva --amount 3
+# Run the CLI in development mode (using Bun):
+bun run dev --synth Diva --amount 3
+
+# Run tests:
+bun test
 
 # Maintenance scripts
 npm run clean      # remove dist output and incremental build cache

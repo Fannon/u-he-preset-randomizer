@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'bun:test';
 import type { Config } from '../config.js';
 import type { ParamsModel } from '../analyzer.js';
 import type { Preset } from '../parser.js';
