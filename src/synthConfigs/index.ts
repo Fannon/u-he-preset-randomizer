@@ -1,5 +1,4 @@
 import type { SynthNames } from '../utils/detector.js';
-import { divaConfig } from './Diva.js';
 import { repro1Config } from './Repro1.js';
 import { repro5Config } from './Repro5.js';
 import {
@@ -20,7 +19,6 @@ export {
  */
 const synthConfigs = {
   Zebralette3: zebralette3Config,
-  Diva: divaConfig,
   'Repro-1': repro1Config,
   'Repro-5': repro5Config,
 };
