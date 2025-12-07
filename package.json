@@ -15,7 +15,7 @@
     "start": "NODE_OPTIONS=--max-old-space-size=8192 tsx src/cli.ts",
     "mcp": "tsx src/mcp-server.ts",
     "detect": "tsx src/detect-synths.ts",
-    "benchmark": "hyperfine --warmup 2 --runs 5 --export-markdown tmp/hyperfine.md --export-json tmp/hyperfine.json --ignore-failure 'npm run clean' 'npm run build' 'npm run typecheck' 'npm run lint' 'npm run format' 'npm run test'",
+    "benchmark": "hyperfine --warmup 2 --runs 5 --export-markdown tmp/hyperfine.md --export-json tmp/hyperfine.json --ignore-failure 'bun run clean' 'bun run build' 'bun run typecheck' 'bun run lint' 'bun run format' 'bun run test:unit'",
     "build": "tsgo --project tsconfig.json",
     "build:dist": "tsgo --project tsconfig.build.json",
     "clean": "node scripts/clean.mjs",
@@ -29,7 +29,7 @@
     "test:coverage": "bun test --coverage",
     "test:e2e": "bun test .e2e",
     "test:unit": "bun test .unit",
-    "test:ci": "npm run lint && npm run typecheck && npm run test:unit",
+    "test:ci": "bun run lint && bun run typecheck && bun run test:unit",
     "dev": "bun run src/cli.ts",
     "prepublishOnly": "node scripts/sync-mcp-version.mjs && npm run clean && npm run build:dist",
     "sync:mcp-version": "node scripts/sync-mcp-version.mjs"

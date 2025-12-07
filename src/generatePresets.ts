@@ -68,6 +68,10 @@ export function generatePresets(
   let generatedPresets: PresetLibrary;
   let writtenFiles: string[];
 
+  // Ensure the RANDOM output folder exists upfront
+  const randomOutputFolder = `${presetLibrary.userPresetsFolder}/RANDOM`;
+  fs.ensureDirSync(randomOutputFolder);
+
   if (config.merge) {
     generatedPresets = generateMergedPresets(
       filteredLibrary,

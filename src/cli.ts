@@ -25,6 +25,7 @@ import {
   narrowDownByFavoritesFile,
 } from './libraryFilters.js';
 import { loadPresetLibrary } from './presetLibrary.js';
+import { getSynthConfig } from './synthConfigs/index.js';
 import {
   type DetectedPresetLibrary,
   detectPresetLibraryLocations,
@@ -142,7 +143,12 @@ async function runInteractiveMode() {
     },
   });
   config.synth = synth;
-  if (config.synth === 'Zebralette3' && config.binaryTemplate === undefined) {
+  const synthConfig = getSynthConfig(synth);
+
+  if (
+    config.binaryTemplate === undefined &&
+    synthConfig?.defaults?.binaryTemplate
+  ) {
     config.binaryTemplate = true;
   }
   const detectedLocation = locations.find((el) => el.synthName === synth);
@@ -170,7 +176,7 @@ async function runInteractiveMode() {
 
   // 2.5) Choose optional modifiers for randomization
   if (!config.stable || !config.binary) {
-    const binaryEnabled = ['Repro-1', 'Repro-5'].includes(config.synth);
+    const binaryEnabled = synthConfig?.defaults?.binary ?? false;
 
     // First: Basic filtering options
     // First: Basic filtering options
