@@ -507,14 +507,11 @@ export function validateMergeCompatibility(presets: Preset[]): void {
 
     // Error if very low overlap (< 50%)
     if (overlapPercent < 50) {
-      console.error(
-        chalk.red(
-          `Error: Presets are incompatible for merging (< 50% parameter overlap).\n` +
-            `  "${basePreset.presetName}" vs "${preset.presetName}"\n` +
-            `  These presets appear to be from different synths or versions.`,
-        ),
+      throw new Error(
+        `Presets are incompatible for merging (< 50% parameter overlap).\n` +
+          `  "${basePreset.presetName}" vs "${preset.presetName}"\n` +
+          `  These presets appear to be from different synths or versions.`,
       );
-      process.exit(1);
     }
   }
 }
@@ -560,7 +557,7 @@ export function getRandomValue(
   // Select based on weighted random
   const random = Math.random() * totalFrequency;
   for (let i = 0; i < cumulativeFrequencies.length; i++) {
-    if (random < cumulativeFrequencies[i]!) {
+    if (random < (cumulativeFrequencies[i] ?? 0)) {
       return values[i];
     }
   }

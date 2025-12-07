@@ -74,6 +74,9 @@ export function parseUhePreset(
  * @returns An array of PresetMetaEntry objects representing the metadata entries.
  */
 export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
+  if (!fileString.includes('/*@Meta') && !fileString.includes('/*@meta')) {
+    return [];
+  }
   const split = fileString.split('*/');
   const metadataHeader =
     split[0]?.replace('/*@Meta', '').replace('/*@meta', '') ?? '';
