@@ -74,6 +74,9 @@ export function parseUhePreset(
  * @returns An array of PresetMetaEntry objects representing the metadata entries.
  */
 export function getPresetMetadata(fileString: string): PresetMetaEntry[] {
+  if (!fileString.includes('/*@Meta') && !fileString.includes('/*@meta')) {
+    return [];
+  }
   const split = fileString.split('*/');
   const metadataHeader =
     split[0]?.replace('/*@Meta', '').replace('/*@meta', '') ?? '';
@@ -314,10 +317,8 @@ export function isValidPreset(preset: Preset) {
 //////////////////////////////////////////
 
 export function isInt(value: unknown): boolean {
-  return (
-    !Number.isNaN(value as number) &&
-    ((x) => (x | 0) === x)(parseFloat(value as string))
-  );
+  const num = parseFloat(value as string);
+  return !Number.isNaN(num) && Number.isFinite(num) && Math.floor(num) === num;
 }
 
 export function isNumeric(value: unknown): boolean {
