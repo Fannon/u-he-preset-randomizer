@@ -16,6 +16,7 @@ import {
   serializePresetToFile,
 } from './parser.js';
 import {
+  type DetectedPresetLibrary,
   detectPresetLibraryLocations,
   type SynthNames,
 } from './utils/detector.js';
@@ -49,13 +50,16 @@ export interface UheFavoriteFileEntry {
 export function loadPresetLibrary(
   synth: SynthNames,
   config: Config,
+  preDetectedLocation?: DetectedPresetLibrary,
 ): PresetLibrary {
   let pattern = config.pattern ?? '**/*';
 
   // Detect correct Preset Library Location
-  const location = detectPresetLibraryLocations(config).find(
-    (el) => el.synthName.toLowerCase() === synth.toLowerCase(),
-  );
+  const location =
+    preDetectedLocation ??
+    detectPresetLibraryLocations(config).find(
+      (el) => el.synthName.toLowerCase() === synth.toLowerCase(),
+    );
 
   if (!location) {
     throw new Error(
@@ -120,6 +124,7 @@ export function loadPresetLibrary(
         }
       }
     } else {
+      console.log('');
       console.warn(
         chalk.yellow(
           `Could not find presets with glob pattern: ${pattern}.h2p in library: ${presetLibrary.presetsFolder}`,
@@ -167,6 +172,7 @@ export function loadPresetLibrary(
         }
       }
     } else {
+      console.log('');
       console.warn(
         chalk.yellow(
           `Could not find presets with glob pattern: ${pattern}.h2p in user library: ${path.resolve(presetLibrary.userPresetsFolder, '../..')}`,
@@ -212,6 +218,7 @@ export function loadPresetLibrary(
         }
       }
     } else {
+      console.log('');
       console.warn(
         chalk.yellow(
           `Could not find presets with glob pattern: ${pattern}.h2p in user library: ${presetLibrary.userPresetsFolder}`,

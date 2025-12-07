@@ -153,6 +153,7 @@ async function runInteractiveMode() {
     },
   });
   config.synth = synth;
+  const detectedLocation = locations.find((el) => el.synthName === synth);
 
   // 2) Choose random generation mode
   // 2) Choose random generation mode
@@ -289,9 +290,12 @@ async function runInteractiveMode() {
   // Narrow down by folder selection
   if (config.folder === true) {
     // Detect correct Preset Library Location
-    const location = detectPresetLibraryLocations(config).find(
-      (el) => el.synthName.toLowerCase() === (config.synth ?? '').toLowerCase(),
-    );
+    const location =
+      detectedLocation ??
+      detectPresetLibraryLocations(config).find(
+        (el) =>
+          el.synthName.toLowerCase() === (config.synth ?? '').toLowerCase(),
+      );
 
     if (!location) {
       throw new Error(
@@ -354,7 +358,11 @@ async function runInteractiveMode() {
     color: 'cyan',
   }).start();
 
-  const presetLibrary = loadPresetLibrary(config.synth, config);
+  const presetLibrary = loadPresetLibrary(
+    config.synth,
+    config,
+    detectedLocation,
+  );
 
   spinner.succeed(
     chalk.green(`Loaded ${presetLibrary.presets.length} presets`),
