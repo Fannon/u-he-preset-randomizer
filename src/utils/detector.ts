@@ -122,7 +122,11 @@ export function detectPresetLibraryLocations(
       `/mnt/c/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`,
     );
     locationsTried.push(`/mnt/c/VstPlugins/u-he/__SynthName__.data/`);
-    // Hack: My own Google Drive location that isn't detected otherwise (no symlink following in WSL)
+  }
+
+  // Custom Google Drive location (check last as it may not be mounted)
+  // Only add if the drive appears to be accessible
+  if (process.platform === 'linux' && fs.existsSync('/mnt/g/My Drive/')) {
     locationsTried.push(`/mnt/g/My Drive/Musik/u-he/__SynthName__.data/`);
   }
 
