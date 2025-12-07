@@ -4,9 +4,11 @@ import type { ParamsModel } from '../analyzer.js';
 import type { Preset } from '../parser.js';
 import {
   calculateRandomMergeRatios,
+  generateFullyRandomPresets,
   getPresetDescriptionSuffix,
   randomizePreset,
 } from '../randomizer.js';
+import type { PresetLibrary } from '../presetLibrary.js';
 
 describe('randomizer', () => {
   describe('calculateRandomMergeRatios', () => {
@@ -224,6 +226,132 @@ describe('randomizer', () => {
       // For float with value 1.0:
       // newValue = 0.0 * 0.4 + 1.0 * 0.6 = 0.6
       expect(result.params[1]?.value).toBe(0.6);
+    });
+  });
+  describe('generateFullyRandomPresets with Binary Randomization', () => {
+    const mockPreset: Preset = {
+      filePath: '/Local/Init.h2p',
+      presetName: 'Init',
+      categories: [],
+      meta: [],
+      params: [],
+      binary: 'BINARY_DATA_1',
+    };
+
+    const mockPresetWithBinary2: Preset = {
+      filePath: '/Local/Other.h2p',
+      presetName: 'Other',
+      categories: [],
+      meta: [],
+      params: [],
+      binary: 'BINARY_DATA_2',
+    };
+
+    const mockLibrary: PresetLibrary = {
+      synth: 'Zebra2',
+      rootFolder: '/test',
+      userPresetsFolder: '/test/User',
+      presets: [mockPreset, mockPresetWithBinary2],
+      favorites: [],
+    };
+
+    const mockParamsModel: ParamsModel = {
+      ID1: {
+        type: 'integer',
+        values: [1],
+        distinctValues: [1],
+        frequencies: { '1': 1 },
+        maxValue: 1,
+        minValue: 1,
+        avgValue: 1,
+      },
+      ID2: {
+        type: 'integer',
+        values: [2],
+        distinctValues: [2],
+        frequencies: { '2': 1 },
+        maxValue: 2,
+        minValue: 2,
+        avgValue: 2,
+      },
+    };
+
+    it('should randomize binary section when config.binary is true', () => {
+      const config: Config = {
+        debug: false,
+        binary: true,
+        amount: 20,
+        stable: false,
+      };
+
+      const result = generateFullyRandomPresets(
+        mockLibrary,
+        mockParamsModel,
+        config,
+      );
+
+      const binaries = result.presets.map((p) => p.binary);
+      // We expect to see both binaries eventually
+      expect(binaries).toContain('BINARY_DATA_1');
+      expect(binaries).toContain('BINARY_DATA_2');
+    });
+
+    it('should explicitly decouple binary section from base preset', () => {
+      const preset1: Preset = {
+        ...mockPreset,
+        binary: 'BIN1',
+        params: [
+          {
+            id: 'ID1',
+            key: 'K',
+            section: 'S',
+            value: 1,
+            index: 0,
+            type: 'integer',
+          },
+        ],
+      };
+      const preset2: Preset = {
+        ...mockPresetWithBinary2,
+        binary: 'BIN2',
+        params: [
+          {
+            id: 'ID2',
+            key: 'K',
+            section: 'S',
+            value: 2,
+            index: 0,
+            type: 'integer',
+          },
+        ],
+      };
+
+      const lib: PresetLibrary = {
+        ...mockLibrary,
+        presets: [preset1, preset2],
+      };
+
+      const config: Config = {
+        debug: false,
+        binary: true,
+        amount: 200,
+        stable: true,
+      };
+
+      const result = generateFullyRandomPresets(lib, mockParamsModel, config);
+
+      let decoupledCount = 0;
+      for (const p of result.presets) {
+        // If we identify base preset1 (by ID1 params) but it has BIN2 binary, it's decoupled
+        // Note: param names/ids are preserved
+        const hasID1 = p.params.some((param) => param.id === 'ID1');
+        const hasID2 = p.params.some((param) => param.id === 'ID2');
+
+        if (hasID1 && p.binary === 'BIN2') decoupledCount++;
+        if (hasID2 && p.binary === 'BIN1') decoupledCount++;
+      }
+
+      expect(decoupledCount).toBeGreaterThan(0);
     });
   });
 });

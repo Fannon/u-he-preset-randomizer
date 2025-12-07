@@ -234,7 +234,7 @@ async function runInteractiveMode() {
           },
           {
             value: 'balanced',
-            name: '[Balanced] Default randomization',
+            name: '[Balanced] More randomization, balance between stability and creativity',
           },
           {
             value: 'creative',
@@ -263,7 +263,7 @@ async function runInteractiveMode() {
         choices: [
           {
             value: 'binary',
-            name: '[Binary] Include advanced modulation data (may cause crashes)',
+            name: '[Binary] Include binary encoded preset data like curves (may cause crashes)',
             checked: binaryEnabled,
           },
           {
@@ -669,7 +669,14 @@ async function runInteractiveMode() {
 
   let result: GenerationResult;
   try {
-    result = generatePresets(config, presetLibrary);
+    // If binary mode is enabled but the current library lacks binary data,
+    // force a reload by passing undefined.
+    const needsReload =
+      config.binary &&
+      presetLibrary.presets.length > 0 &&
+      presetLibrary.presets[0]?.binary === undefined;
+
+    result = generatePresets(config, needsReload ? undefined : presetLibrary);
     generationSpinner.stop();
   } catch (error) {
     generationSpinner.fail('Failed to generate presets');
@@ -869,6 +876,9 @@ function logRepeatCommand(config: Config) {
   }
   if (config.debug) {
     cliCommand += ` --debug`;
+  }
+  if (config.binary) {
+    cliCommand += ` --binary`;
   }
 
   console.log(chalk.dim('To repeat with same settings:'));

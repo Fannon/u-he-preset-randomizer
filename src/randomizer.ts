@@ -43,6 +43,20 @@ export function generateFullyRandomPresets(
     }
     const randomPreset: Preset = structuredClone(basePreset);
 
+    // Randomize binary section if enabled (e.g. for Zebralette 3)
+    if (config.binary) {
+      const presetsWithBinary = presetLibrary.presets.filter(
+        (p) => p.binary && p.binary.length > 0,
+      );
+
+      if (presetsWithBinary.length > 0) {
+        const randomBinaryPreset = getRandomArrayItem(presetsWithBinary);
+        if (randomBinaryPreset) {
+          randomPreset.binary = randomBinaryPreset.binary;
+        }
+      }
+    }
+
     if (config.stable) {
       const presetPerSectionMap: Record<string, Preset> = {};
 
