@@ -86,7 +86,7 @@ export async function startCli() {
   } catch (error) {
     console.error(
       chalk.red(
-        'Error: ' + (error instanceof Error ? error.message : String(error)),
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
       ),
     );
     process.exit(1);
@@ -675,7 +675,7 @@ async function runInteractiveMode() {
     generationSpinner.fail('Failed to generate presets');
     console.error(
       chalk.red(
-        'Error: ' + (error instanceof Error ? error.message : String(error)),
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
       ),
     );
     process.exit(1);
