@@ -51,9 +51,9 @@ function logCliBanner() {
   );
   console.log('');
   console.log('Create new synth presets through:');
-  console.log(chalk.dim('  •') + ' Fully random generation');
-  console.log(chalk.dim('  •') + ' Variations of existing presets');
-  console.log(chalk.dim('  •') + ' Merging multiple presets');
+  console.log(`${chalk.dim('  •')} Fully random generation`);
+  console.log(`${chalk.dim('  •')} Variations of existing presets`);
+  console.log(`${chalk.dim('  •')} Merging multiple presets`);
   console.log('');
   console.log(chalk.dim('https://github.com/Fannon/u-he-preset-randomizer'));
   console.log('');
@@ -111,12 +111,12 @@ async function runInteractiveMode() {
     console.log('');
     console.log(chalk.bold('Please make sure:'));
     console.log(
-      chalk.dim('  •') + ' You have at least one u-he synth installed',
+      `${chalk.dim('  •')} You have at least one u-he synth installed`,
     );
     console.log(
-      chalk.dim('  •') + ' The synth is installed in the standard location',
+      `${chalk.dim('  •')} The synth is installed in the standard location`,
     );
-    console.log(chalk.dim('  •') + ' You have created or loaded some presets');
+    console.log(`${chalk.dim('  •')} You have created or loaded some presets`);
     console.log('');
     console.log(chalk.dim('If your u-he folder is in a custom location, use:'));
     console.log(
@@ -581,15 +581,15 @@ async function runInteractiveMode() {
   // Show summary before generating
   console.log('');
   console.log(chalk.bold('Summary:'));
-  console.log(chalk.dim('  • ') + `Synth: ${chalk.cyan(config.synth)}`);
-  console.log(chalk.dim('  • ') + `Mode: ${chalk.cyan(mode)}`);
+  console.log(`${chalk.dim('  • ')}Synth: ${chalk.cyan(config.synth)}`);
+  console.log(`${chalk.dim('  • ')}Mode: ${chalk.cyan(mode)}`);
   console.log(
-    chalk.dim('  • ') + `Amount: ${chalk.cyan(`${config.amount} presets`)}`,
+    `${chalk.dim('  • ')}Amount: ${chalk.cyan(`${config.amount} presets`)}`,
   );
 
   if (config.randomness) {
     console.log(
-      chalk.dim('  • ') + `Randomness: ${chalk.cyan(`${config.randomness}%`)}`,
+      `${chalk.dim('  • ')}Randomness: ${chalk.cyan(`${config.randomness}%`)}`,
     );
   }
   if (config.preset) {
@@ -600,18 +600,18 @@ async function runInteractiveMode() {
       );
     } else {
       console.log(
-        chalk.dim('  • ') + `Base Preset: ${chalk.cyan(config.preset)}`,
+        `${chalk.dim('  • ')}Base Preset: ${chalk.cyan(config.preset)}`,
       );
     }
   }
   if (config.category && typeof config.category === 'string') {
-    console.log(chalk.dim('  • ') + `Category: ${chalk.cyan(config.category)}`);
+    console.log(`${chalk.dim('  • ')}Category: ${chalk.cyan(config.category)}`);
   }
   if (config.author && typeof config.author === 'string') {
-    console.log(chalk.dim('  • ') + `Author: ${chalk.cyan(config.author)}`);
+    console.log(`${chalk.dim('  • ')}Author: ${chalk.cyan(config.author)}`);
   }
   if (config.folder && typeof config.folder === 'string') {
-    console.log(chalk.dim('  • ') + `Folder: ${chalk.cyan(config.folder)}`);
+    console.log(`${chalk.dim('  • ')}Folder: ${chalk.cyan(config.folder)}`);
   }
 
   // Show randomization mode
