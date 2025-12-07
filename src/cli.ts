@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 import { dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import checkbox from '@inquirer/checkbox';
+import confirm from '@inquirer/confirm';
+import number from '@inquirer/number';
 import searchPrompt from '@inquirer/search';
+import select from '@inquirer/select';
 import boxen from 'boxen';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import fg from 'fast-glob';
 import fs from 'fs-extra';
-import inquirer from 'inquirer';
 import ora from 'ora';
 import { type Config, getConfigFromParameters } from './config.js';
 import { type GenerationResult, generatePresets } from './generatePresets.js';
@@ -146,114 +149,100 @@ async function runInteractiveMode() {
   config.synth = synth;
 
   // 2) Choose random generation mode
-  const mode = await inquirer.prompt<{ value: string }>([
-    {
-      name: 'value',
-      type: 'list',
-      message: 'What would you like to do?',
-      default: 'Fully randomized presets',
-      choices: [
-        {
-          value: 'Fully randomized presets',
-          name: 'Create fully random presets (best for discovering new sounds)',
-        },
-        {
-          value: 'Randomize existing preset',
-          name: 'Create variations of a specific preset (keep the character, add variation)',
-        },
-        {
-          value: 'Merge existing presets',
-          name: 'Blend multiple presets together (combine your favorites)',
-        },
-      ],
-    },
-  ]);
+  // 2) Choose random generation mode
+  const mode = await select({
+    message: 'What would you like to do?',
+    default: 'Fully randomized presets',
+    choices: [
+      {
+        value: 'Fully randomized presets',
+        name: 'Create fully random presets (best for discovering new sounds)',
+      },
+      {
+        value: 'Randomize existing preset',
+        name: 'Create variations of a specific preset (keep the character, add variation)',
+      },
+      {
+        value: 'Merge existing presets',
+        name: 'Blend multiple presets together (combine your favorites)',
+      },
+    ],
+  });
 
   // 2.5) Choose optional modifiers for randomization
   if (!config.stable || !config.binary) {
     const binaryEnabled = ['Repro-1', 'Repro-5'].includes(config.synth);
 
     // First: Basic filtering options
-    const basicOptions = await inquirer.prompt<{ value: string[] }>([
-      {
-        name: 'value',
-        type: 'checkbox',
-        message: 'Narrow down which presets to use as inspiration (optional):',
-        choices: [
-          {
-            value: 'folder',
-            name: 'Select a specific folder',
-          },
-          {
-            value: 'category',
-            name: 'Filter by category (e.g., Bass, Lead, Pad)',
-          },
-          {
-            value: 'author',
-            name: 'Filter by preset creator',
-          },
-          {
-            value: 'favorites',
-            name: 'Use only your favorited presets',
-          },
-        ],
-      },
-    ]);
+    // First: Basic filtering options
+    const basicOptions = await checkbox({
+      message: 'Narrow down which presets to use as inspiration (optional):',
+      choices: [
+        {
+          value: 'folder',
+          name: 'Select a specific folder',
+        },
+        {
+          value: 'category',
+          name: 'Filter by category (e.g., Bass, Lead, Pad)',
+        },
+        {
+          value: 'author',
+          name: 'Filter by preset creator',
+        },
+        {
+          value: 'favorites',
+          name: 'Use only your favorited presets',
+        },
+      ],
+    });
 
     // Apply basic options
-    if (basicOptions.value.includes('folder')) {
+    if (basicOptions.includes('folder')) {
       config.folder = true;
     }
-    if (basicOptions.value.includes('category')) {
+    if (basicOptions.includes('category')) {
       config.category = true;
     }
-    if (basicOptions.value.includes('author')) {
+    if (basicOptions.includes('author')) {
       config.author = true;
     }
-    if (basicOptions.value.includes('favorites')) {
+    if (basicOptions.includes('favorites')) {
       config.favorites = true;
     }
 
     // Then: Ask if they want advanced options
-    const wantsAdvanced = await inquirer.prompt<{ value: boolean }>([
-      {
-        name: 'value',
-        type: 'confirm',
-        message: 'Show advanced options?',
-        default: false,
-      },
-    ]);
+    const wantsAdvanced = await confirm({
+      message: 'Show advanced options?',
+      default: false,
+    });
 
-    if (wantsAdvanced.value) {
+    if (wantsAdvanced) {
       // First: Choose randomization mode
-      const randomizationMode = await inquirer.prompt<{ value: string }>([
-        {
-          name: 'value',
-          type: 'list',
-          message: 'Randomization approach:',
-          choices: [
-            {
-              value: 'stable',
-              name: '[Stable] Safer randomization, stays close to library character (recommended)',
-            },
-            {
-              value: 'balanced',
-              name: '[Balanced] Default randomization',
-            },
-            {
-              value: 'creative',
-              name: '[Creative] Experimental, explores unusual combinations',
-            },
-          ],
-          default: 'stable',
-        },
-      ]);
+      const randomizationMode = await select({
+        message: 'Randomization approach:',
+        choices: [
+          {
+            value: 'stable',
+            name: '[Stable] Safer randomization, stays close to library character (recommended)',
+          },
+          {
+            value: 'balanced',
+            name: '[Balanced] Default randomization',
+          },
+          {
+            value: 'creative',
+            name: '[Creative] Experimental, explores unusual combinations',
+          },
+        ],
+        default: 'stable',
+      });
 
       // Set mode flags
-      if (randomizationMode.value === 'stable') {
+      if (randomizationMode === 'stable') {
         config.stable = true;
         config.creative = false;
-      } else if (randomizationMode.value === 'creative') {
+      } else if (randomizationMode === 'creative') {
         config.stable = false;
         config.creative = true;
       } else {
@@ -263,29 +252,25 @@ async function runInteractiveMode() {
       }
 
       // Then: Other advanced options
-      const advancedOptions = await inquirer.prompt<{ value: string[] }>([
-        {
-          name: 'value',
-          type: 'checkbox',
-          message: 'Additional advanced settings:',
-          choices: [
-            {
-              value: 'binary',
-              name: '[Binary] Include advanced modulation data (may cause crashes)',
-              checked: binaryEnabled,
-            },
-            {
-              value: 'dictionary',
-              name: '[Dictionary] Generate realistic preset names',
-            },
-          ],
-        },
-      ]);
+      const advancedOptions = await checkbox({
+        message: 'Additional advanced settings:',
+        choices: [
+          {
+            value: 'binary',
+            name: '[Binary] Include advanced modulation data (may cause crashes)',
+            checked: binaryEnabled,
+          },
+          {
+            value: 'dictionary',
+            name: '[Dictionary] Generate realistic preset names',
+          },
+        ],
+      });
 
-      if (advancedOptions.value.includes('binary')) {
+      if (advancedOptions.includes('binary')) {
         config.binary = true;
       }
-      if (advancedOptions.value.includes('dictionary')) {
+      if (advancedOptions.includes('dictionary')) {
         config.dictionary = true;
       }
     } else {
@@ -378,15 +363,11 @@ async function runInteractiveMode() {
       };
     });
 
-    const favoritesPrompt = await inquirer.prompt<{ value: string }>([
-      {
-        name: 'value',
-        type: 'checkbox',
-        message: 'Which favorite file(s) to use as a selection?',
-        choices: allChoices,
-      },
-    ]);
-    config.favorites = favoritesPrompt.value;
+    const favoritesPrompt = await checkbox({
+      message: 'Which favorite file(s) to use as a selection?',
+      choices: allChoices,
+    });
+    config.favorites = favoritesPrompt;
   }
   // Filter out presets by favorite file (if given)
   if (
@@ -506,13 +487,13 @@ async function runInteractiveMode() {
     );
   }
 
-  if (mode.value === 'Fully randomized presets') {
+  if (mode === 'Fully randomized presets') {
     //////////////////////////////////////////////////
     // MODE 1: Generate fully randomized presets    //
     //////////////////////////////////////////////////
 
     config.amount ??= await chooseAmountOfPresets(32);
-  } else if (mode.value === 'Randomize existing preset') {
+  } else if (mode === 'Randomize existing preset') {
     //////////////////////////////////////////////////
     // MODE 2: Randomize existing preset            //
     //////////////////////////////////////////////////
@@ -549,7 +530,7 @@ async function runInteractiveMode() {
 
     config.randomness ??= await chooseRandomness(20);
     config.amount ??= await chooseAmountOfPresets(16);
-  } else if (mode.value === 'Merge existing presets') {
+  } else if (mode === 'Merge existing presets') {
     //////////////////////////////////////////////////
     // MODE 3: Merge Random Presets                 //
     //////////////////////////////////////////////////
@@ -601,7 +582,7 @@ async function runInteractiveMode() {
 
   table.push(
     [chalk.bold('Synth'), config.synth],
-    [chalk.bold('Mode'), mode.value],
+    [chalk.bold('Mode'), mode],
     [chalk.bold('Amount'), `${config.amount} presets`],
   );
 
@@ -662,16 +643,12 @@ async function runInteractiveMode() {
   console.log(table.toString());
   console.log('');
 
-  const proceed = await inquirer.prompt<{ value: boolean }>([
-    {
-      name: 'value',
-      type: 'confirm',
-      message: 'Generate presets with these settings?',
-      default: true,
-    },
-  ]);
+  const proceed = await confirm({
+    message: 'Generate presets with these settings?',
+    default: true,
+  });
 
-  if (!proceed.value) {
+  if (!proceed) {
     console.log(
       chalk.yellow('Cancelled. Run the command again to start over.'),
     );
@@ -734,7 +711,7 @@ function logGenerationSuccess(result: GenerationResult) {
   console.log('');
   console.log(
     chalk.dim(
-      'Open your DAW and look for the RANDOM folder in your user presets.',
+      'Open your synth and look for the RANDOM folder in your user presets.',
     ),
   );
   console.log('');
@@ -748,21 +725,17 @@ async function chooseAmountOfPresets(initial = 8): Promise<number> {
       'Tip: Start with 8-16 presets to review. You can always generate more!',
     ),
   );
-  const amount = await inquirer.prompt<{ value: number }>([
-    {
-      name: 'value',
-      type: 'number',
-      message: 'How many presets would you like to generate?',
-      default: initial,
-      validate: (input: number | undefined) => {
-        if (typeof input !== 'number' || Number.isNaN(input))
-          return 'Please enter a number';
-        if (input < 1) return 'Please enter at least 1';
-        return true;
-      },
+  const amount = await number({
+    message: 'How many presets would you like to generate?',
+    default: initial,
+    validate: (input: number | undefined) => {
+      if (typeof input !== 'number' || Number.isNaN(input))
+        return 'Please enter a number';
+      if (input < 1) return 'Please enter at least 1';
+      return true;
     },
-  ]);
-  return amount.value;
+  });
+  return amount ?? initial;
 }
 /** Choose randomness amount */
 async function chooseRandomness(initial = 20): Promise<number> {
@@ -771,9 +744,7 @@ async function chooseRandomness(initial = 20): Promise<number> {
   console.log(chalk.dim('   0-20%   = Subtle variations'));
   console.log(chalk.dim('   20-50%  = Noticeable differences'));
   console.log(chalk.dim('   50-100% = Dramatically different'));
-  const amount = await inquirer.prompt<{ value: number }>({
-    name: 'value',
-    type: 'number',
+  const amount = await number({
     message: 'How much variation? (0-100)',
     default: initial,
     validate: (input: number | undefined) => {
@@ -784,7 +755,7 @@ async function chooseRandomness(initial = 20): Promise<number> {
       return true;
     },
   });
-  return amount.value;
+  return amount ?? initial;
 }
 
 async function choosePreset(
