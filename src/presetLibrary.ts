@@ -22,7 +22,7 @@ import {
 } from './utils/detector.js';
 
 export interface PresetLibrary {
-  synth: string;
+  synth: SynthNames;
   rootFolder: string;
   userPresetsFolder: string;
   presetsFolder?: string;
