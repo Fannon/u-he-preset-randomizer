@@ -42,11 +42,11 @@ describe('parser helpers', () => {
     });
 
     it('should handle edge cases', () => {
-      // Note: isInt uses bitwise OR which only works for 32-bit integers
-      // So very large numbers like MAX_SAFE_INTEGER return false
+      // Now properly handles all JavaScript integers
       expect(isInt(2147483647)).toBe(true); // Max 32-bit signed int
       expect(isInt(-2147483648)).toBe(true); // Min 32-bit signed int
-      expect(isInt(Number.MAX_SAFE_INTEGER)).toBe(false); // Too large for bitwise
+      expect(isInt(Number.MAX_SAFE_INTEGER)).toBe(true); // Large integers work now
+      expect(isInt(Number.MIN_SAFE_INTEGER)).toBe(true);
       // Very large floats that look like integers
       expect(isInt(1.0)).toBe(true);
       expect(isInt(-0)).toBe(true);
@@ -163,8 +163,8 @@ describe('analyzer helpers', () => {
       expect(average([0])).toBe(0);
     });
 
-    it('should return NaN for empty array', () => {
-      expect(average([])).toBeNaN();
+    it('should return 0 for empty array', () => {
+      expect(average([])).toBe(0);
     });
   });
 });

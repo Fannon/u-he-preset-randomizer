@@ -314,10 +314,8 @@ export function isValidPreset(preset: Preset) {
 //////////////////////////////////////////
 
 export function isInt(value: unknown): boolean {
-  return (
-    !Number.isNaN(value as number) &&
-    ((x) => (x | 0) === x)(parseFloat(value as string))
-  );
+  const num = parseFloat(value as string);
+  return !Number.isNaN(num) && Number.isFinite(num) && Math.floor(num) === num;
 }
 
 export function isNumeric(value: unknown): boolean {

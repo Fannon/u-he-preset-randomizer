@@ -219,7 +219,8 @@ export function convertParamsModelBySection(
   return paramsModelBySection;
 }
 
-export function average(arr: number[]) {
+export function average(arr: number[]): number {
+  if (arr.length === 0) return 0;
   return arr.reduce((p, c) => p + c, 0) / arr.length;
 }
 
