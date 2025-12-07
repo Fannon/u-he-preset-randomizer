@@ -13,8 +13,11 @@ const stripDistinctValues = (node) => {
   }
 
   if (node !== null && typeof node === 'object') {
-    if ('distinctValues' in node) {
-      delete node.distinctValues;
+    if ('distinctValues' in node && Array.isArray(node.distinctValues)) {
+      // Keep distinct values if there are few of them
+      if (node.distinctValues.length > 20) {
+        delete node.distinctValues;
+      }
     }
 
     for (const value of Object.values(node)) {

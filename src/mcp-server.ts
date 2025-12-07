@@ -173,7 +173,6 @@ const server = new Server(
   {
     name: 'u-he-preset-randomizer',
     version: packageJson.version,
-    description: 'u-he Synth Preset Library Randomizer and Explorer',
   },
   {
     capabilities: {
