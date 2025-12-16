@@ -6,6 +6,7 @@ import {
   type SpecialParameterHandling,
   type SynthConfig,
 } from './types.js';
+import { zebra3Config } from './Zebra3.js';
 import { zebralette3Config } from './Zebralette3.js';
 
 export {
@@ -19,6 +20,7 @@ export {
  */
 const synthConfigs = {
   Zebralette3: zebralette3Config,
+  Zebra3: zebra3Config,
   'Repro-1': repro1Config,
   'Repro-5': repro5Config,
 };
