@@ -22,7 +22,7 @@ import {
 } from './utils/detector.js';
 
 export interface PresetLibrary {
-  synth: string;
+  synth: SynthNames;
   rootFolder: string;
   userPresetsFolder: string;
   presetsFolder?: string;
@@ -322,6 +322,26 @@ export function writePresetLibrary(presetLibrary: PresetLibrary): string[] {
       preset.filePath,
     );
     const fileContent = serializePresetToFile(preset);
+
+    // Explicitly ensure directory exists first (helps with cloud/network filesystems)
+    const dirPath = path.dirname(filePath);
+    try {
+      fs.ensureDirSync(dirPath);
+    } catch (dirError) {
+      // Retry once after a brief delay (cloud filesystems may need time)
+      const err = dirError as NodeJS.ErrnoException;
+      if (err.code === 'ENOENT') {
+        // Wait briefly and retry
+        const startTime = Date.now();
+        while (Date.now() - startTime < 100) {
+          // Busy wait for ~100ms
+        }
+        fs.ensureDirSync(dirPath);
+      } else {
+        throw dirError;
+      }
+    }
+
     fs.outputFileSync(filePath, fileContent);
     writtenFiles.push(path.normalize(filePath));
   }

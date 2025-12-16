@@ -6,7 +6,7 @@
 import chalk from 'chalk';
 import type { Config } from './config.js';
 import type { PresetLibrary } from './presetLibrary.js';
-import type { SynthNames } from './utils/detector.js';
+import { getSpecialParameterHandling } from './synthConfigs/index.js';
 
 export type ParamsModel = Record<
   string,
@@ -41,6 +41,11 @@ export function analyzeParamsTypeAndRange(
   presetLibrary: PresetLibrary,
   config?: Config,
 ) {
+  // Get special parameter handling rules for this synth (global + synth-specific)
+  const specialParameterHandling = getSpecialParameterHandling(
+    presetLibrary.synth,
+  );
+
   const paramsModel: ParamsModel = {};
   for (const preset of presetLibrary.presets) {
     for (const param of preset.params) {
@@ -223,32 +228,3 @@ export function average(arr: number[]): number {
   if (arr.length === 0) return 0;
   return arr.reduce((p, c) => p + c, 0) / arr.length;
 }
-
-interface SpecialParameterHandling {
-  id: string;
-  keepStable: 'always' | 'stable-mode';
-  restrictToSynth?: SynthNames;
-}
-
-const specialParameterHandling: SpecialParameterHandling[] = [
-  {
-    id: 'VCC/Trsp',
-    keepStable: 'always',
-  },
-  {
-    id: 'VCC/FTun',
-    keepStable: 'always',
-  },
-  {
-    id: 'Tune',
-    keepStable: 'stable-mode',
-  },
-  {
-    id: 'main/CcOp',
-    keepStable: 'stable-mode',
-  },
-  {
-    id: 'ZMas/Mast',
-    keepStable: 'stable-mode',
-  },
-];
