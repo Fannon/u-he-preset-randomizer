@@ -1,5 +1,8 @@
 # u-he-preset-randomizer
 
+[![Run in Smithery](https://smithery.ai/badge/skills/fannon)](https://smithery.ai/skills?ns=fannon&utm_source=github&utm_medium=badge)
+
+
 Generate [u-he](https://u-he.com/) synth presets through randomization and merging of your existing presets (genetics like).
 
 This tool can generate random presets in three different modes:
