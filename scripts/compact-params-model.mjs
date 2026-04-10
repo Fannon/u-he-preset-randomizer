@@ -27,10 +27,7 @@ const compactNode = (node, { maxDistinctValues, maxFrequencies }) => {
 
     if ('frequencies' in node && node.frequencies !== null) {
       const frequencyKeys = Object.keys(node.frequencies);
-      if (
-        frequencyKeys.length <= 1 ||
-        frequencyKeys.length > maxFrequencies
-      ) {
+      if (frequencyKeys.length <= 1 || frequencyKeys.length > maxFrequencies) {
         delete node.frequencies;
       }
     }
@@ -50,7 +47,11 @@ const writeCompactedModel = async (
   compactNode(compacted, { maxDistinctValues, maxFrequencies });
 
   try {
-    await writeFile(targetPath, `${JSON.stringify(compacted, null, 2)}\n`, 'utf8');
+    await writeFile(
+      targetPath,
+      `${JSON.stringify(compacted, null, 2)}\n`,
+      'utf8',
+    );
   } catch (error) {
     console.error(`Failed to write ${targetPath}:`, error);
     process.exit(1);
