@@ -1,0 +1,29 @@
+stages:
+  - test
+  - build
+  - publish
+
+variables:
+  NODE_VERSION: '24'
+
+test:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+    - npm test
+
+publish:
+  stage: publish
+  image: node:${NODE_VERSION}
+  id_tokens:
+    NPM_ID_TOKEN:
+      aud: "npm:registry.npmjs.org"
+    SIGSTORE_ID_TOKEN:
+      aud: sigstore
+  script:
+    - npm ci
+    - npm run build --if-present
+    - npm publish
+  only:
+    - tags
