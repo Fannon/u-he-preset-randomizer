@@ -3,7 +3,10 @@ import fs from 'fs-extra';
 import os from 'node:os';
 import path from 'node:path';
 import type { Config } from '../config.js';
-import { detectPresetLibraryLocations } from '../utils/detector.js';
+import {
+  detectPresetLibraryLocations,
+  getWslWindowsUserPresetRoots,
+} from '../utils/detector.js';
 
 describe('detectPresetLibraryLocations', () => {
   let tmpRoot: string;
@@ -43,6 +46,24 @@ describe('detectPresetLibraryLocations', () => {
     expect(repro5?.userPresets).toBe(
       path.join(tmpRoot, 'Repro-1.data/UserPresets/Repro-5'),
     );
+  });
+
+  it('collects WSL Windows per-user preset roots', () => {
+    const usersRoot = path.join(tmpRoot, 'Users');
+    fs.ensureDirSync(path.join(usersRoot, 'Alice'));
+    fs.ensureDirSync(path.join(usersRoot, 'Bob'));
+    fs.writeFileSync(path.join(usersRoot, 'desktop.ini'), '');
+
+    const roots = getWslWindowsUserPresetRoots(usersRoot);
+
+    expect(roots.sort()).toEqual([
+      path.join(usersRoot, 'Alice', 'Documents', 'u-he'),
+      path.join(usersRoot, 'Alice', 'My Documents', 'u-he'),
+      path.join(usersRoot, 'Alice', 'AppData', 'Roaming', 'u-he'),
+      path.join(usersRoot, 'Bob', 'Documents', 'u-he'),
+      path.join(usersRoot, 'Bob', 'My Documents', 'u-he'),
+      path.join(usersRoot, 'Bob', 'AppData', 'Roaming', 'u-he'),
+    ].sort());
   });
 
   function createSynthDataFolder(synthName: string) {

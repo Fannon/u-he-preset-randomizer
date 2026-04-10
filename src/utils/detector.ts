@@ -35,6 +35,28 @@ export const uheSynthNames = [
 
 export type SynthNames = (typeof uheSynthNames)[number];
 
+export function getWslWindowsUserPresetRoots(
+  usersRoot = '/mnt/c/Users',
+): string[] {
+  if (process.platform !== 'linux' || !fs.existsSync(usersRoot)) {
+    return [];
+  }
+
+  const roots: string[] = [];
+
+  for (const entry of fs.readdirSync(usersRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    roots.push(path.join(usersRoot, entry.name, 'Documents', 'u-he'));
+    roots.push(path.join(usersRoot, entry.name, 'My Documents', 'u-he'));
+    roots.push(path.join(usersRoot, entry.name, 'AppData', 'Roaming', 'u-he'));
+  }
+
+  return roots;
+}
+
 /**
  * Detects Preset Library locations
  */
@@ -122,6 +144,10 @@ export function detectPresetLibraryLocations(
       `/mnt/c/Program Files/Common Files/CLAP/u-he/__SynthName__.data/`,
     );
     locationsTried.push(`/mnt/c/VstPlugins/u-he/__SynthName__.data/`);
+
+    for (const windowsPresetRoot of getWslWindowsUserPresetRoots()) {
+      locationsTried.push(`${windowsPresetRoot}/__SynthName__.data/`);
+    }
   }
 
   // Custom Google Drive location (check last as it may not be mounted)
