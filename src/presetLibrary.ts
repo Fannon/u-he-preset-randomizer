@@ -133,54 +133,6 @@ export function loadPresetLibrary(
     }
   }
 
-  // Load user third party preset library
-  const thirdPartyPresets = fg
-    .sync([`${pattern}.h2p`], {
-      cwd: path.resolve(presetLibrary.userPresetsFolder, '../..'),
-      ignore: ['UserPresets/**/*', 'Presets/**/*'],
-    })
-    .map((el) => {
-      return `/UserThirdParty/${el}`;
-    });
-
-  // Add third party presets only if not loading Local only
-  if (librarySelector !== 'Local') {
-    if (thirdPartyPresets.length > 0) {
-      for (const presetPath of thirdPartyPresets) {
-        try {
-          const presetString = fs
-            .readFileSync(
-              path.join(
-                path.resolve(presetLibrary.userPresetsFolder, '../..'),
-                presetPath.replace('/UserThirdParty/', ''),
-              ),
-            )
-            .toString();
-          const parsedPreset = parseUhePreset(
-            presetString,
-            presetPath,
-            config.binary ?? false,
-          );
-          if (isValidPreset(parsedPreset)) {
-            presetLibrary.presets.push(parsedPreset);
-          }
-        } catch (err) {
-          console.warn(
-            chalk.yellow(`Could not load and parse preset: ${presetPath}`),
-            err,
-          );
-        }
-      }
-    } else {
-      console.log('');
-      console.warn(
-        chalk.yellow(
-          `Could not find presets with glob pattern: ${pattern}.h2p in user library: ${path.resolve(presetLibrary.userPresetsFolder, '../..')}`,
-        ),
-      );
-    }
-  }
-
   // Load user preset library
   const userPresets = fg
     .sync([`${pattern}.h2p`], {

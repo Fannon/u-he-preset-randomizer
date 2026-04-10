@@ -78,6 +78,34 @@ describe('presetLibrary', () => {
     expect(library.presets[0]?.filePath).toBe('/User/UserOnly.h2p');
   });
 
+  it('loads presets only from explicit preset directories', () => {
+    const modulesDir = path.join(synthRoot, 'Modules', 'Velvet');
+    fs.ensureDirSync(modulesDir);
+    fs.writeFileSync(
+      path.join(modulesDir, 'Default.h2p'),
+      '#cm=Velvet\nogain=-1.00\n',
+    );
+
+    writePresetFixture(userDir, 'UserPreset.h2p', {
+      filePath: '/User/UserPreset.h2p',
+    });
+    writePresetFixture(presetsDir, 'FactoryPreset.h2p', {
+      filePath: '/Local/FactoryPreset.h2p',
+    });
+
+    const library = loadPresetLibrary('TestSynth', config);
+
+    expect(library.presets.map((preset) => preset.filePath)).toContain(
+      '/User/UserPreset.h2p',
+    );
+    expect(library.presets.map((preset) => preset.filePath)).toContain(
+      '/Local/FactoryPreset.h2p',
+    );
+    expect(library.presets.some((preset) => preset.filePath.includes('Modules'))).toBe(
+      false,
+    );
+  });
+
   it('writes generated presets relative to the user preset folder', () => {
     const randomFolder = path.join(userDir, 'RANDOM');
     fs.ensureDirSync(randomFolder);

@@ -6,7 +6,7 @@
  */
 
 import { dirname } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import checkbox from '@inquirer/checkbox';
 import confirm from '@inquirer/confirm';
 import number from '@inquirer/number';
@@ -17,7 +17,11 @@ import chalk from 'chalk';
 import fg from 'fast-glob';
 import fs from 'fs-extra';
 
-import { type Config, getConfigFromParameters } from './config.js';
+import {
+  type Config,
+  getConfigFromParameters,
+  getDefaultConfig,
+} from './config.js';
 import { type GenerationResult, generatePresets } from './generatePresets.js';
 import {
   narrowDownByAuthor,
@@ -31,6 +35,7 @@ import {
   detectPresetLibraryLocations,
   type SynthNames,
 } from './utils/detector.js';
+import { isDirectExecution } from './utils/entrypoint.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -43,7 +48,7 @@ interface ChoiceOptions {
   value: string;
 }
 
-const config = getConfigFromParameters();
+let config: Config = getDefaultConfig();
 
 function logCliBanner() {
   console.log('');
@@ -64,7 +69,8 @@ function logCliBanner() {
   console.log('');
 }
 
-export async function startCli() {
+export async function startCli(overrides?: Record<string, unknown>) {
+  config = getConfigFromParameters(overrides);
   logCliBanner();
   if (!config.synth) {
     await runInteractiveMode();
@@ -83,12 +89,7 @@ export async function startCli() {
   }
 }
 
-const executionArg = process.argv[1];
-const wasInvokedDirectly =
-  executionArg !== undefined &&
-  import.meta.url === pathToFileURL(executionArg).href;
-
-if (wasInvokedDirectly) {
+if (isDirectExecution(import.meta.url)) {
   startCli().catch((err) => {
     console.error(err);
     process.exit(1);

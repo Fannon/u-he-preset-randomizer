@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import {
+  buildCliArgParser,
   getConfig,
   getConfigFromParameters,
   resetConfig,
@@ -93,5 +94,14 @@ describe('config utilities', () => {
     expect(config2.randomness).toBe(80);
     // amount should not be inherited from config1
     expect(config2.amount).toBeUndefined();
+  });
+
+  it('registers documented CLI options in help output', async () => {
+    const helpText = await buildCliArgParser([]).getHelp();
+
+    expect(helpText).toContain('--synth');
+    expect(helpText).toContain('--amount');
+    expect(helpText).toContain('--custom-folder');
+    expect(helpText).toContain('--binary-template');
   });
 });

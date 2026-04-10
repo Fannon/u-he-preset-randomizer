@@ -39,8 +39,112 @@ export function getDefaultConfig(): Config {
 
 let config = getDefaultConfig();
 
+export function buildCliArgParser(argv = hideBin(process.argv)) {
+  return yargs(argv)
+    .scriptName('u-he-preset-randomizer')
+    .usage('$0 [options]')
+    .example(
+      '$0 --synth Diva --amount 3',
+      'Generate 3 fully random Diva presets',
+    )
+    .example(
+      '$0 --synth Diva --preset "HS Greek Horn" --randomness 20 --amount 5',
+      'Create 5 randomized variants of an existing preset',
+    )
+    .example(
+      '$0 --synth Diva --merge "HS Greek Horn" --merge "HS Strumpet" --amount 5',
+      'Merge existing presets into 5 new variants',
+    )
+    .epilogue('Run without --synth to start interactive mode.')
+    .option('synth', {
+      type: 'string',
+      describe: 'Choose the u-he synth, for example Diva or Repro-1.',
+    })
+    .option('amount', {
+      type: 'number',
+      describe: 'How many presets to generate.',
+    })
+    .option('randomness', {
+      type: 'number',
+      describe: 'Randomness percentage for preset variation or merge output.',
+    })
+    .option('preset', {
+      type: 'string',
+      array: true,
+      describe: 'Base preset name to randomize. Repeat to randomize multiple.',
+    })
+    .option('merge', {
+      type: 'string',
+      array: true,
+      describe: 'Preset name to merge. Repeat the flag to add more presets.',
+    })
+    .option('pattern', {
+      type: 'string',
+      describe: 'Glob pattern used to narrow the preset library.',
+    })
+    .option('binary', {
+      type: 'boolean',
+      describe: 'Keep binary preset sections when generating new presets.',
+    })
+    .option('stable', {
+      type: 'boolean',
+      describe: 'Use the safer, more stable randomization mode.',
+    })
+    .option('creative', {
+      type: 'boolean',
+      describe: 'Use the more experimental randomization mode.',
+    })
+    .option('category', {
+      type: 'string',
+      describe: 'Filter presets by category metadata.',
+    })
+    .option('dictionary', {
+      type: 'boolean',
+      describe: 'Generate preset names from the existing library dictionary.',
+    })
+    .option('author', {
+      type: 'string',
+      describe: 'Filter presets by author metadata.',
+    })
+    .option('folder', {
+      type: 'string',
+      describe: 'Filter presets by folder. Use /Local/ or /User/ as a base.',
+    })
+    .option('favorites', {
+      type: 'string',
+      array: true,
+      describe: 'Filter presets by .uhe-fav favorites file. Repeat if needed.',
+    })
+    .option('custom-folder', {
+      type: 'string',
+      describe: 'Custom base folder for the u-he installation or presets.',
+    })
+    .option('binary-template', {
+      type: 'boolean',
+      describe: 'Use curated binary templates instead of random binary data.',
+    })
+    .option('debug', {
+      type: 'boolean',
+      describe: 'Print debug output and dump the analyzed params model.',
+    })
+    .alias('h', 'help')
+    .alias('v', 'version')
+    .help()
+    .version();
+}
+
 function parseCliArgs(): Record<string, unknown> {
-  return yargs(hideBin(process.argv)).parse() as Record<string, unknown>;
+  return buildCliArgParser().parse() as Record<string, unknown>;
+}
+
+function parseOptionalNumber(value: unknown): number | undefined {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    return Number.parseInt(value, 10);
+  }
+  return undefined;
 }
 
 export function getConfigFromParameters(
@@ -57,14 +161,16 @@ export function getConfigFromParameters(
   if (argv.debug) {
     newConfig.debug = true;
   }
-  if (argv.amount) {
-    newConfig.amount = parseInt(argv.amount as string, 10);
+  const amount = parseOptionalNumber(argv.amount);
+  if (amount !== undefined) {
+    newConfig.amount = amount;
   }
   if (argv.preset) {
     newConfig.preset = argv.preset as string | string[];
   }
-  if (argv.randomness) {
-    newConfig.randomness = parseInt(argv.randomness as string, 10);
+  const randomness = parseOptionalNumber(argv.randomness);
+  if (randomness !== undefined) {
+    newConfig.randomness = randomness;
   }
   if (argv.merge) {
     newConfig.merge = argv.merge as string | string[];

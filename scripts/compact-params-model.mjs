@@ -2,28 +2,61 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const sourcePath = resolve('tmp/paramsModel.json');
-const targetPath = resolve('tmp/paramsModel.compact.json');
+const compactPath = resolve('tmp/paramsModel.compact.json');
+const compactMinPath = resolve('tmp/paramsModel.compact.min.json');
 
-const stripDistinctValues = (node) => {
+const compactNode = (node, { maxDistinctValues, maxFrequencies }) => {
   if (Array.isArray(node)) {
     for (const item of node) {
-      stripDistinctValues(item);
+      compactNode(item, { maxDistinctValues, maxFrequencies });
     }
     return;
   }
 
   if (node !== null && typeof node === 'object') {
+    if ('values' in node && Array.isArray(node.values)) {
+      delete node.values;
+    }
+
     if ('distinctValues' in node && Array.isArray(node.distinctValues)) {
       // Keep distinct values if there are few of them
-      if (node.distinctValues.length > 20) {
+      if (node.distinctValues.length > maxDistinctValues) {
         delete node.distinctValues;
       }
     }
 
+    if ('frequencies' in node && node.frequencies !== null) {
+      const frequencyKeys = Object.keys(node.frequencies);
+      if (
+        frequencyKeys.length <= 1 ||
+        frequencyKeys.length > maxFrequencies
+      ) {
+        delete node.frequencies;
+      }
+    }
+
     for (const value of Object.values(node)) {
-      stripDistinctValues(value);
+      compactNode(value, { maxDistinctValues, maxFrequencies });
     }
   }
+};
+
+const writeCompactedModel = async (
+  data,
+  targetPath,
+  { maxDistinctValues, maxFrequencies, label },
+) => {
+  const compacted = JSON.parse(JSON.stringify(data));
+  compactNode(compacted, { maxDistinctValues, maxFrequencies });
+
+  try {
+    await writeFile(targetPath, `${JSON.stringify(compacted, null, 2)}\n`, 'utf8');
+  } catch (error) {
+    console.error(`Failed to write ${targetPath}:`, error);
+    process.exit(1);
+  }
+
+  console.log(`Wrote ${label} params model to ${targetPath}`);
 };
 
 const main = async () => {
@@ -45,16 +78,16 @@ const main = async () => {
     process.exit(1);
   }
 
-  stripDistinctValues(data);
-
-  try {
-    await writeFile(targetPath, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
-  } catch (error) {
-    console.error(`Failed to write ${targetPath}:`, error);
-    process.exit(1);
-  }
-
-  console.log(`Wrote compact params model to ${targetPath}`);
+  await writeCompactedModel(data, compactPath, {
+    maxDistinctValues: 20,
+    maxFrequencies: Number.POSITIVE_INFINITY,
+    label: 'compact',
+  });
+  await writeCompactedModel(data, compactMinPath, {
+    maxDistinctValues: 20,
+    maxFrequencies: 20,
+    label: 'compact min',
+  });
 };
 
 main();
